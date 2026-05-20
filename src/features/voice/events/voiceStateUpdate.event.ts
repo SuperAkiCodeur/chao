@@ -17,9 +17,9 @@ export async function handleVoiceStateUpdate(
     await handleTempChannelJoin(newState);
   }
 
+  await syncChattingRoleFromVoiceState(oldState, newState);
+
   if (oldState.channelId) {
     await handleTempChannelLeave(oldState);
   }
-
-  await syncChattingRoleFromVoiceState(oldState, newState);
 }

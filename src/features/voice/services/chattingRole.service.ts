@@ -1,7 +1,14 @@
 import type { VoiceState } from "discord.js";
 import { logger } from "../../../core/app/logger.js";
 import { VOICE_CONSTANTS } from "../domain/voice.constants.js";
-import { isTemporaryVoiceChannel } from "./tempChannel.service.js";
+
+function isTrackedTemporaryChannelName(channelName: string | null | undefined): boolean {
+  if (!channelName) {
+    return false;
+  }
+
+  return channelName.startsWith(VOICE_CONSTANTS.TEMP_CHANNEL_PREFIX);
+}
 
 export async function syncChattingRoleFromVoiceState(
   oldState: VoiceState,
@@ -13,11 +20,12 @@ export async function syncChattingRoleFromVoiceState(
     return;
   }
 
-  const wasInTempChannel = isTemporaryVoiceChannel(oldState.channelId);
-  const isInTempChannel = isTemporaryVoiceChannel(newState.channelId);
   const hasChattingRole = member.roles.cache.has(VOICE_CONSTANTS.CHATTING_ROLE_ID);
+  const joinedTemporaryChannel = isTrackedTemporaryChannelName(newState.channel?.name);
+  const leftTemporaryChannel = isTrackedTemporaryChannelName(oldState.channel?.name);
+  const isNowOutsideVoice = !newState.channelId;
 
-  if (!wasInTempChannel && isInTempChannel && !hasChattingRole) {
+  if (joinedTemporaryChannel && !hasChattingRole) {
     await member.roles.add(
       VOICE_CONSTANTS.CHATTING_ROLE_ID,
       "User joined a temporary voice channel",
@@ -33,7 +41,7 @@ export async function syncChattingRoleFromVoiceState(
     return;
   }
 
-  if (wasInTempChannel && !isInTempChannel && hasChattingRole) {
+  if ((leftTemporaryChannel || hasChattingRole) && (isNowOutsideVoice || !joinedTemporaryChannel) && hasChattingRole) {
     await member.roles.remove(
       VOICE_CONSTANTS.CHATTING_ROLE_ID,
       "User left temporary voice channel",
