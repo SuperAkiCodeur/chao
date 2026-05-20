@@ -244,7 +244,7 @@ export async function startWatchParty(
   });
 
   return {
-    message: "✅ Annonce publiée avec billeterie.",
+    message: "✅ Annonce publiée !",
   };
 }
 

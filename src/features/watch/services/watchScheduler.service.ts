@@ -44,22 +44,7 @@ function buildWatchStartEmbed(watchParty: WatchParty): EmbedBuilder {
   return new EmbedBuilder()
     .setColor(WATCH_CONSTANTS.DEFAULT_EMBED_COLOR)
     .setTitle("🎬 La diffusion commence maintenant")
-    .setDescription(`**${watchParty.title}** commence maintenant.`)
-    .addFields(
-      {
-        name: "Type",
-        value:
-          watchParty.mediaType === WATCH_CONSTANTS.MEDIA_TYPES.MOVIE
-            ? "Film"
-            : "Série",
-        inline: true,
-      },
-      {
-        name: "Statut",
-        value: "En cours",
-        inline: true,
-      },
-    );
+    .setDescription(`On regarde **${watchParty.title}**, rejoins-nous vite !`)
 }
 
 async function sendScheduledWatchAnnouncement(
