@@ -69,7 +69,15 @@ export const watchCommand = {
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
 
   async execute(interaction: ChatInputCommandInteraction): Promise<void> {
-    const subcommand = interaction.options.getSubcommand();
+    const subcommand = interaction.options.getSubcommand(false);
+
+    if (!subcommand) {
+      await interaction.reply({
+        content: "❌ Sous-commande manquante. Utilise `/watch start` ou `/watch end`.",
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
 
     await interaction.deferReply({
       flags: MessageFlags.Ephemeral,
