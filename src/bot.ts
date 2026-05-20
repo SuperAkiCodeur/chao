@@ -1,8 +1,4 @@
-import {
-  Client,
-  GatewayIntentBits,
-  Partials,
-} from "discord.js";
+import { Client, GatewayIntentBits, Partials } from "discord.js";
 import { loadEvents } from "./core/discord/eventLoader.js";
 
 export function createBot() {
@@ -21,6 +17,18 @@ export function createBot() {
     ],
   });
 
+  client.on("debug", (message) => {
+    console.log("[discord debug]", message);
+  });
+
+  client.on("warn", (message) => {
+    console.warn("[discord warn]", message);
+  });
+
+  client.on("error", (error) => {
+    console.error("[discord error]", error);
+  });
+
   loadEvents(client);
 
   return {
@@ -32,7 +40,9 @@ export function createBot() {
         throw new Error("DISCORD_TOKEN is missing in environment variables.");
       }
 
+      console.log("[bot] logging in");
       await client.login(token);
+      console.log("[bot] login promise resolved");
     },
   };
 }
