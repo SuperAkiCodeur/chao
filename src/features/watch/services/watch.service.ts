@@ -93,6 +93,40 @@ function getSpectatorRoleId(): string {
   return spectatorRoleId;
 }
 
+function getTicketChannelId(): string {
+  const ticketChannelId = process.env.TICKET_CHANNEL_ID;
+
+  if (!ticketChannelId) {
+    throw new Error("TICKET_CHANNEL_ID is missing");
+  }
+
+  return ticketChannelId;
+}
+
+function getCinemaCategoryId(): string {
+  const cinemaCategoryId = process.env.CINEMA_CATEGORY_ID;
+
+  if (!cinemaCategoryId) {
+    throw new Error("CINEMA_CATEGORY_ID is missing");
+  }
+
+  return cinemaCategoryId;
+}
+
+function isWatchStartChannelAllowed(channelId: string): boolean {
+  return channelId === getTicketChannelId();
+}
+
+function isWatchEndChannelAllowed(
+  channel: ChatInputCommandInteraction["channel"],
+): boolean {
+  if (!channel || !("parentId" in channel)) {
+    return false;
+  }
+
+  return channel.parentId === getCinemaCategoryId();
+}
+
 async function deleteWatchMessageById(
   client: Client,
   channelId: string,
@@ -184,6 +218,12 @@ export async function startWatchParty(
 
   ensureGuildInteraction(interaction);
   ensureWritableTextChannel(interaction.channel);
+
+  if (!isWatchStartChannelAllowed(interaction.channelId)) {
+    return {
+      message: "❌ /watch start est utilisable uniquement dans le salon billetterie.",
+    };
+  }
 
   const titleValidation = validateWatchTitleInput(title);
 
@@ -278,6 +318,12 @@ export async function endWatchParty(
   const { interaction, type, title } = params;
 
   ensureGuildInteraction(interaction);
+
+  if (!isWatchEndChannelAllowed(interaction.channel)) {
+    return {
+      message: "❌ /watch end est utilisable uniquement dans la catégorie Cinéma.",
+    };
+  }
 
   const titleValidation = validateWatchTitleInput(title);
 
