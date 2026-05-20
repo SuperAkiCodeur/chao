@@ -1,17 +1,27 @@
-import { Client } from "discord.js";
+import type { Client } from "discord.js";
 import { logger } from "../app/logger.js";
-import { handleVoiceStateUpdate } from "../../features/voice/events/voiceStateUpdate.event.js";
+import { eventRegistry } from "./eventRegistry.js";
 
-export function loadEvents(client: Client) {
-  client.once("clientReady", () => {
-    logger.info(`Connected as ${client.user?.tag ?? "unknown user"}`);
-  });
+export function loadEvents(client: Client): void {
+  for (const event of eventRegistry) {
+    const execute = event.execute as (...args: unknown[]) => Promise<void>;
 
-  client.on("voiceStateUpdate", async (oldState, newState) => {
-    try {
-      await handleVoiceStateUpdate(oldState, newState);
-    } catch (error) {
-      logger.error("Failed to handle voiceStateUpdate event", error);
+    const listener = async (...args: unknown[]) => {
+      try {
+        await execute(...args);
+      } catch (error) {
+        logger.error("Discord event failed", {
+          event: event.name,
+          error,
+        });
+      }
+    };
+
+    if (event.once) {
+      client.once(event.name, listener);
+      continue;
     }
-  });
+
+    client.on(event.name, listener);
+  }
 }
