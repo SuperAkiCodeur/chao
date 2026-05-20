@@ -41,21 +41,36 @@ export async function handleTempChannelJoin(state: VoiceState) {
     return;
   }
 
-  const tempChannel = await state.guild.channels.create({
-    name: `${VOICE_CONSTANTS.TEMP_CHANNEL_PREFIX} ${member.displayName}`,
-    type: ChannelType.GuildVoice,
-    parent: joinedChannel.parent,
-  });
+  let tempChannel: Awaited<ReturnType<typeof state.guild.channels.create>> | null = null;
 
-  registerTemporaryVoiceChannel(tempChannel.id);
+  try {
+    tempChannel = await state.guild.channels.create({
+      name: `${VOICE_CONSTANTS.TEMP_CHANNEL_PREFIX} ${member.displayName}`,
+      type: ChannelType.GuildVoice,
+      parent: joinedChannel.parent,
+    });
 
-  await member.voice.setChannel(tempChannel);
+    registerTemporaryVoiceChannel(tempChannel.id);
 
-  logger.info("Temporary voice channel created", {
-    guildId: state.guild.id,
-    channelId: tempChannel.id,
-    ownerId: member.id,
-  });
+    await member.voice.setChannel(tempChannel);
+
+    logger.info("Temporary voice channel created", {
+      guildId: state.guild.id,
+      channelId: tempChannel.id,
+      ownerId: member.id,
+    });
+  } catch (error) {
+    if (tempChannel) {
+      unregisterTemporaryVoiceChannel(tempChannel.id);
+      await tempChannel.delete().catch(() => null);
+    }
+
+    logger.error("Failed to create or assign temporary voice channel", {
+      guildId: state.guild.id,
+      userId: state.id,
+      error,
+    });
+  }
 }
 
 export async function handleTempChannelLeave(state: VoiceState) {
