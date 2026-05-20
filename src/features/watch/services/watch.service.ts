@@ -31,6 +31,10 @@ import {
 } from "../repositories/watch.repository.js";
 import { fetchTmdbMedia } from "./tmdb.service.js";
 import { buildWatchAnnouncement } from "./watchAnnouncement.service.js";
+import {
+  cancelWatchStartAnnouncement,
+  scheduleWatchStartAnnouncement,
+} from "./watchScheduler.service.js";
 
 type WritableInteractionChannel = NonNullable<ChatInputCommandInteraction["channel"]> & {
   send: (...args: any[]) => Promise<any>;
@@ -143,6 +147,7 @@ async function cleanupWatchParty(
   guild: Guild,
   watchParty: WatchParty,
 ): Promise<void> {
+  cancelWatchStartAnnouncement(watchParty.messageId);
   await deleteWatchAnnouncementMessage(client, watchParty);
   await cleanupSpectatorRolesForWatchParty(guild, watchParty);
   deleteWatchParty(watchParty.messageId);
@@ -226,6 +231,7 @@ export async function startWatchParty(
   };
 
   saveWatchParty(watchParty);
+  scheduleWatchStartAnnouncement(interaction.client, watchParty);
 
   logger.info("Watch party started", {
     guildId: watchParty.guildId,
@@ -234,6 +240,7 @@ export async function startWatchParty(
     mediaType: watchParty.mediaType,
     mediaId: watchParty.mediaId,
     title: watchParty.title,
+    viewingAt: watchParty.viewingAt,
   });
 
   return {
@@ -298,6 +305,8 @@ export async function handleDeletedWatchMessage(params: {
   if (!watchParty) {
     return;
   }
+
+  cancelWatchStartAnnouncement(params.messageId);
 
   if (params.guild) {
     await cleanupSpectatorRolesForWatchParty(params.guild, watchParty);
