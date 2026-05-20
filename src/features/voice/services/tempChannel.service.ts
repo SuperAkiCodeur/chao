@@ -2,6 +2,24 @@ import { ChannelType, VoiceState } from "discord.js";
 import { logger } from "../../../core/app/logger.js";
 import { VOICE_CONSTANTS } from "../domain/voice.constants.js";
 
+const temporaryVoiceChannelIds = new Set<string>();
+
+export function registerTemporaryVoiceChannel(channelId: string): void {
+  temporaryVoiceChannelIds.add(channelId);
+}
+
+export function unregisterTemporaryVoiceChannel(channelId: string): void {
+  temporaryVoiceChannelIds.delete(channelId);
+}
+
+export function isTemporaryVoiceChannel(channelId: string | null | undefined): boolean {
+  if (!channelId) {
+    return false;
+  }
+
+  return temporaryVoiceChannelIds.has(channelId);
+}
+
 export async function handleTempChannelJoin(state: VoiceState) {
   const joinedChannel = state.channel;
 
@@ -29,6 +47,8 @@ export async function handleTempChannelJoin(state: VoiceState) {
     parent: joinedChannel.parent,
   });
 
+  registerTemporaryVoiceChannel(tempChannel.id);
+
   await member.voice.setChannel(tempChannel);
 
   logger.info("Temporary voice channel created", {
@@ -49,13 +69,15 @@ export async function handleTempChannelLeave(state: VoiceState) {
     return;
   }
 
-  if (!leftChannel.name.startsWith(VOICE_CONSTANTS.TEMP_CHANNEL_PREFIX)) {
+  if (!isTemporaryVoiceChannel(leftChannel.id)) {
     return;
   }
 
   if (leftChannel.members.size > 0) {
     return;
   }
+
+  unregisterTemporaryVoiceChannel(leftChannel.id);
 
   await leftChannel.delete();
 
