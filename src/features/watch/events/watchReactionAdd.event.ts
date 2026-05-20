@@ -8,7 +8,10 @@ import {
 import type { AppEvent } from "../../../core/discord/types/appEvent.js";
 import { logger } from "../../../core/app/logger.js";
 import { WATCH_CONSTANTS } from "../domain/watch.constants.js";
-import { handleWatchReactionAdd } from "../services/watch.service.js";
+import {
+  handleWatchRatingReactionAdd,
+  handleWatchReactionAdd,
+} from "../services/watch.service.js";
 
 async function resolveReaction(
   reaction: MessageReaction | PartialMessageReaction,
@@ -38,7 +41,9 @@ export const watchReactionAddEvent: AppEvent<Events.MessageReactionAdd> = {
         return;
       }
 
-      if (resolvedReaction.emoji.name !== WATCH_CONSTANTS.TICKET_EMOJI) {
+      const emojiName = resolvedReaction.emoji.name;
+
+      if (!emojiName) {
         return;
       }
 
@@ -49,11 +54,30 @@ export const watchReactionAddEvent: AppEvent<Events.MessageReactionAdd> = {
         return;
       }
 
-      await handleWatchReactionAdd({
-        guild,
-        messageId: message.id,
-        userId: user.id,
-      });
+      if (emojiName === WATCH_CONSTANTS.TICKET_EMOJI) {
+        await handleWatchReactionAdd({
+          guild,
+          messageId: message.id,
+          userId: user.id,
+        });
+        return;
+      }
+
+      if (
+        emojiName === WATCH_CONSTANTS.RATING_EMOJIS[1] ||
+        emojiName === WATCH_CONSTANTS.RATING_EMOJIS[2] ||
+        emojiName === WATCH_CONSTANTS.RATING_EMOJIS[3] ||
+        emojiName === WATCH_CONSTANTS.RATING_EMOJIS[4] ||
+        emojiName === WATCH_CONSTANTS.RATING_EMOJIS[5]
+      ) {
+        await handleWatchRatingReactionAdd({
+          guild,
+          reaction: resolvedReaction,
+          messageId: message.id,
+          userId: user.id,
+          emoji: emojiName,
+        });
+      }
     } catch (error) {
       logger.error("[watchReactionAdd.event] error", {
         userId: user.id,

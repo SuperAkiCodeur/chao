@@ -2,7 +2,9 @@ import type {
   ChatInputCommandInteraction,
   Client,
   Guild,
+  MessageReaction,
 } from "discord.js";
+import { EmbedBuilder } from "discord.js";
 import { logger } from "../../../core/app/logger.js";
 import {
   addSpectatorRoleByUserId,
@@ -19,22 +21,29 @@ import type {
   StartWatchPartyParams,
   WatchCommandResult,
   WatchParty,
+  WatchRatingValue,
 } from "../domain/watch.types.js";
 import {
   addUserToWatchParty,
   clearWatchStartAnnouncementMessageId,
+  closeWatchRatingSession,
   deleteWatchParty,
   findActiveWatchPartyByMedia,
   findWatchPartyByMessageId,
+  findWatchPartyByRatingMessageId,
   findWatchPartyByStartAnnouncementMessageId,
+  openWatchRatingSession,
   removeUserFromWatchParty,
+  removeWatchPartyUserRating,
   saveWatchParty,
+  setWatchPartyUserRating,
   userHasAnotherActiveWatchParty,
 } from "../repositories/watch.repository.js";
 import { fetchTmdbMedia } from "./tmdb.service.js";
 import { buildWatchAnnouncement } from "./watchAnnouncement.service.js";
 import {
   cancelWatchStartAnnouncement,
+  scheduleWatchRatingClosure,
   scheduleWatchStartAnnouncement,
 } from "./watchScheduler.service.js";
 
@@ -46,6 +55,16 @@ type FetchableMessageChannel = {
   messages: {
     fetch: (messageId: string) => Promise<any>;
   };
+};
+
+type SendableTextChannel = {
+  isTextBased: () => boolean;
+  send: (options: {
+    embeds?: EmbedBuilder[];
+  }) => Promise<{
+    id: string;
+    react: (emoji: string) => Promise<unknown>;
+  }>;
 };
 
 function ensureGuildInteraction(
@@ -83,6 +102,26 @@ function hasFetchableMessages(channel: unknown): channel is FetchableMessageChan
   return typeof candidate.messages?.fetch === "function";
 }
 
+function isSendableTextChannel(channel: unknown): channel is SendableTextChannel {
+  if (!channel || typeof channel !== "object") {
+    return false;
+  }
+
+  if (!("isTextBased" in channel) || !("send" in channel)) {
+    return false;
+  }
+
+  const candidate = channel as {
+    isTextBased?: unknown;
+    send?: unknown;
+  };
+
+  return (
+    typeof candidate.isTextBased === "function" &&
+    typeof candidate.send === "function"
+  );
+}
+
 function getSpectatorRoleId(): string {
   const spectatorRoleId = process.env.SPECTATOR_ROLE_ID;
 
@@ -113,6 +152,16 @@ function getCinemaCategoryId(): string {
   return cinemaCategoryId;
 }
 
+function getLetterboxdChannelId(): string {
+  const letterboxdChannelId = process.env.LETTERBOXD_CHANNEL_ID;
+
+  if (!letterboxdChannelId) {
+    throw new Error("LETTERBOXD_CHANNEL_ID is missing");
+  }
+
+  return letterboxdChannelId;
+}
+
 function isWatchStartChannelAllowed(channelId: string): boolean {
   return channelId === getTicketChannelId();
 }
@@ -125,6 +174,113 @@ function isWatchEndChannelAllowed(
   }
 
   return channel.parentId === getCinemaCategoryId();
+}
+
+function buildWatchRatingEmbed(watchParty: WatchParty): EmbedBuilder {
+  return new EmbedBuilder()
+    .setColor(WATCH_CONSTANTS.DEFAULT_EMBED_COLOR)
+    .setTitle(`🎬 Notez ${watchParty.title}`)
+    .setDescription(
+      [
+        "Réagissez avec une note de **1 à 5**.",
+        "",
+        `${WATCH_CONSTANTS.RATING_EMOJIS[1]} — 1/5`,
+        `${WATCH_CONSTANTS.RATING_EMOJIS[2]} — 2/5`,
+        `${WATCH_CONSTANTS.RATING_EMOJIS[3]} — 3/5`,
+        `${WATCH_CONSTANTS.RATING_EMOJIS[4]} — 4/5`,
+        `${WATCH_CONSTANTS.RATING_EMOJIS[5]} — 5/5`,
+        "",
+        "Le vote se ferme dans 24h.",
+      ].join("\n"),
+    );
+}
+
+function getWatchRatingValueFromEmoji(emoji: string): WatchRatingValue | null {
+  const entry = Object.entries(WATCH_CONSTANTS.RATING_EMOJIS).find(([, value]) => {
+    return value === emoji;
+  });
+
+  if (!entry) {
+    return null;
+  }
+
+  return Number(entry[0]) as WatchRatingValue;
+}
+
+async function removeOtherRatingReactionsForUser(params: {
+  reaction: MessageReaction;
+  userId: string;
+  selectedEmoji: string;
+}): Promise<void> {
+  const message = params.reaction.message;
+
+  for (const messageReaction of message.reactions.cache.values()) {
+    const emojiName = messageReaction.emoji.name;
+
+    if (!emojiName) {
+      continue;
+    }
+
+    if (!getWatchRatingValueFromEmoji(emojiName)) {
+      continue;
+    }
+
+    if (emojiName === params.selectedEmoji) {
+      continue;
+    }
+
+    await messageReaction.users.remove(params.userId).catch(() => null);
+  }
+}
+
+async function createWatchRatingMessage(
+  client: Client,
+  watchParty: WatchParty,
+): Promise<WatchParty> {
+  const letterboxdChannelId = getLetterboxdChannelId();
+  const channel = await client.channels.fetch(letterboxdChannelId).catch(() => null);
+
+  if (!channel || !isSendableTextChannel(channel) || !channel.isTextBased()) {
+    throw new Error("LETTERBOXD channel not found or not writable");
+  }
+
+  const embed = buildWatchRatingEmbed(watchParty);
+
+  const ratingMessage = await channel.send({
+    embeds: [embed],
+  });
+
+  for (const emoji of Object.values(WATCH_CONSTANTS.RATING_EMOJIS)) {
+    await ratingMessage.react(emoji);
+  }
+
+  const ratingClosesAt = new Date(
+    Date.now() + WATCH_CONSTANTS.RATING_DURATION_MS,
+  ).toISOString();
+
+  const updatedWatchParty = openWatchRatingSession({
+    messageId: watchParty.messageId,
+    ratingChannelId: letterboxdChannelId,
+    ratingMessageId: ratingMessage.id,
+    ratingClosesAt,
+  });
+
+  if (!updatedWatchParty) {
+    throw new Error("Failed to open watch rating session");
+  }
+
+  scheduleWatchRatingClosure(client, updatedWatchParty);
+
+  logger.info("Watch rating session opened", {
+    guildId: updatedWatchParty.guildId,
+    channelId: updatedWatchParty.ratingChannelId,
+    messageId: updatedWatchParty.messageId,
+    ratingMessageId: updatedWatchParty.ratingMessageId,
+    title: updatedWatchParty.title,
+    ratingClosesAt: updatedWatchParty.ratingClosesAt,
+  });
+
+  return updatedWatchParty;
 }
 
 async function deleteWatchMessageById(
@@ -204,11 +360,17 @@ async function cleanupWatchParty(
   client: Client,
   guild: Guild,
   watchParty: WatchParty,
+  options?: {
+    preserveWatchParty?: boolean;
+  },
 ): Promise<void> {
   cancelWatchStartAnnouncement(watchParty.messageId);
   await deleteWatchAnnouncementMessages(client, watchParty);
   await cleanupSpectatorRolesForWatchParty(guild, watchParty);
-  deleteWatchParty(watchParty.messageId);
+
+  if (!options?.preserveWatchParty) {
+    deleteWatchParty(watchParty.messageId);
+  }
 }
 
 export async function startWatchParty(
@@ -349,19 +511,33 @@ export async function endWatchParty(
     };
   }
 
-  await cleanupWatchParty(interaction.client, interaction.guild, activeWatchParty);
+  const endedWatchParty: WatchParty = {
+    ...activeWatchParty,
+    status: WATCH_CONSTANTS.ENDED_STATUS,
+  };
+
+  saveWatchParty(endedWatchParty);
+
+  await cleanupWatchParty(
+    interaction.client,
+    interaction.guild,
+    endedWatchParty,
+    { preserveWatchParty: true },
+  );
+
+  await createWatchRatingMessage(interaction.client, endedWatchParty);
 
   logger.info("Watch party ended", {
-    guildId: activeWatchParty.guildId,
-    channelId: activeWatchParty.channelId,
-    messageId: activeWatchParty.messageId,
-    mediaType: activeWatchParty.mediaType,
-    mediaId: activeWatchParty.mediaId,
-    title: activeWatchParty.title,
+    guildId: endedWatchParty.guildId,
+    channelId: endedWatchParty.channelId,
+    messageId: endedWatchParty.messageId,
+    mediaType: endedWatchParty.mediaType,
+    mediaId: endedWatchParty.mediaId,
+    title: endedWatchParty.title,
   });
 
   return {
-    message: `✅ Diffusion terminée pour "${activeWatchParty.title}".`,
+    message: `✅ Diffusion terminée pour "${endedWatchParty.title}".`,
   };
 }
 
@@ -472,5 +648,91 @@ export async function handleWatchReactionRemove(params: {
     messageId: params.messageId,
     userId: params.userId,
     title: watchParty.title,
+  });
+}
+
+export async function handleWatchRatingReactionAdd(params: {
+  guild: Guild;
+  reaction: MessageReaction;
+  messageId: string;
+  userId: string;
+  emoji: string;
+}): Promise<void> {
+  const watchParty = findWatchPartyByRatingMessageId(params.messageId);
+
+  if (!watchParty) {
+    return;
+  }
+
+  const rating = getWatchRatingValueFromEmoji(params.emoji);
+
+  if (!rating) {
+    return;
+  }
+
+  const updatedWatchParty = setWatchPartyUserRating({
+    ratingMessageId: params.messageId,
+    userId: params.userId,
+    rating,
+  });
+
+  if (!updatedWatchParty) {
+    return;
+  }
+
+  await removeOtherRatingReactionsForUser({
+    reaction: params.reaction,
+    userId: params.userId,
+    selectedEmoji: params.emoji,
+  });
+
+  logger.info("Watch rating reaction added", {
+    guildId: params.guild.id,
+    messageId: params.messageId,
+    userId: params.userId,
+    title: updatedWatchParty.title,
+    rating,
+  });
+}
+
+export async function handleWatchRatingReactionRemove(params: {
+  guild: Guild;
+  messageId: string;
+  userId: string;
+  emoji: string;
+}): Promise<void> {
+  const watchParty = findWatchPartyByRatingMessageId(params.messageId);
+
+  if (!watchParty) {
+    return;
+  }
+
+  const rating = getWatchRatingValueFromEmoji(params.emoji);
+
+  if (!rating) {
+    return;
+  }
+
+  const currentRating = watchParty.ratings?.[params.userId];
+
+  if (!currentRating || currentRating !== rating) {
+    return;
+  }
+
+  const updatedWatchParty = removeWatchPartyUserRating({
+    ratingMessageId: params.messageId,
+    userId: params.userId,
+  });
+
+  if (!updatedWatchParty) {
+    return;
+  }
+
+  logger.info("Watch rating reaction removed", {
+    guildId: params.guild.id,
+    messageId: params.messageId,
+    userId: params.userId,
+    title: updatedWatchParty.title,
+    rating,
   });
 }

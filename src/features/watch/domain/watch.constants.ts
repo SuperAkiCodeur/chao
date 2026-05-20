@@ -6,6 +6,14 @@ export const WATCH_CONSTANTS = {
   ACTIVE_STATUS: "active",
   ENDED_STATUS: "ended",
   STORAGE_FILE_NAME: "watchParties.json",
+  RATING_DURATION_MS: 24 * 60 * 60 * 1000,
+  RATING_EMOJIS: {
+    1: "1️⃣",
+    2: "2️⃣",
+    3: "3️⃣",
+    4: "4️⃣",
+    5: "5️⃣",
+  },
   MEDIA_TYPES: {
     MOVIE: "movie",
     TV: "tv",

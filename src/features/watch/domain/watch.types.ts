@@ -11,6 +11,10 @@ export type WatchStatus =
   | typeof WATCH_CONSTANTS.ACTIVE_STATUS
   | typeof WATCH_CONSTANTS.ENDED_STATUS;
 
+export type WatchRatingValue = 1 | 2 | 3 | 4 | 5;
+
+export type WatchRatings = Record<string, WatchRatingValue>;
+
 export type StartWatchPartyParams = {
   interaction: ChatInputCommandInteraction;
   type: WatchContentType;
@@ -41,6 +45,11 @@ export type WatchParty = {
   status: WatchStatus;
   users: string[];
   startAnnouncementMessageId?: string;
+  ratingChannelId?: string;
+  ratingMessageId?: string;
+  ratingSummaryMessageId?: string;
+  ratingClosesAt?: string;
+  ratings?: WatchRatings;
 };
 
 export type WatchPartiesData = {

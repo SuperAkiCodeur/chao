@@ -1,7 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import { WATCH_CONSTANTS } from "../domain/watch.constants.js";
-import type { WatchContentType, WatchPartiesData, WatchParty } from "../domain/watch.types.js";
+import type {
+  WatchContentType,
+  WatchPartiesData,
+  WatchParty,
+  WatchRatingValue,
+} from "../domain/watch.types.js";
 
 const WATCH_PARTIES_FILE_PATH = path.join(
   process.cwd(),
@@ -60,6 +65,18 @@ export function findWatchPartyByStartAnnouncementMessageId(
   );
 }
 
+export function findWatchPartyByRatingMessageId(
+  ratingMessageId: string,
+): WatchParty | null {
+  const data = readWatchParties();
+
+  return (
+    Object.values(data.watchParties).find((watchParty) => {
+      return watchParty.ratingMessageId === ratingMessageId;
+    }) ?? null
+  );
+}
+
 export function saveWatchParty(watchParty: WatchParty): void {
   const data = readWatchParties();
 
@@ -101,6 +118,145 @@ export function clearWatchStartAnnouncementMessageId(
   const [, watchParty] = watchPartyEntry;
 
   delete watchParty.startAnnouncementMessageId;
+  writeWatchParties(data);
+
+  return watchParty;
+}
+
+export function openWatchRatingSession(params: {
+  messageId: string;
+  ratingChannelId: string;
+  ratingMessageId: string;
+  ratingClosesAt: string;
+}): WatchParty | null {
+  const data = readWatchParties();
+  const watchParty = data.watchParties[params.messageId];
+
+  if (!watchParty) {
+    return null;
+  }
+
+  watchParty.ratingChannelId = params.ratingChannelId;
+  watchParty.ratingMessageId = params.ratingMessageId;
+  watchParty.ratingClosesAt = params.ratingClosesAt;
+  watchParty.ratings = {};
+
+  writeWatchParties(data);
+
+  return watchParty;
+}
+
+export function setWatchPartyUserRating(params: {
+  ratingMessageId: string;
+  userId: string;
+  rating: WatchRatingValue;
+}): WatchParty | null {
+  const data = readWatchParties();
+
+  const watchPartyEntry = Object.entries(data.watchParties).find(([, watchParty]) => {
+    return watchParty.ratingMessageId === params.ratingMessageId;
+  });
+
+  if (!watchPartyEntry) {
+    return null;
+  }
+
+  const [, watchParty] = watchPartyEntry;
+
+  watchParty.ratings ??= {};
+  watchParty.ratings[params.userId] = params.rating;
+
+  writeWatchParties(data);
+
+  return watchParty;
+}
+
+export function removeWatchPartyUserRating(params: {
+  ratingMessageId: string;
+  userId: string;
+}): WatchParty | null {
+  const data = readWatchParties();
+
+  const watchPartyEntry = Object.entries(data.watchParties).find(([, watchParty]) => {
+    return watchParty.ratingMessageId === params.ratingMessageId;
+  });
+
+  if (!watchPartyEntry) {
+    return null;
+  }
+
+  const [, watchParty] = watchPartyEntry;
+
+  if (!watchParty.ratings) {
+    return watchParty;
+  }
+
+  delete watchParty.ratings[params.userId];
+  writeWatchParties(data);
+
+  return watchParty;
+}
+
+export function closeWatchRatingSession(params: {
+  messageId: string;
+  ratingSummaryMessageId?: string;
+}): WatchParty | null {
+  const data = readWatchParties();
+  const watchParty = data.watchParties[params.messageId];
+
+  if (!watchParty) {
+    return null;
+  }
+
+  delete watchParty.ratingMessageId;
+  delete watchParty.ratingChannelId;
+  delete watchParty.ratingClosesAt;
+
+  if (params.ratingSummaryMessageId) {
+    watchParty.ratingSummaryMessageId = params.ratingSummaryMessageId;
+  }
+
+  writeWatchParties(data);
+
+  return watchParty;
+}
+
+export function clearWatchRatingMessageId(
+  ratingMessageId: string,
+): WatchParty | null {
+  const data = readWatchParties();
+
+  const watchPartyEntry = Object.entries(data.watchParties).find(([, watchParty]) => {
+    return watchParty.ratingMessageId === ratingMessageId;
+  });
+
+  if (!watchPartyEntry) {
+    return null;
+  }
+
+  const [, watchParty] = watchPartyEntry;
+
+  delete watchParty.ratingMessageId;
+  delete watchParty.ratingChannelId;
+  delete watchParty.ratingClosesAt;
+
+  writeWatchParties(data);
+
+  return watchParty;
+}
+
+export function setWatchRatingSummaryMessageId(
+  messageId: string,
+  ratingSummaryMessageId: string,
+): WatchParty | null {
+  const data = readWatchParties();
+  const watchParty = data.watchParties[messageId];
+
+  if (!watchParty) {
+    return null;
+  }
+
+  watchParty.ratingSummaryMessageId = ratingSummaryMessageId;
   writeWatchParties(data);
 
   return watchParty;
