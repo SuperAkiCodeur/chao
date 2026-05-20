@@ -1,25 +1,27 @@
-import { VoiceState } from "discord.js";
+import { Events, type VoiceState } from "discord.js";
+import type { AppEvent } from "../../../core/discord/types/appEvent.js";
 import {
   handleTempChannelJoin,
   handleTempChannelLeave,
 } from "../services/tempChannel.service.js";
 import { syncChattingRoleFromVoiceState } from "../services/chattingRole.service.js";
 
-export async function handleVoiceStateUpdate(
-  oldState: VoiceState,
-  newState: VoiceState,
-) {
-  if (oldState.channelId === newState.channelId) {
-    return;
-  }
+export const voiceStateUpdateEvent: AppEvent<Events.VoiceStateUpdate> = {
+  name: Events.VoiceStateUpdate,
 
-  if (newState.channelId) {
-    await handleTempChannelJoin(newState);
-  }
+  async execute(oldState: VoiceState, newState: VoiceState): Promise<void> {
+    if (oldState.channelId === newState.channelId) {
+      return;
+    }
 
-  await syncChattingRoleFromVoiceState(oldState, newState);
+    if (newState.channelId) {
+      await handleTempChannelJoin(newState);
+    }
 
-  if (oldState.channelId) {
-    await handleTempChannelLeave(oldState);
-  }
-}
+    await syncChattingRoleFromVoiceState(oldState, newState);
+
+    if (oldState.channelId) {
+      await handleTempChannelLeave(oldState);
+    }
+  },
+};
