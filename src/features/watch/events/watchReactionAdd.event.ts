@@ -20,7 +20,15 @@ async function resolveReaction(
     return reaction;
   }
 
-  return reaction.fetch().catch(() => null);
+  return reaction.fetch().catch((error) => {
+    logger.error("[watchReactionAdd.event] failed to fetch partial reaction", {
+      messageId: reaction.message.id,
+      errorMessage: error instanceof Error ? error.message : String(error),
+      errorStack: error instanceof Error ? error.stack : undefined,
+    });
+
+    return null;
+  });
 }
 
 export const watchReactionAddEvent: AppEvent<Events.MessageReactionAdd> = {
@@ -54,12 +62,27 @@ export const watchReactionAddEvent: AppEvent<Events.MessageReactionAdd> = {
         return;
       }
 
+      logger.info("[watchReactionAdd.event] reaction received", {
+        guildId: guild.id,
+        messageId: message.id,
+        userId: user.id,
+        emoji: emojiName,
+      });
+
       if (emojiName === WATCH_CONSTANTS.TICKET_EMOJI) {
+        logger.info("[watchReactionAdd.event] watch join reaction detected", {
+          guildId: guild.id,
+          messageId: message.id,
+          userId: user.id,
+          emoji: emojiName,
+        });
+
         await handleWatchReactionAdd({
           guild,
           messageId: message.id,
           userId: user.id,
         });
+
         return;
       }
 
@@ -70,9 +93,23 @@ export const watchReactionAddEvent: AppEvent<Events.MessageReactionAdd> = {
         emojiName === WATCH_CONSTANTS.RATING_EMOJIS[4] ||
         emojiName === WATCH_CONSTANTS.RATING_EMOJIS[5]
       ) {
+        logger.info("[watchReactionAdd.event] watch rating reaction detected", {
+          guildId: guild.id,
+          messageId: message.id,
+          userId: user.id,
+          emoji: emojiName,
+        });
+
         await handleWatchRatingReactionAdd({
           guild,
           reaction: resolvedReaction,
+          messageId: message.id,
+          userId: user.id,
+          emoji: emojiName,
+        });
+
+        logger.info("[watchReactionAdd.event] watch rating reaction handled", {
+          guildId: guild.id,
           messageId: message.id,
           userId: user.id,
           emoji: emojiName,
@@ -82,7 +119,9 @@ export const watchReactionAddEvent: AppEvent<Events.MessageReactionAdd> = {
       logger.error("[watchReactionAdd.event] error", {
         userId: user.id,
         reactionEmoji: reaction.emoji.name ?? null,
-        error,
+        errorName: error instanceof Error ? error.name : "UnknownError",
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined,
       });
     }
   },

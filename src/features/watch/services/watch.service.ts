@@ -651,7 +651,7 @@ export async function handleWatchReactionRemove(params: {
   });
 }
 
-export async function handleWatchRatingReactionAdd(params: {
+export async function handleWatchRatingReactionAdd(params: {  
   guild: Guild;
   reaction: MessageReaction;
   messageId: string;
@@ -659,6 +659,13 @@ export async function handleWatchRatingReactionAdd(params: {
   emoji: string;
 }): Promise<void> {
   const watchParty = findWatchPartyByRatingMessageId(params.messageId);
+
+  // à supp
+  logger.info("handleWatchRatingReactionAdd called", {
+    messageId: params.messageId,
+    userId: params.userId,
+    emoji: params.emoji,
+  });
 
   if (!watchParty) {
     return;
