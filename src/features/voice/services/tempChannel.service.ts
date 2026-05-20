@@ -1,4 +1,4 @@
-import { ChannelType, VoiceState } from "discord.js";
+import { ChannelType, VoiceChannel, VoiceState } from "discord.js";
 import { logger } from "../../../core/app/logger.js";
 import { VOICE_CONSTANTS } from "../domain/voice.constants.js";
 
@@ -41,7 +41,7 @@ export async function handleTempChannelJoin(state: VoiceState) {
     return;
   }
 
-  let tempChannel: Awaited<ReturnType<typeof state.guild.channels.create>> | null = null;
+  let tempChannel: VoiceChannel | null = null;
 
   try {
     tempChannel = await state.guild.channels.create({
