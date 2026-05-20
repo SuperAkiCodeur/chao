@@ -2,6 +2,10 @@ import { AllowedMentionsTypes, Client, EmbedBuilder } from "discord.js";
 import { logger } from "../../../core/app/logger.js";
 import type { WatchParty } from "../domain/watch.types.js";
 import { WATCH_CONSTANTS } from "../domain/watch.constants.js";
+import {
+  findWatchPartyByMessageId,
+  setWatchStartAnnouncementMessageId,
+} from "../repositories/watch.repository.js";
 
 const MAX_TIMEOUT_DELAY = 2_147_483_647;
 
@@ -15,7 +19,7 @@ type SchedulableTextChannel = {
       roles?: string[];
       parse?: AllowedMentionsTypes[];
     };
-  }) => Promise<unknown>;
+  }) => Promise<{ id: string }>;
 };
 
 function isSchedulableTextChannel(channel: unknown): channel is SchedulableTextChannel & {
@@ -44,41 +48,63 @@ function buildWatchStartEmbed(watchParty: WatchParty): EmbedBuilder {
   return new EmbedBuilder()
     .setColor(WATCH_CONSTANTS.DEFAULT_EMBED_COLOR)
     .setTitle("🎬 La diffusion commence maintenant")
-    .setDescription(`On regarde **${watchParty.title}**, rejoins-nous vite !`)
+    .setDescription(`On regarde **${watchParty.title}**, rejoins-nous vite !`);
 }
 
 async function sendScheduledWatchAnnouncement(
   client: Client,
   watchParty: WatchParty,
 ): Promise<void> {
-  const channel = await client.channels.fetch(watchParty.channelId).catch(() => null);
+  const currentWatchParty = findWatchPartyByMessageId(watchParty.messageId);
 
-  if (!channel || !isSchedulableTextChannel(channel) || !channel.isTextBased()) {
-    logger.warn("Unable to send scheduled watch announcement: channel not found or not writable", {
-      channelId: watchParty.channelId,
+  if (!currentWatchParty) {
+    logger.warn("Unable to send scheduled watch announcement: watch party not found", {
       messageId: watchParty.messageId,
       title: watchParty.title,
     });
     return;
   }
 
-  const embed = buildWatchStartEmbed(watchParty);
+  if (currentWatchParty.startAnnouncementMessageId) {
+    logger.info("Scheduled watch announcement already sent", {
+      messageId: currentWatchParty.messageId,
+      startAnnouncementMessageId: currentWatchParty.startAnnouncementMessageId,
+      title: currentWatchParty.title,
+    });
+    return;
+  }
 
-  await channel.send({
-    content: `<@&${watchParty.roleId}>`,
+  const channel = await client.channels.fetch(currentWatchParty.channelId).catch(() => null);
+
+  if (!channel || !isSchedulableTextChannel(channel) || !channel.isTextBased()) {
+    logger.warn("Unable to send scheduled watch announcement: channel not found or not writable", {
+      channelId: currentWatchParty.channelId,
+      messageId: currentWatchParty.messageId,
+      title: currentWatchParty.title,
+    });
+    return;
+  }
+
+  const embed = buildWatchStartEmbed(currentWatchParty);
+
+  const sentMessage = await channel.send({
+    content: `<@&${currentWatchParty.roleId}>`,
     embeds: [embed],
     allowedMentions: {
-      roles: [watchParty.roleId],
+      roles: [currentWatchParty.roleId],
       parse: [],
     },
   });
 
+  setWatchStartAnnouncementMessageId(currentWatchParty.messageId, sentMessage.id);
+
   logger.info("Scheduled watch announcement sent", {
-    guildId: watchParty.guildId,
-    channelId: watchParty.channelId,
-    messageId: watchParty.messageId,
-    roleId: watchParty.roleId,
-    title: watchParty.title,
+    guildId: currentWatchParty.guildId,
+    channelId: currentWatchParty.channelId,
+    messageId: currentWatchParty.messageId,
+    startAnnouncementMessageId: sentMessage.id,
+    roleId: currentWatchParty.roleId,
+    title: currentWatchParty.title,
   });
 }
 
@@ -104,12 +130,10 @@ function scheduleWithChunkedTimeout(
   }
 
   return setTimeout(() => {
-    const nextTimeout = scheduleWithChunkedTimeout(
+    void scheduleWithChunkedTimeout(
       callback,
       delay - MAX_TIMEOUT_DELAY,
     );
-
-    return nextTimeout;
   }, MAX_TIMEOUT_DELAY);
 }
 
@@ -138,7 +162,9 @@ export function scheduleWatchStartAnnouncement(
       title: watchParty.title,
     });
 
-    void sendScheduledWatchAnnouncement(client, watchParty);
+    void sendScheduledWatchAnnouncement(client, watchParty).finally(() => {
+      scheduledWatchAnnouncements.delete(watchParty.messageId);
+    });
     return;
   }
 

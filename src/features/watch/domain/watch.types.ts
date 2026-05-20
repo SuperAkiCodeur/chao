@@ -40,6 +40,7 @@ export type WatchParty = {
   viewingAt: string;
   status: WatchStatus;
   users: string[];
+  startAnnouncementMessageId?: string;
 };
 
 export type WatchPartiesData = {

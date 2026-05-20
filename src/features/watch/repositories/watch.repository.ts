@@ -48,12 +48,62 @@ export function findWatchPartyByMessageId(messageId: string): WatchParty | null 
   return data.watchParties[messageId] ?? null;
 }
 
+export function findWatchPartyByStartAnnouncementMessageId(
+  startAnnouncementMessageId: string,
+): WatchParty | null {
+  const data = readWatchParties();
+
+  return (
+    Object.values(data.watchParties).find((watchParty) => {
+      return watchParty.startAnnouncementMessageId === startAnnouncementMessageId;
+    }) ?? null
+  );
+}
+
 export function saveWatchParty(watchParty: WatchParty): void {
   const data = readWatchParties();
 
   data.watchParties[watchParty.messageId] = watchParty;
 
   writeWatchParties(data);
+}
+
+export function setWatchStartAnnouncementMessageId(
+  messageId: string,
+  startAnnouncementMessageId: string,
+): WatchParty | null {
+  const data = readWatchParties();
+  const watchParty = data.watchParties[messageId];
+
+  if (!watchParty) {
+    return null;
+  }
+
+  watchParty.startAnnouncementMessageId = startAnnouncementMessageId;
+  writeWatchParties(data);
+
+  return watchParty;
+}
+
+export function clearWatchStartAnnouncementMessageId(
+  startAnnouncementMessageId: string,
+): WatchParty | null {
+  const data = readWatchParties();
+
+  const watchPartyEntry = Object.entries(data.watchParties).find(([, watchParty]) => {
+    return watchParty.startAnnouncementMessageId === startAnnouncementMessageId;
+  });
+
+  if (!watchPartyEntry) {
+    return null;
+  }
+
+  const [, watchParty] = watchPartyEntry;
+
+  delete watchParty.startAnnouncementMessageId;
+  writeWatchParties(data);
+
+  return watchParty;
 }
 
 export function deleteWatchParty(messageId: string): void {

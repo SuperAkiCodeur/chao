@@ -22,9 +22,11 @@ import type {
 } from "../domain/watch.types.js";
 import {
   addUserToWatchParty,
+  clearWatchStartAnnouncementMessageId,
   deleteWatchParty,
   findActiveWatchPartyByMedia,
   findWatchPartyByMessageId,
+  findWatchPartyByStartAnnouncementMessageId,
   removeUserFromWatchParty,
   saveWatchParty,
   userHasAnotherActiveWatchParty,
@@ -91,29 +93,51 @@ function getSpectatorRoleId(): string {
   return spectatorRoleId;
 }
 
-async function deleteWatchAnnouncementMessage(
+async function deleteWatchMessageById(
   client: Client,
-  watchParty: WatchParty,
+  channelId: string,
+  messageId?: string,
 ): Promise<void> {
-  const channel = await client.channels.fetch(watchParty.channelId).catch(() => null);
+  if (!messageId) {
+    return;
+  }
+
+  const channel = await client.channels.fetch(channelId).catch(() => null);
 
   if (!channel || !channel.isTextBased() || !hasFetchableMessages(channel)) {
     return;
   }
 
-  const message = await channel.messages.fetch(watchParty.messageId).catch(() => null);
+  const message = await channel.messages.fetch(messageId).catch(() => null);
 
   if (!message) {
     return;
   }
 
   await message.delete().catch((error: unknown) => {
-    logger.error("Failed to delete watch announcement message", {
-      messageId: watchParty.messageId,
-      channelId: watchParty.channelId,
+    logger.error("Failed to delete watch message", {
+      channelId,
+      messageId,
       error,
     });
   });
+}
+
+async function deleteWatchAnnouncementMessages(
+  client: Client,
+  watchParty: WatchParty,
+): Promise<void> {
+  await deleteWatchMessageById(
+    client,
+    watchParty.channelId,
+    watchParty.startAnnouncementMessageId,
+  );
+
+  await deleteWatchMessageById(
+    client,
+    watchParty.channelId,
+    watchParty.messageId,
+  );
 }
 
 async function cleanupSpectatorRolesForWatchParty(
@@ -148,7 +172,7 @@ async function cleanupWatchParty(
   watchParty: WatchParty,
 ): Promise<void> {
   cancelWatchStartAnnouncement(watchParty.messageId);
-  await deleteWatchAnnouncementMessage(client, watchParty);
+  await deleteWatchAnnouncementMessages(client, watchParty);
   await cleanupSpectatorRolesForWatchParty(guild, watchParty);
   deleteWatchParty(watchParty.messageId);
 }
@@ -302,22 +326,38 @@ export async function handleDeletedWatchMessage(params: {
 }): Promise<void> {
   const watchParty = findWatchPartyByMessageId(params.messageId);
 
-  if (!watchParty) {
+  if (watchParty) {
+    cancelWatchStartAnnouncement(params.messageId);
+
+    if (params.guild) {
+      await cleanupSpectatorRolesForWatchParty(params.guild, watchParty);
+    }
+
+    deleteWatchParty(params.messageId);
+
+    logger.info("Watch party deleted after main message deletion", {
+      messageId: params.messageId,
+      guildId: params.guildId,
+      title: watchParty.title,
+    });
+
     return;
   }
 
-  cancelWatchStartAnnouncement(params.messageId);
+  const watchPartyByStartAnnouncement = findWatchPartyByStartAnnouncementMessageId(
+    params.messageId,
+  );
 
-  if (params.guild) {
-    await cleanupSpectatorRolesForWatchParty(params.guild, watchParty);
+  if (!watchPartyByStartAnnouncement) {
+    return;
   }
 
-  deleteWatchParty(params.messageId);
+  clearWatchStartAnnouncementMessageId(params.messageId);
 
-  logger.info("Watch party deleted after message deletion", {
+  logger.info("Watch start announcement reference cleared after message deletion", {
     messageId: params.messageId,
     guildId: params.guildId,
-    title: watchParty.title,
+    title: watchPartyByStartAnnouncement.title,
   });
 }
 
