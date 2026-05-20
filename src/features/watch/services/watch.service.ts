@@ -87,7 +87,7 @@ function getSpectatorRoleId(): string {
   return spectatorRoleId;
 }
 
-async function removeAllWatchMessageReactions(
+async function deleteWatchAnnouncementMessage(
   client: Client,
   watchParty: WatchParty,
 ): Promise<void> {
@@ -103,9 +103,10 @@ async function removeAllWatchMessageReactions(
     return;
   }
 
-  await message.reactions.removeAll().catch((error: unknown) => {
-    logger.error("Failed to remove all watch reactions", {
+  await message.delete().catch((error: unknown) => {
+    logger.error("Failed to delete watch announcement message", {
       messageId: watchParty.messageId,
+      channelId: watchParty.channelId,
       error,
     });
   });
@@ -142,7 +143,7 @@ async function cleanupWatchParty(
   guild: Guild,
   watchParty: WatchParty,
 ): Promise<void> {
-  await removeAllWatchMessageReactions(client, watchParty);
+  await deleteWatchAnnouncementMessage(client, watchParty);
   await cleanupSpectatorRolesForWatchParty(guild, watchParty);
   deleteWatchParty(watchParty.messageId);
 }
