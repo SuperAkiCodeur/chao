@@ -1,0 +1,17 @@
+app = "chao-bot"
+primary_region = "cdg"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  TZ = "Europe/Paris"
+  NODE_ENV = "production"
+
+[processes]
+  app = "node dist/main.js"
+
+[[vm]]
+  memory = "256mb"
+  cpu_kind = "shared"
+  cpus = 1

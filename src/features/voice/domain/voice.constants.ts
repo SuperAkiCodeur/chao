@@ -1,0 +1,4 @@
+export const VOICE_CONSTANTS = {
+    TRIGGER_CHANNEL_ID: "1504850320650408196",
+    TEMP_CHANNEL_PREFIX: "💬・Salon de",
+} as const;
