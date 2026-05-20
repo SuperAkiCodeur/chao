@@ -13,9 +13,9 @@ function getRequiredEnv(name: string): string {
 }
 
 export async function registerCommands(): Promise<void> {
-  const token = getRequiredEnv("DISCORD_BOT_TOKEN");
-  const applicationId = getRequiredEnv("DISCORD_APPLICATION_ID");
-  const guildId = process.env.DISCORD_GUILD_ID;
+  const token = getRequiredEnv("DISCORD_TOKEN");
+  const applicationId = getRequiredEnv("CLIENT_ID");
+  const guildId = process.env.GUILD_ID;
 
   const commands = Array.from(commandRegistry.values()).map((command) =>
     command.data.toJSON(),

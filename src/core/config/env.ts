@@ -1,13 +1,19 @@
-function getEnv(name: string): string {
+function getRequiredEnv(name: string): string {
     const value = process.env[name];
   
     if (!value) {
-        throw new Error(`Missing required environment variable: ${name}`);
+      throw new Error(`${name} is missing`);
     }
   
     return value;
-}
+  }
   
-export const env = {
-    DISCORD_TOKEN: getEnv("DISCORD_TOKEN"),
-};
+  export const env = {
+    DISCORD_TOKEN: getRequiredEnv("DISCORD_TOKEN"),
+    CLIENT_ID: getRequiredEnv("CLIENT_ID"),
+    TMDB_API_KEY: getRequiredEnv("TMDB_API_KEY"),
+    SPECTATOR_ROLE_ID: getRequiredEnv("SPECTATOR_ROLE_ID"),
+    VOICE_TRIGGER_CHANNEL_ID: getRequiredEnv("VOICE_TRIGGER_CHANNEL_ID"),
+    VOICE_CHATTING_ROLE_ID: getRequiredEnv("VOICE_CHATTING_ROLE_ID"),
+    DISCORD_GUILD_ID: process.env.DISCORD_GUILD_ID,
+  } as const;

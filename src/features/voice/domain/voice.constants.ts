@@ -1,5 +1,7 @@
+import { env } from "../../../core/config/env.js";
+
 export const VOICE_CONSTANTS = {
-    TRIGGER_CHANNEL_ID: "1504850320650408196",
-    TEMP_CHANNEL_PREFIX: "💬・Salon de",
-    CHATTING_ROLE_ID: "1504859552368296077",
+  TRIGGER_CHANNEL_ID: env.VOICE_TRIGGER_CHANNEL_ID,
+  TEMP_CHANNEL_PREFIX: "💬・Salon de",
+  CHATTING_ROLE_ID: env.VOICE_CHATTING_ROLE_ID,
 } as const;
