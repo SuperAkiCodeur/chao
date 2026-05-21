@@ -18,4 +18,5 @@ export const env = {
   VOICE_CHATTING_ROLE_ID: getRequiredEnv("VOICE_CHATTING_ROLE_ID"),
   DISCORD_GUILD_ID: process.env.DISCORD_GUILD_ID,
   HENRIKDEV_API_KEY: process.env.HENRIKDEV_API_KEY,
+  VALORANT_CHANNEL_ID: process.env.VALORANT_CHANNEL_ID,
 } as const;

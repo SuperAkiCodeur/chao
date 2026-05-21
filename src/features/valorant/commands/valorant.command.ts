@@ -4,6 +4,7 @@ import {
   SlashCommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
+import { env } from "../../../core/config/env.js";
 import { logger } from "../../../core/app/logger.js";
 import type { ValorantStatsType } from "../domain/valorant.types.js";
 import {
@@ -73,6 +74,14 @@ export const valorantCommand = {
     if (!interaction.inCachedGuild()) {
       await interaction.reply({
         content: "❌ Cette commande doit être utilisée dans un serveur.",
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
+
+    if (env.VALORANT_CHANNEL_ID && interaction.channelId !== env.VALORANT_CHANNEL_ID) {
+      await interaction.reply({
+        content: `❌ Cette commande est réservée au salon <#${env.VALORANT_CHANNEL_ID}>.`,
         flags: MessageFlags.Ephemeral,
       });
       return;
