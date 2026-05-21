@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Partials } from "discord.js";
+import { Client, GatewayIntentBits } from "discord.js";
 import { env } from "./core/config/env.js";
 import { logger } from "./core/app/logger.js";
 import { loadEvents } from "./core/discord/eventLoader.js";
@@ -8,14 +8,8 @@ export function createBot() {
     intents: [
       GatewayIntentBits.Guilds,
       GatewayIntentBits.GuildMessages,
-      GatewayIntentBits.GuildMessageReactions,
       GatewayIntentBits.GuildMembers,
       GatewayIntentBits.GuildVoiceStates,
-    ],
-    partials: [
-      Partials.Message,
-      Partials.Channel,
-      Partials.Reaction,
     ],
   });
 

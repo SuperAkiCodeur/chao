@@ -3,7 +3,6 @@ import type {
   ChatInputCommandInteraction,
   Client,
   Guild,
-  MessageReaction,
 } from "discord.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlags } from "discord.js";
 import { env } from "../../../core/config/env.js";
@@ -61,9 +60,9 @@ type SendableTextChannel = {
   isTextBased: () => boolean;
   send: (options: {
     embeds?: EmbedBuilder[];
+    components?: ActionRowBuilder<ButtonBuilder>[];
   }) => Promise<{
     id: string;
-    react: (emoji: string) => Promise<unknown>;
   }>;
 };
 
@@ -140,96 +139,9 @@ function buildWatchRatingEmbed(watchParty: WatchParty): EmbedBuilder {
   return new EmbedBuilder()
     .setColor(WATCH_CONSTANTS.DEFAULT_EMBED_COLOR)
     .setTitle(`🎬 Notez ${watchParty.title}`)
-    .setDescription(
-      [
-        "Réagissez avec une note de **1 à 5**.",
-        "",
-        `${WATCH_CONSTANTS.RATING_EMOJIS[1]} — 1/5`,
-        `${WATCH_CONSTANTS.RATING_EMOJIS[2]} — 2/5`,
-        `${WATCH_CONSTANTS.RATING_EMOJIS[3]} — 3/5`,
-        `${WATCH_CONSTANTS.RATING_EMOJIS[4]} — 4/5`,
-        `${WATCH_CONSTANTS.RATING_EMOJIS[5]} — 5/5`,
-        "",
-        "Le vote se ferme dans 1h.",
-      ].join("\n"),
-    );
+    .setDescription("Clique sur une étoile pour noter. Reclique pour retirer ta note.\n\nLe vote se ferme dans 1h.");
 }
 
-function getWatchRatingValueFromEmoji(emoji: string): WatchRatingValue | null {
-  const entry = Object.entries(WATCH_CONSTANTS.RATING_EMOJIS).find(([, value]) => {
-    return value === emoji;
-  });
-
-  if (!entry) {
-    return null;
-  }
-
-  return Number(entry[0]) as WatchRatingValue;
-}
-
-async function removeOtherRatingReactionsForUser(params: {
-  reaction: MessageReaction;
-  userId: string;
-  selectedEmoji: string;
-}): Promise<void> {
-  const channel = params.reaction.message.channel;
-
-  if (!("messages" in channel) || typeof channel.messages?.fetch !== "function") {
-    logger.warn("removeOtherRatingReactionsForUser: channel is not fetchable", {
-      messageId: params.reaction.message.id,
-      userId: params.userId,
-      selectedEmoji: params.selectedEmoji,
-    });
-    return;
-  }
-
-  const freshMessage = await channel.messages
-    .fetch(params.reaction.message.id)
-    .catch((error) => {
-      logger.error("removeOtherRatingReactionsForUser: failed to fetch message", {
-        messageId: params.reaction.message.id,
-        userId: params.userId,
-        selectedEmoji: params.selectedEmoji,
-        errorMessage: error instanceof Error ? error.message : String(error),
-        errorStack: error instanceof Error ? error.stack : undefined,
-      });
-
-      return null;
-    });
-
-  if (!freshMessage) {
-    return;
-  }
-
-  for (const messageReaction of freshMessage.reactions.cache.values()) {
-    const emojiName = messageReaction.emoji.name;
-
-    if (!emojiName) {
-      continue;
-    }
-
-    if (!getWatchRatingValueFromEmoji(emojiName)) {
-      continue;
-    }
-
-    if (emojiName === params.selectedEmoji) {
-      continue;
-    }
-
-    await messageReaction.users.remove(params.userId).catch((error) => {
-      logger.error("Failed to remove other rating reaction for user", {
-        messageId: freshMessage.id,
-        userId: params.userId,
-        selectedEmoji: params.selectedEmoji,
-        removedEmoji: emojiName,
-        errorMessage: error instanceof Error ? error.message : String(error),
-        errorStack: error instanceof Error ? error.stack : undefined,
-      });
-
-      return null;
-    });
-  }
-}
 
 async function createWatchRatingMessage(
   client: Client,
@@ -244,13 +156,19 @@ async function createWatchRatingMessage(
 
   const embed = buildWatchRatingEmbed(watchParty);
 
+  const ratingButtons = ([1, 2, 3, 4, 5] as const).map((value) =>
+    new ButtonBuilder()
+      .setCustomId(`${WATCH_CONSTANTS.RATING_BUTTON_PREFIX}${value}`)
+      .setLabel("⭐".repeat(value))
+      .setStyle(ButtonStyle.Secondary),
+  );
+
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(...ratingButtons);
+
   const ratingMessage = await channel.send({
     embeds: [embed],
+    components: [row],
   });
-
-  for (const emoji of Object.values(WATCH_CONSTANTS.RATING_EMOJIS)) {
-    await ratingMessage.react(emoji);
-  }
 
   const ratingClosesAt = new Date(
     Date.now() + WATCH_CONSTANTS.RATING_DURATION_MS,
@@ -654,96 +572,95 @@ export async function handleWatchTicketButton(interaction: ButtonInteraction): P
   }
 }
 
-export async function handleWatchRatingReactionAdd(params: {  
-  guild: Guild;
-  reaction: MessageReaction;
-  messageId: string;
-  userId: string;
-  emoji: string;
-}): Promise<void> {
-  const watchParty = await findWatchPartyByRatingMessageId(params.messageId);
+export async function handleWatchRatingButton(interaction: ButtonInteraction): Promise<void> {
+  if (!interaction.inCachedGuild()) {
+    await interaction.reply({
+      content: "❌ Cette action doit être effectuée dans un serveur.",
+      flags: MessageFlags.Ephemeral,
+    });
+    return;
+  }
+
+  const ratingStr = interaction.customId.slice(WATCH_CONSTANTS.RATING_BUTTON_PREFIX.length);
+  const rating = Number(ratingStr) as WatchRatingValue;
+
+  if (!rating || rating < 1 || rating > 5) {
+    await interaction.reply({
+      content: "❌ Note invalide.",
+      flags: MessageFlags.Ephemeral,
+    });
+    return;
+  }
+
+  const messageId = interaction.message.id;
+  const userId = interaction.user.id;
+
+  const watchParty = await findWatchPartyByRatingMessageId(messageId);
 
   if (!watchParty) {
+    await interaction.reply({
+      content: "❌ Cette session de vote n'existe plus.",
+      flags: MessageFlags.Ephemeral,
+    });
     return;
   }
 
-  const rating = getWatchRatingValueFromEmoji(params.emoji);
+  const currentRating = watchParty.ratings?.[userId];
 
-  if (!rating) {
-    return;
+  if (currentRating === rating) {
+    const updated = await removeWatchPartyUserRating({
+      ratingMessageId: messageId,
+      userId,
+    });
+
+    if (!updated) {
+      await interaction.reply({
+        content: "❌ Impossible de supprimer ta note.",
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
+
+    await interaction.reply({
+      content: "✅ Note retirée.",
+      flags: MessageFlags.Ephemeral,
+    });
+
+    logger.info("Watch rating removed", {
+      guildId: interaction.guild.id,
+      messageId,
+      userId,
+      title: updated.title,
+      rating,
+    });
+  } else {
+    const updated = await setWatchPartyUserRating({
+      ratingMessageId: messageId,
+      userId,
+      rating,
+    });
+
+    if (!updated) {
+      await interaction.reply({
+        content: "❌ Impossible d'enregistrer ta note.",
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
+
+    const stars = "⭐".repeat(rating);
+
+    await interaction.reply({
+      content: `✅ Note enregistrée : ${stars}`,
+      flags: MessageFlags.Ephemeral,
+    });
+
+    logger.info("Watch rating stored", {
+      guildId: interaction.guild.id,
+      messageId,
+      userId,
+      title: updated.title,
+      rating,
+    });
   }
-
-  const updatedWatchParty = await setWatchPartyUserRating({
-    ratingMessageId: params.messageId,
-    userId: params.userId,
-    rating,
-  });
-
-  if (!updatedWatchParty) {
-    return;
-  }
-
-  logger.info("Watch rating stored", {
-    guildId: params.guild.id,
-    messageId: params.messageId,
-    userId: params.userId,
-    title: updatedWatchParty.title,
-    rating,
-  });
-
-  await removeOtherRatingReactionsForUser({
-    reaction: params.reaction,
-    userId: params.userId,
-    selectedEmoji: params.emoji,
-  });
-
-  logger.info("Watch rating reaction added", {
-    guildId: params.guild.id,
-    messageId: params.messageId,
-    userId: params.userId,
-    title: updatedWatchParty.title,
-    rating,
-  });
-}
-
-export async function handleWatchRatingReactionRemove(params: {
-  guild: Guild;
-  messageId: string;
-  userId: string;
-  emoji: string;
-}): Promise<void> {
-  const watchParty = await findWatchPartyByRatingMessageId(params.messageId);
-
-  if (!watchParty) {
-    return;
-  }
-
-  const rating = getWatchRatingValueFromEmoji(params.emoji);
-
-  if (!rating) {
-    return;
-  }
-
-  const currentRating = watchParty.ratings?.[params.userId];
-
-  if (!currentRating || currentRating !== rating) {
-    return;
-  }
-
-  const updatedWatchParty = await removeWatchPartyUserRating({
-    ratingMessageId: params.messageId,
-    userId: params.userId,
-  });
-
-  if (!updatedWatchParty) {
-    return;
-  }
-
-  logger.info("Watch rating reaction removed", {
-    guildId: params.guild.id,
-    messageId: params.messageId,
-    userId: params.userId,
-    title: updatedWatchParty.title,
-    rating,
-  });
 }

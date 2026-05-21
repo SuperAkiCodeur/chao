@@ -3,7 +3,7 @@ import type { AppEvent } from "../types/appEvent.js";
 import { logger } from "../../app/logger.js";
 import { getCommand } from "../commandRegistry.js";
 import { handleSelfRoleButton, isSelfRoleButton } from "../../../features/selfrole/services/selfrole.service.js";
-import { handleWatchTicketButton } from "../../../features/watch/services/watch.service.js";
+import { handleWatchRatingButton, handleWatchTicketButton } from "../../../features/watch/services/watch.service.js";
 import { WATCH_CONSTANTS } from "../../../features/watch/domain/watch.constants.js";
 
 export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
@@ -13,6 +13,8 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
     if (interaction.isButton()) {
       if (interaction.customId === WATCH_CONSTANTS.TICKET_BUTTON_ID) {
         await handleWatchTicketButton(interaction);
+      } else if (interaction.customId.startsWith(WATCH_CONSTANTS.RATING_BUTTON_PREFIX)) {
+        await handleWatchRatingButton(interaction);
       } else if (isSelfRoleButton(interaction.customId)) {
         await handleSelfRoleButton(interaction);
       }
