@@ -212,9 +212,36 @@ async function removeOtherRatingReactionsForUser(params: {
   userId: string;
   selectedEmoji: string;
 }): Promise<void> {
-  const message = params.reaction.message;
+  const channel = params.reaction.message.channel;
 
-  for (const messageReaction of message.reactions.cache.values()) {
+  if (!("messages" in channel) || typeof channel.messages?.fetch !== "function") {
+    logger.warn("removeOtherRatingReactionsForUser: channel is not fetchable", {
+      messageId: params.reaction.message.id,
+      userId: params.userId,
+      selectedEmoji: params.selectedEmoji,
+    });
+    return;
+  }
+
+  const freshMessage = await channel.messages
+    .fetch(params.reaction.message.id)
+    .catch((error) => {
+      logger.error("removeOtherRatingReactionsForUser: failed to fetch message", {
+        messageId: params.reaction.message.id,
+        userId: params.userId,
+        selectedEmoji: params.selectedEmoji,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined,
+      });
+
+      return null;
+    });
+
+  if (!freshMessage) {
+    return;
+  }
+
+  for (const messageReaction of freshMessage.reactions.cache.values()) {
     const emojiName = messageReaction.emoji.name;
 
     if (!emojiName) {
@@ -229,7 +256,25 @@ async function removeOtherRatingReactionsForUser(params: {
       continue;
     }
 
-    await messageReaction.users.remove(params.userId).catch(() => null);
+    logger.info("Removing other rating reaction for user", {
+      messageId: freshMessage.id,
+      userId: params.userId,
+      selectedEmoji: params.selectedEmoji,
+      removedEmoji: emojiName,
+    });
+
+    await messageReaction.users.remove(params.userId).catch((error) => {
+      logger.error("Failed to remove other rating reaction for user", {
+        messageId: freshMessage.id,
+        userId: params.userId,
+        selectedEmoji: params.selectedEmoji,
+        removedEmoji: emojiName,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined,
+      });
+
+      return null;
+    });
   }
 }
 
@@ -548,38 +593,38 @@ export async function handleDeletedWatchMessage(params: {
 }): Promise<void> {
   const watchParty = findWatchPartyByMessageId(params.messageId);
 
-  if (watchParty) {
-    cancelWatchStartAnnouncement(params.messageId);
+  if (!watchParty) {
+    return;
+  }
 
-    if (params.guild) {
-      await cleanupSpectatorRolesForWatchParty(params.guild, watchParty);
-    }
-
-    deleteWatchParty(params.messageId);
-
-    logger.info("Watch party deleted after main message deletion", {
-      messageId: params.messageId,
-      guildId: params.guildId,
+  if (
+    watchParty.status === WATCH_CONSTANTS.ENDED_STATUS ||
+    watchParty.ratingMessageId ||
+    watchParty.ratingClosesAt
+  ) {
+    logger.info("Ignoring watch message deletion because watch party is already ended", {
+      messageId: watchParty.messageId,
+      guildId: watchParty.guildId,
       title: watchParty.title,
+      status: watchParty.status,
+      ratingMessageId: watchParty.ratingMessageId ?? null,
+      ratingClosesAt: watchParty.ratingClosesAt ?? null,
     });
-
     return;
   }
 
-  const watchPartyByStartAnnouncement = findWatchPartyByStartAnnouncementMessageId(
-    params.messageId,
-  );
+  cancelWatchStartAnnouncement(watchParty.messageId);
 
-  if (!watchPartyByStartAnnouncement) {
-    return;
+  if (params.guild) {
+    await cleanupSpectatorRolesForWatchParty(params.guild, watchParty);
   }
 
-  clearWatchStartAnnouncementMessageId(params.messageId);
+  deleteWatchParty(watchParty.messageId);
 
-  logger.info("Watch start announcement reference cleared after message deletion", {
-    messageId: params.messageId,
-    guildId: params.guildId,
-    title: watchPartyByStartAnnouncement.title,
+  logger.info("Watch party deleted after main message deletion", {
+    messageId: watchParty.messageId,
+    guildId: watchParty.guildId,
+    title: watchParty.title,
   });
 }
 
@@ -686,6 +731,14 @@ export async function handleWatchRatingReactionAdd(params: {
   if (!updatedWatchParty) {
     return;
   }
+
+  logger.info("Watch rating stored", {
+    guildId: params.guild.id,
+    messageId: params.messageId,
+    userId: params.userId,
+    title: updatedWatchParty.title,
+    rating,
+  });
 
   await removeOtherRatingReactionsForUser({
     reaction: params.reaction,
