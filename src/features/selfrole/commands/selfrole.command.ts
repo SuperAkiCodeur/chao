@@ -86,7 +86,7 @@ export const selfRoleCommand = {
 
     const channel = interaction.options.getChannel("channel", true) as TextChannel;
     const title = interaction.options.getString("title", true);
-    const description = interaction.options.getString("description");
+    const description = interaction.options.getString("description")?.replace(/\\n/g, "\n");
     const colorInput = interaction.options.getString("color");
     const parsedColor = colorInput ? parseHexColor(colorInput) : null;
 
