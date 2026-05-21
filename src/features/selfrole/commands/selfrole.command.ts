@@ -15,6 +15,13 @@ import { SELFROLE_BUTTON_PREFIX } from "../services/selfrole.service.js";
 
 const SELFROLE_EMBED_COLOR = 0x5865f2;
 
+function parseHexColor(input: string | null): number | null {
+  if (!input) return null;
+  const cleaned = input.replace(/^#/, "");
+  if (!/^[0-9a-fA-F]{6}$/.test(cleaned)) return null;
+  return parseInt(cleaned, 16);
+}
+
 export const selfRoleCommand = {
   data: new SlashCommandBuilder()
     .setName("selfrole")
@@ -56,6 +63,12 @@ export const selfRoleCommand = {
             .setName("description")
             .setDescription("Description de l'embed (optionnel)")
             .setRequired(false),
+        )
+        .addStringOption((opt) =>
+          opt
+            .setName("color")
+            .setDescription("Couleur de l'embed en hex (ex: #ff4655). Défaut : #5865f2")
+            .setRequired(false),
         ),
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
@@ -74,6 +87,17 @@ export const selfRoleCommand = {
     const channel = interaction.options.getChannel("channel", true) as TextChannel;
     const title = interaction.options.getString("title", true);
     const description = interaction.options.getString("description");
+    const colorInput = interaction.options.getString("color");
+    const parsedColor = colorInput ? parseHexColor(colorInput) : null;
+
+    if (colorInput && parsedColor === null) {
+      await interaction.editReply({
+        content: "❌ Couleur invalide. Utilise un code hex valide (ex: `#ff4655`).",
+      });
+      return;
+    }
+
+    const color = parsedColor ?? SELFROLE_EMBED_COLOR;
 
     const roles = [
       interaction.options.getRole("role1"),
@@ -84,7 +108,7 @@ export const selfRoleCommand = {
     ].filter(Boolean);
 
     const embed = new EmbedBuilder()
-      .setColor(SELFROLE_EMBED_COLOR)
+      .setColor(color)
       .setTitle(title);
 
     if (description) {
