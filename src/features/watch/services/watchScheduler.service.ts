@@ -383,14 +383,6 @@ export function cancelWatchStartAnnouncement(messageId: string): void {
   clearScheduledWatchAnnouncement(messageId);
 }
 
-export function clearAllScheduledWatchAnnouncements(): void {
-  for (const timeout of scheduledWatchAnnouncements.values()) {
-    clearTimeout(timeout);
-  }
-
-  scheduledWatchAnnouncements.clear();
-}
-
 export function scheduleWatchRatingClosure(
   client: Client,
   watchParty: WatchParty,
@@ -458,12 +450,4 @@ export function scheduleWatchRatingClosure(
 
 export function cancelWatchRatingClosure(messageId: string): void {
   clearScheduledWatchRatingClosure(messageId);
-}
-
-export function clearAllScheduledWatchRatingClosures(): void {
-  for (const timeout of scheduledWatchRatingClosures.values()) {
-    clearTimeout(timeout);
-  }
-
-  scheduledWatchRatingClosures.clear();
 }

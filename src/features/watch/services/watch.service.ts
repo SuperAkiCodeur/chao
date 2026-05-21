@@ -713,13 +713,6 @@ export async function handleWatchRatingReactionAdd(params: {
 }): Promise<void> {
   const watchParty = findWatchPartyByRatingMessageId(params.messageId);
 
-  // à supp
-  logger.info("handleWatchRatingReactionAdd called", {
-    messageId: params.messageId,
-    userId: params.userId,
-    emoji: params.emoji,
-  });
-
   if (!watchParty) {
     return;
   }

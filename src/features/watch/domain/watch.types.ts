@@ -5,8 +5,6 @@ import { WATCH_CONSTANTS } from "./watch.constants.js";
 export type WatchContentType =
   (typeof WATCH_CONSTANTS.MEDIA_TYPES)[keyof typeof WATCH_CONSTANTS.MEDIA_TYPES];
 
-export type WatchMediaType = WatchContentType;
-
 export type WatchStatus =
   | typeof WATCH_CONSTANTS.ACTIVE_STATUS
   | typeof WATCH_CONSTANTS.ENDED_STATUS;
