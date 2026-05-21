@@ -142,11 +142,6 @@ async function sendScheduledWatchAnnouncement(
   }
 
   if (currentWatchParty.startAnnouncementMessageId) {
-    logger.info("Scheduled watch announcement already sent", {
-      messageId: currentWatchParty.messageId,
-      startAnnouncementMessageId: currentWatchParty.startAnnouncementMessageId,
-      title: currentWatchParty.title,
-    });
     return;
   }
 

@@ -19,10 +19,6 @@ export function createBot() {
     ],
   });
 
-  client.on("debug", (message) => {
-    logger.info("[discord debug]", message);
-  });
-
   client.on("warn", (message) => {
     logger.warn("[discord warn]", message);
   });
@@ -36,9 +32,7 @@ export function createBot() {
   return {
     client,
     async start() {
-      logger.info("[bot] logging in");
       await client.login(env.DISCORD_TOKEN);
-      logger.info("[bot] login promise resolved");
     },
   };
 }

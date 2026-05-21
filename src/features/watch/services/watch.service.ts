@@ -215,13 +215,6 @@ async function removeOtherRatingReactionsForUser(params: {
       continue;
     }
 
-    logger.info("Removing other rating reaction for user", {
-      messageId: freshMessage.id,
-      userId: params.userId,
-      selectedEmoji: params.selectedEmoji,
-      removedEmoji: emojiName,
-    });
-
     await messageReaction.users.remove(params.userId).catch((error) => {
       logger.error("Failed to remove other rating reaction for user", {
         messageId: freshMessage.id,
