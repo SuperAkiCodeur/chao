@@ -190,7 +190,7 @@ function buildWatchRatingEmbed(watchParty: WatchParty): EmbedBuilder {
         `${WATCH_CONSTANTS.RATING_EMOJIS[4]} — 4/5`,
         `${WATCH_CONSTANTS.RATING_EMOJIS[5]} — 5/5`,
         "",
-        "Le vote se ferme dans 24h.",
+        "Le vote se ferme dans 1h.",
       ].join("\n"),
     );
 }
@@ -563,14 +563,20 @@ export async function endWatchParty(
 
   saveWatchParty(endedWatchParty);
 
+  const viewingTimestamp = new Date(endedWatchParty.viewingAt).getTime();
+  const hasViewingStarted =
+    !Number.isNaN(viewingTimestamp) && viewingTimestamp <= Date.now();
+  
   await cleanupWatchParty(
     interaction.client,
     interaction.guild,
     endedWatchParty,
-    { preserveWatchParty: true },
+    { preserveWatchParty: hasViewingStarted },
   );
-
-  await createWatchRatingMessage(interaction.client, endedWatchParty);
+  
+  if (hasViewingStarted) {
+    await createWatchRatingMessage(interaction.client, endedWatchParty);
+  }
 
   logger.info("Watch party ended", {
     guildId: endedWatchParty.guildId,
@@ -582,7 +588,9 @@ export async function endWatchParty(
   });
 
   return {
-    message: `✅ Diffusion terminée pour "${endedWatchParty.title}".`,
+    message: hasViewingStarted
+      ? `✅ Diffusion terminée pour "${endedWatchParty.title}". Le vote est ouvert pendant 1h.`
+      : `✅ Diffusion annulée pour "${endedWatchParty.title}".`,
   };
 }
 
