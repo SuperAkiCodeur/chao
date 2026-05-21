@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"const p = require\\('C:/Users/Akash/Documents/chao/package.json'\\); console.log\\(JSON.stringify\\({name: p.name, scripts: p.scripts, dependencies: Object.keys\\(p.dependencies||{}\\), devDependencies: Object.keys\\(p.devDependencies||{}\\)}, null, 2\\)\\)\")",
+      "Bash(Remove-Item \"C:\\\\Users\\\\Akash\\\\Documents\\\\chao\\\\src\\\\core\\\\discord\\\\interactionRouter.ts\")",
+      "Bash(Remove-Item \"C:\\\\Users\\\\Akash\\\\Documents\\\\chao\\\\src\\\\shared\\\\utils\\\\channel.ts\")",
+      "Bash(Remove-Item \"C:\\\\Users\\\\Akash\\\\Documents\\\\chao\\\\src\\\\features\\\\voice\\\\domain\\\\voice.types.ts\")",
+      "Bash(npx tsc *)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(gh pr create --title 'Cleanup: suppression du code mort, simplifications et corrections' --body ' *)",
+      "PowerShell(Get-Command gh -ErrorAction SilentlyContinue; where.exe gh 2>$null; \\(Get-ChildItem \"C:\\\\Program Files\\\\GitHub CLI\\\\\" -ErrorAction SilentlyContinue\\))",
+      "PowerShell(git -C \"C:\\\\Users\\\\Akash\\\\Documents\\\\chao\" credential fill 2>$null; [System.Environment]::GetEnvironmentVariable\\(\"GITHUB_TOKEN\"\\))",
+      "PowerShell(Stop-Process -Name \"git\" -ErrorAction SilentlyContinue)",
+      "PowerShell($env:GITHUB_TOKEN)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(fly secrets *)"
+    ]
+  }
+}
