@@ -1,6 +1,6 @@
 export const WATCH_CONSTANTS = {
   COMMAND_NAME: "watch",
-  TICKET_EMOJI: "🎟️",
+  TICKET_BUTTON_ID: "watch:ticket",
   TMDB_POSTER_BASE_URL: "https://image.tmdb.org/t/p/w500",
   DEFAULT_EMBED_COLOR: 0xe91e63,
   ACTIVE_STATUS: "active",

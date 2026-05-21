@@ -8,10 +8,7 @@ import {
 import type { AppEvent } from "../../../core/discord/types/appEvent.js";
 import { logger } from "../../../core/app/logger.js";
 import { WATCH_CONSTANTS } from "../domain/watch.constants.js";
-import {
-  handleWatchRatingReactionAdd,
-  handleWatchReactionAdd,
-} from "../services/watch.service.js";
+import { handleWatchRatingReactionAdd } from "../services/watch.service.js";
 
 async function resolveReaction(
   reaction: MessageReaction | PartialMessageReaction,
@@ -58,16 +55,6 @@ export const watchReactionAddEvent: AppEvent<Events.MessageReactionAdd> = {
       const { guild } = message;
 
       if (!guild) {
-        return;
-      }
-
-      if (emojiName === WATCH_CONSTANTS.TICKET_EMOJI) {
-        await handleWatchReactionAdd({
-          guild,
-          messageId: message.id,
-          userId: user.id,
-        });
-
         return;
       }
 

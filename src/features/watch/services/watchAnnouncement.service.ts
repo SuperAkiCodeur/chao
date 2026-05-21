@@ -115,7 +115,7 @@ export function buildWatchAnnouncement(
       },
       {
         name: "Billetterie",
-        value: `Réagis avec ${WATCH_CONSTANTS.TICKET_EMOJI} pour réserver ta place.`,
+        value: "Clique sur le bouton ci-dessous pour réserver ta place.",
         inline: false,
       },
     )

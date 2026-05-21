@@ -1,10 +1,11 @@
 import type {
+  ButtonInteraction,
   ChatInputCommandInteraction,
   Client,
   Guild,
   MessageReaction,
 } from "discord.js";
-import { EmbedBuilder } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlags } from "discord.js";
 import { env } from "../../../core/config/env.js";
 import { logger } from "../../../core/app/logger.js";
 import {
@@ -434,11 +435,18 @@ export async function startWatchParty(
     credits: media.credits,
   });
 
+  const ticketButton = new ButtonBuilder()
+    .setCustomId(WATCH_CONSTANTS.TICKET_BUTTON_ID)
+    .setLabel("Prendre un ticket")
+    .setStyle(ButtonStyle.Primary)
+    .setEmoji("🎟️");
+
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(ticketButton);
+
   const message = await interaction.channel.send({
     embeds: [embed],
+    components: [row],
   });
-
-  await message.react(WATCH_CONSTANTS.TICKET_EMOJI);
 
   const watchParty: WatchParty = {
     guildId: interaction.guildId,
@@ -588,72 +596,62 @@ export async function handleDeletedWatchMessage(params: {
   });
 }
 
-export async function handleWatchReactionAdd(params: {
-  guild: Guild;
-  messageId: string;
-  userId: string;
-}): Promise<void> {
-  const watchParty = await addUserToWatchParty(params.messageId, params.userId);
+export async function handleWatchTicketButton(interaction: ButtonInteraction): Promise<void> {
+  if (!interaction.inCachedGuild()) {
+    await interaction.reply({
+      content: "❌ Cette action doit être effectuée dans un serveur.",
+      flags: MessageFlags.Ephemeral,
+    });
+    return;
+  }
+
+  const messageId = interaction.message.id;
+  const { guild } = interaction;
+  const userId = interaction.user.id;
+
+  const watchParty = await findWatchPartyByMessageId(messageId);
 
   if (!watchParty) {
+    await interaction.reply({
+      content: "❌ Cette diffusion n'existe plus.",
+      flags: MessageFlags.Ephemeral,
+    });
     return;
   }
 
-  if (!watchParty.roleId) {
-    return;
+  const isAlreadyIn = watchParty.users.includes(userId);
+
+  if (isAlreadyIn) {
+    const updated = await removeUserFromWatchParty(messageId, userId);
+
+    if (updated?.roleId) {
+      const hasAnotherWatchParty = await userHasAnotherActiveWatchParty(guild.id, userId, messageId);
+
+      if (!hasAnotherWatchParty) {
+        await removeSpectatorRoleByUserId(guild, userId, updated.roleId, "User left watch party");
+      }
+    }
+
+    await interaction.reply({
+      content: "✅ Réservation annulée.",
+      flags: MessageFlags.Ephemeral,
+    });
+
+    logger.info("Watch party ticket removed", { guildId: guild.id, messageId, userId, title: watchParty.title });
+  } else {
+    const updated = await addUserToWatchParty(messageId, userId);
+
+    if (updated?.roleId) {
+      await addSpectatorRoleByUserId(guild, userId, updated.roleId, "User joined watch party");
+    }
+
+    await interaction.reply({
+      content: `✅ Place réservée pour **${watchParty.title}** !`,
+      flags: MessageFlags.Ephemeral,
+    });
+
+    logger.info("Watch party ticket added", { guildId: guild.id, messageId, userId, title: watchParty.title });
   }
-
-  await addSpectatorRoleByUserId(
-    params.guild,
-    params.userId,
-    watchParty.roleId,
-    "User joined a watch party",
-  );
-
-  logger.info("Watch party reaction added", {
-    guildId: params.guild.id,
-    messageId: params.messageId,
-    userId: params.userId,
-    title: watchParty.title,
-  });
-}
-
-export async function handleWatchReactionRemove(params: {
-  guild: Guild;
-  messageId: string;
-  userId: string;
-}): Promise<void> {
-  const watchParty = await removeUserFromWatchParty(params.messageId, params.userId);
-
-  if (!watchParty) {
-    return;
-  }
-
-  if (!watchParty.roleId) {
-    return;
-  }
-
-  const hasAnotherWatchParty = await userHasAnotherActiveWatchParty(
-    params.guild.id,
-    params.userId,
-    params.messageId,
-  );
-
-  if (!hasAnotherWatchParty) {
-    await removeSpectatorRoleByUserId(
-      params.guild,
-      params.userId,
-      watchParty.roleId,
-      "User left all watch parties",
-    );
-  }
-
-  logger.info("Watch party reaction removed", {
-    guildId: params.guild.id,
-    messageId: params.messageId,
-    userId: params.userId,
-    title: watchParty.title,
-  });
 }
 
 export async function handleWatchRatingReactionAdd(params: {  
