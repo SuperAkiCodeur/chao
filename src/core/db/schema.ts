@@ -39,3 +39,20 @@ export const watchPartyRatings = pgTable(
   },
   (t) => [primaryKey({ columns: [t.messageId, t.userId] })],
 );
+
+// ---------------------------------------------------------------------------
+// Valorant
+// ---------------------------------------------------------------------------
+
+export const valorantLinks = pgTable(
+  "valorant_links",
+  {
+    discordUserId: text("discord_user_id").notNull(),
+    guildId: text("guild_id").notNull(),
+    riotId: text("riot_id").notNull(),
+    puuid: text("puuid"),
+    region: text("region"),
+    linkedAt: text("linked_at").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.discordUserId, t.guildId] })],
+);
