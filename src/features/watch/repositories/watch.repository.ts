@@ -1,353 +1,311 @@
-import fs from "node:fs";
-import path from "node:path";
+import { and, eq } from "drizzle-orm";
+import { db } from "../../../core/db/client.js";
+import {
+  watchParties as watchPartiesTable,
+  watchPartyRatings as watchPartyRatingsTable,
+  watchPartyUsers as watchPartyUsersTable,
+} from "../../../core/db/schema.js";
 import { WATCH_CONSTANTS } from "../domain/watch.constants.js";
 import type {
   WatchContentType,
-  WatchPartiesData,
   WatchParty,
   WatchRatingValue,
+  WatchRatings,
+  WatchStatus,
 } from "../domain/watch.types.js";
 
-const WATCH_PARTIES_FILE_PATH = path.join(
-  process.cwd(),
-  "data",
-  WATCH_CONSTANTS.STORAGE_FILE_NAME,
-);
+// ---------------------------------------------------------------------------
+// Internal helper
+// ---------------------------------------------------------------------------
 
-function ensureWatchStorageDirectory(): void {
-  const directoryPath = path.dirname(WATCH_PARTIES_FILE_PATH);
+async function toWatchParty(
+  row: typeof watchPartiesTable.$inferSelect,
+): Promise<WatchParty> {
+  const [userRows, ratingRows] = await Promise.all([
+    db
+      .select()
+      .from(watchPartyUsersTable)
+      .where(eq(watchPartyUsersTable.messageId, row.messageId)),
+    db
+      .select()
+      .from(watchPartyRatingsTable)
+      .where(eq(watchPartyRatingsTable.messageId, row.messageId)),
+  ]);
 
-  if (!fs.existsSync(directoryPath)) {
-    fs.mkdirSync(directoryPath, { recursive: true });
-  }
-}
+  const ratings: WatchRatings = {};
 
-export function readWatchParties(): WatchPartiesData {
-  ensureWatchStorageDirectory();
-
-  if (!fs.existsSync(WATCH_PARTIES_FILE_PATH)) {
-    return { watchParties: {} };
-  }
-
-  const fileContent = fs.readFileSync(WATCH_PARTIES_FILE_PATH, "utf8");
-
-  if (!fileContent.trim().length) {
-    return { watchParties: {} };
+  for (const r of ratingRows) {
+    ratings[r.userId] = r.rating as WatchRatingValue;
   }
 
-  return JSON.parse(fileContent) as WatchPartiesData;
+  return {
+    guildId: row.guildId,
+    channelId: row.channelId,
+    messageId: row.messageId,
+    roleId: row.roleId,
+    title: row.title,
+    mediaType: row.mediaType as WatchContentType,
+    mediaId: row.mediaId,
+    viewingAt: row.viewingAt,
+    status: row.status as WatchStatus,
+    users: userRows.map((u) => u.userId),
+    startAnnouncementMessageId: row.startAnnouncementMessageId ?? undefined,
+    ratingChannelId: row.ratingChannelId ?? undefined,
+    ratingMessageId: row.ratingMessageId ?? undefined,
+    ratingSummaryMessageId: row.ratingSummaryMessageId ?? undefined,
+    ratingClosesAt: row.ratingClosesAt ?? undefined,
+    ratings: Object.keys(ratings).length > 0 ? ratings : undefined,
+  };
 }
 
-export function writeWatchParties(data: WatchPartiesData): void {
-  ensureWatchStorageDirectory();
+// ---------------------------------------------------------------------------
+// Queries
+// ---------------------------------------------------------------------------
 
-  fs.writeFileSync(
-    WATCH_PARTIES_FILE_PATH,
-    JSON.stringify(data, null, 2),
-    "utf8",
-  );
+export async function findAllWatchParties(): Promise<WatchParty[]> {
+  const rows = await db.select().from(watchPartiesTable);
+  return Promise.all(rows.map(toWatchParty));
 }
 
-export function findWatchPartyByMessageId(messageId: string): WatchParty | null {
-  const data = readWatchParties();
-  return data.watchParties[messageId] ?? null;
-}
-
-export function findWatchPartyByStartAnnouncementMessageId(
-  startAnnouncementMessageId: string,
-): WatchParty | null {
-  const data = readWatchParties();
-
-  return (
-    Object.values(data.watchParties).find((watchParty) => {
-      return watchParty.startAnnouncementMessageId === startAnnouncementMessageId;
-    }) ?? null
-  );
-}
-
-export function findWatchPartyByRatingMessageId(
-  ratingMessageId: string,
-): WatchParty | null {
-  const data = readWatchParties();
-
-  return (
-    Object.values(data.watchParties).find((watchParty) => {
-      return watchParty.ratingMessageId === ratingMessageId;
-    }) ?? null
-  );
-}
-
-export function saveWatchParty(watchParty: WatchParty): void {
-  const data = readWatchParties();
-
-  data.watchParties[watchParty.messageId] = watchParty;
-
-  writeWatchParties(data);
-}
-
-export function setWatchStartAnnouncementMessageId(
+export async function findWatchPartyByMessageId(
   messageId: string,
-  startAnnouncementMessageId: string,
-): WatchParty | null {
-  const data = readWatchParties();
-  const watchParty = data.watchParties[messageId];
+): Promise<WatchParty | null> {
+  const [row] = await db
+    .select()
+    .from(watchPartiesTable)
+    .where(eq(watchPartiesTable.messageId, messageId));
+
+  return row ? toWatchParty(row) : null;
+}
+
+export async function findWatchPartyByRatingMessageId(
+  ratingMessageId: string,
+): Promise<WatchParty | null> {
+  const [row] = await db
+    .select()
+    .from(watchPartiesTable)
+    .where(eq(watchPartiesTable.ratingMessageId, ratingMessageId));
+
+  return row ? toWatchParty(row) : null;
+}
+
+export async function findActiveWatchPartyByMedia(
+  mediaType: WatchContentType,
+  mediaId: string,
+): Promise<WatchParty | null> {
+  const [row] = await db
+    .select()
+    .from(watchPartiesTable)
+    .where(
+      and(
+        eq(watchPartiesTable.mediaType, mediaType),
+        eq(watchPartiesTable.mediaId, mediaId),
+        eq(watchPartiesTable.status, WATCH_CONSTANTS.ACTIVE_STATUS),
+      ),
+    );
+
+  return row ? toWatchParty(row) : null;
+}
+
+export async function userHasAnotherActiveWatchParty(
+  guildId: string,
+  userId: string,
+  excludedMessageId?: string,
+): Promise<boolean> {
+  const rows = await db
+    .select({ messageId: watchPartiesTable.messageId })
+    .from(watchPartiesTable)
+    .innerJoin(
+      watchPartyUsersTable,
+      eq(watchPartiesTable.messageId, watchPartyUsersTable.messageId),
+    )
+    .where(
+      and(
+        eq(watchPartiesTable.guildId, guildId),
+        eq(watchPartiesTable.status, WATCH_CONSTANTS.ACTIVE_STATUS),
+        eq(watchPartyUsersTable.userId, userId),
+      ),
+    );
+
+  return rows.some((r) => r.messageId !== excludedMessageId);
+}
+
+// ---------------------------------------------------------------------------
+// Mutations
+// ---------------------------------------------------------------------------
+
+export async function saveWatchParty(watchParty: WatchParty): Promise<void> {
+  await db
+    .insert(watchPartiesTable)
+    .values({
+      messageId: watchParty.messageId,
+      guildId: watchParty.guildId,
+      channelId: watchParty.channelId,
+      roleId: watchParty.roleId,
+      title: watchParty.title,
+      mediaType: watchParty.mediaType,
+      mediaId: watchParty.mediaId,
+      viewingAt: watchParty.viewingAt,
+      status: watchParty.status,
+      startAnnouncementMessageId: watchParty.startAnnouncementMessageId ?? null,
+      ratingChannelId: watchParty.ratingChannelId ?? null,
+      ratingMessageId: watchParty.ratingMessageId ?? null,
+      ratingSummaryMessageId: watchParty.ratingSummaryMessageId ?? null,
+      ratingClosesAt: watchParty.ratingClosesAt ?? null,
+    })
+    .onConflictDoUpdate({
+      target: watchPartiesTable.messageId,
+      set: {
+        status: watchParty.status,
+        startAnnouncementMessageId: watchParty.startAnnouncementMessageId ?? null,
+        ratingChannelId: watchParty.ratingChannelId ?? null,
+        ratingMessageId: watchParty.ratingMessageId ?? null,
+        ratingSummaryMessageId: watchParty.ratingSummaryMessageId ?? null,
+        ratingClosesAt: watchParty.ratingClosesAt ?? null,
+      },
+    });
+}
+
+export async function deleteWatchParty(messageId: string): Promise<void> {
+  await db
+    .delete(watchPartiesTable)
+    .where(eq(watchPartiesTable.messageId, messageId));
+}
+
+export async function addUserToWatchParty(
+  messageId: string,
+  userId: string,
+): Promise<WatchParty | null> {
+  const watchParty = await findWatchPartyByMessageId(messageId);
 
   if (!watchParty) {
     return null;
   }
 
-  watchParty.startAnnouncementMessageId = startAnnouncementMessageId;
-  writeWatchParties(data);
+  await db
+    .insert(watchPartyUsersTable)
+    .values({ messageId, userId })
+    .onConflictDoNothing();
 
-  return watchParty;
+  return findWatchPartyByMessageId(messageId);
 }
 
-export function clearWatchStartAnnouncementMessageId(
-  startAnnouncementMessageId: string,
-): WatchParty | null {
-  const data = readWatchParties();
+export async function removeUserFromWatchParty(
+  messageId: string,
+  userId: string,
+): Promise<WatchParty | null> {
+  const watchParty = await findWatchPartyByMessageId(messageId);
 
-  const watchPartyEntry = Object.entries(data.watchParties).find(([, watchParty]) => {
-    return watchParty.startAnnouncementMessageId === startAnnouncementMessageId;
-  });
-
-  if (!watchPartyEntry) {
+  if (!watchParty) {
     return null;
   }
 
-  const [, watchParty] = watchPartyEntry;
+  await db
+    .delete(watchPartyUsersTable)
+    .where(
+      and(
+        eq(watchPartyUsersTable.messageId, messageId),
+        eq(watchPartyUsersTable.userId, userId),
+      ),
+    );
 
-  delete watchParty.startAnnouncementMessageId;
-  writeWatchParties(data);
-
-  return watchParty;
+  return findWatchPartyByMessageId(messageId);
 }
 
-export function openWatchRatingSession(params: {
+export async function setWatchStartAnnouncementMessageId(
+  messageId: string,
+  startAnnouncementMessageId: string,
+): Promise<WatchParty | null> {
+  const [row] = await db
+    .update(watchPartiesTable)
+    .set({ startAnnouncementMessageId })
+    .where(eq(watchPartiesTable.messageId, messageId))
+    .returning();
+
+  return row ? toWatchParty(row) : null;
+}
+
+export async function openWatchRatingSession(params: {
   messageId: string;
   ratingChannelId: string;
   ratingMessageId: string;
   ratingClosesAt: string;
-}): WatchParty | null {
-  const data = readWatchParties();
-  const watchParty = data.watchParties[params.messageId];
+}): Promise<WatchParty | null> {
+  const [row] = await db
+    .update(watchPartiesTable)
+    .set({
+      ratingChannelId: params.ratingChannelId,
+      ratingMessageId: params.ratingMessageId,
+      ratingClosesAt: params.ratingClosesAt,
+    })
+    .where(eq(watchPartiesTable.messageId, params.messageId))
+    .returning();
 
-  if (!watchParty) {
-    return null;
-  }
-
-  watchParty.ratingChannelId = params.ratingChannelId;
-  watchParty.ratingMessageId = params.ratingMessageId;
-  watchParty.ratingClosesAt = params.ratingClosesAt;
-  watchParty.ratings = {};
-
-  writeWatchParties(data);
-
-  return watchParty;
+  return row ? toWatchParty(row) : null;
 }
 
-export function setWatchPartyUserRating(params: {
+export async function closeWatchRatingSession(params: {
+  messageId: string;
+  ratingSummaryMessageId?: string;
+}): Promise<WatchParty | null> {
+  const [row] = await db
+    .update(watchPartiesTable)
+    .set({
+      ratingChannelId: null,
+      ratingMessageId: null,
+      ratingClosesAt: null,
+      ratingSummaryMessageId: params.ratingSummaryMessageId ?? null,
+    })
+    .where(eq(watchPartiesTable.messageId, params.messageId))
+    .returning();
+
+  return row ? toWatchParty(row) : null;
+}
+
+export async function setWatchPartyUserRating(params: {
   ratingMessageId: string;
   userId: string;
   rating: WatchRatingValue;
-}): WatchParty | null {
-  const data = readWatchParties();
+}): Promise<WatchParty | null> {
+  const watchParty = await findWatchPartyByRatingMessageId(params.ratingMessageId);
 
-  const watchPartyEntry = Object.entries(data.watchParties).find(([, watchParty]) => {
-    return watchParty.ratingMessageId === params.ratingMessageId;
-  });
-
-  if (!watchPartyEntry) {
+  if (!watchParty) {
     return null;
   }
 
-  const [, watchParty] = watchPartyEntry;
+  await db
+    .insert(watchPartyRatingsTable)
+    .values({
+      messageId: watchParty.messageId,
+      userId: params.userId,
+      rating: params.rating,
+    })
+    .onConflictDoUpdate({
+      target: [watchPartyRatingsTable.messageId, watchPartyRatingsTable.userId],
+      set: { rating: params.rating },
+    });
 
-  watchParty.ratings ??= {};
-  watchParty.ratings[params.userId] = params.rating;
-
-  writeWatchParties(data);
-
-  return watchParty;
+  return findWatchPartyByMessageId(watchParty.messageId);
 }
 
-export function removeWatchPartyUserRating(params: {
+export async function removeWatchPartyUserRating(params: {
   ratingMessageId: string;
   userId: string;
-}): WatchParty | null {
-  const data = readWatchParties();
-
-  const watchPartyEntry = Object.entries(data.watchParties).find(([, watchParty]) => {
-    return watchParty.ratingMessageId === params.ratingMessageId;
-  });
-
-  if (!watchPartyEntry) {
-    return null;
-  }
-
-  const [, watchParty] = watchPartyEntry;
-
-  if (!watchParty.ratings) {
-    return watchParty;
-  }
-
-  delete watchParty.ratings[params.userId];
-  writeWatchParties(data);
-
-  return watchParty;
-}
-
-export function closeWatchRatingSession(params: {
-  messageId: string;
-  ratingSummaryMessageId?: string;
-}): WatchParty | null {
-  const data = readWatchParties();
-  const watchParty = data.watchParties[params.messageId];
+}): Promise<WatchParty | null> {
+  const watchParty = await findWatchPartyByRatingMessageId(params.ratingMessageId);
 
   if (!watchParty) {
     return null;
   }
 
-  delete watchParty.ratingMessageId;
-  delete watchParty.ratingChannelId;
-  delete watchParty.ratingClosesAt;
-
-  if (params.ratingSummaryMessageId) {
-    watchParty.ratingSummaryMessageId = params.ratingSummaryMessageId;
-  }
-
-  writeWatchParties(data);
-
-  return watchParty;
-}
-
-export function clearWatchRatingMessageId(
-  ratingMessageId: string,
-): WatchParty | null {
-  const data = readWatchParties();
-
-  const watchPartyEntry = Object.entries(data.watchParties).find(([, watchParty]) => {
-    return watchParty.ratingMessageId === ratingMessageId;
-  });
-
-  if (!watchPartyEntry) {
-    return null;
-  }
-
-  const [, watchParty] = watchPartyEntry;
-
-  delete watchParty.ratingMessageId;
-  delete watchParty.ratingChannelId;
-  delete watchParty.ratingClosesAt;
-
-  writeWatchParties(data);
-
-  return watchParty;
-}
-
-export function setWatchRatingSummaryMessageId(
-  messageId: string,
-  ratingSummaryMessageId: string,
-): WatchParty | null {
-  const data = readWatchParties();
-  const watchParty = data.watchParties[messageId];
-
-  if (!watchParty) {
-    return null;
-  }
-
-  watchParty.ratingSummaryMessageId = ratingSummaryMessageId;
-  writeWatchParties(data);
-
-  return watchParty;
-}
-
-export function deleteWatchParty(messageId: string): void {
-  const data = readWatchParties();
-
-  if (!data.watchParties[messageId]) {
-    return;
-  }
-
-  delete data.watchParties[messageId];
-
-  writeWatchParties(data);
-}
-
-export function findActiveWatchPartyByMedia(
-  mediaType: WatchContentType,
-  mediaId: string,
-): WatchParty | null {
-  const data = readWatchParties();
-
-  return (
-    Object.values(data.watchParties).find((watchParty) => {
-      return (
-        watchParty.mediaType === mediaType &&
-        watchParty.mediaId === mediaId &&
-        watchParty.status === WATCH_CONSTANTS.ACTIVE_STATUS
-      );
-    }) ?? null
-  );
-}
-
-export function findActiveWatchPartiesByGuildId(guildId: string): WatchParty[] {
-  const data = readWatchParties();
-
-  return Object.values(data.watchParties).filter((watchParty) => {
-    return (
-      watchParty.guildId === guildId &&
-      watchParty.status === WATCH_CONSTANTS.ACTIVE_STATUS
+  await db
+    .delete(watchPartyRatingsTable)
+    .where(
+      and(
+        eq(watchPartyRatingsTable.messageId, watchParty.messageId),
+        eq(watchPartyRatingsTable.userId, params.userId),
+      ),
     );
-  });
-}
 
-export function userHasAnotherActiveWatchParty(
-  guildId: string,
-  userId: string,
-  excludedMessageId?: string,
-): boolean {
-  const data = readWatchParties();
-
-  return Object.entries(data.watchParties).some(([messageId, watchParty]) => {
-    if (excludedMessageId && messageId === excludedMessageId) {
-      return false;
-    }
-
-    return (
-      watchParty.guildId === guildId &&
-      watchParty.status === WATCH_CONSTANTS.ACTIVE_STATUS &&
-      watchParty.users.includes(userId)
-    );
-  });
-}
-
-export function addUserToWatchParty(messageId: string, userId: string): WatchParty | null {
-  const data = readWatchParties();
-  const watchParty = data.watchParties[messageId];
-
-  if (!watchParty) {
-    return null;
-  }
-
-  if (!watchParty.users.includes(userId)) {
-    watchParty.users.push(userId);
-    writeWatchParties(data);
-  }
-
-  return watchParty;
-}
-
-export function removeUserFromWatchParty(messageId: string, userId: string): WatchParty | null {
-  const data = readWatchParties();
-  const watchParty = data.watchParties[messageId];
-
-  if (!watchParty) {
-    return null;
-  }
-
-  watchParty.users = watchParty.users.filter((id) => id !== userId);
-  writeWatchParties(data);
-
-  return watchParty;
+  return findWatchPartyByMessageId(watchParty.messageId);
 }

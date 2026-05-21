@@ -131,7 +131,7 @@ async function sendScheduledWatchAnnouncement(
   client: Client,
   watchParty: WatchParty,
 ): Promise<void> {
-  const currentWatchParty = findWatchPartyByMessageId(watchParty.messageId);
+  const currentWatchParty = await findWatchPartyByMessageId(watchParty.messageId);
 
   if (!currentWatchParty) {
     logger.warn("Unable to send scheduled watch announcement: watch party not found", {
@@ -172,7 +172,7 @@ async function sendScheduledWatchAnnouncement(
     },
   });
 
-  setWatchStartAnnouncementMessageId(currentWatchParty.messageId, sentMessage.id);
+  await setWatchStartAnnouncementMessageId(currentWatchParty.messageId, sentMessage.id);
 
   logger.info("Scheduled watch announcement sent", {
     guildId: currentWatchParty.guildId,
@@ -218,7 +218,7 @@ async function closeScheduledWatchRating(
   client: Client,
   watchParty: WatchParty,
 ): Promise<void> {
-  const currentWatchParty = findWatchPartyByMessageId(watchParty.messageId);
+  const currentWatchParty = await findWatchPartyByMessageId(watchParty.messageId);
 
   if (!currentWatchParty) {
     logger.warn("Unable to close watch rating: watch party not found", {
@@ -265,12 +265,12 @@ async function closeScheduledWatchRating(
     embeds: [summaryEmbed],
   });
 
-  closeWatchRatingSession({
+  await closeWatchRatingSession({
     messageId: currentWatchParty.messageId,
     ratingSummaryMessageId: summaryMessage.id,
   });
 
-  deleteWatchParty(currentWatchParty.messageId);
+  await deleteWatchParty(currentWatchParty.messageId);
 
   logger.info("Watch rating closed and summary sent", {
     guildId: currentWatchParty.guildId,

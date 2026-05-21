@@ -25,13 +25,11 @@ import type {
 } from "../domain/watch.types.js";
 import {
   addUserToWatchParty,
-  clearWatchStartAnnouncementMessageId,
   closeWatchRatingSession,
   deleteWatchParty,
   findActiveWatchPartyByMedia,
   findWatchPartyByMessageId,
   findWatchPartyByRatingMessageId,
-  findWatchPartyByStartAnnouncementMessageId,
   openWatchRatingSession,
   removeUserFromWatchParty,
   removeWatchPartyUserRating,
@@ -303,7 +301,7 @@ async function createWatchRatingMessage(
     Date.now() + WATCH_CONSTANTS.RATING_DURATION_MS,
   ).toISOString();
 
-  const updatedWatchParty = openWatchRatingSession({
+  const updatedWatchParty = await openWatchRatingSession({
     messageId: watchParty.messageId,
     ratingChannelId: letterboxdChannelId,
     ratingMessageId: ratingMessage.id,
@@ -384,7 +382,7 @@ async function cleanupSpectatorRolesForWatchParty(
   }
 
   for (const userId of watchParty.users) {
-    const hasAnotherWatchParty = userHasAnotherActiveWatchParty(
+    const hasAnotherWatchParty = await userHasAnotherActiveWatchParty(
       watchParty.guildId,
       userId,
       watchParty.messageId,
@@ -464,7 +462,7 @@ export async function startWatchParty(
     };
   }
 
-  const activeWatchParty = findActiveWatchPartyByMedia(type, media.mediaId);
+  const activeWatchParty = await findActiveWatchPartyByMedia(type, media.mediaId);
 
   if (activeWatchParty) {
     return {
@@ -501,7 +499,7 @@ export async function startWatchParty(
     users: [],
   };
 
-  saveWatchParty(watchParty);
+  await saveWatchParty(watchParty);
   scheduleWatchStartAnnouncement(interaction.client, watchParty);
 
   logger.info("Watch party started", {
@@ -548,7 +546,7 @@ export async function endWatchParty(
     };
   }
 
-  const activeWatchParty = findActiveWatchPartyByMedia(type, media.mediaId);
+  const activeWatchParty = await findActiveWatchPartyByMedia(type, media.mediaId);
 
   if (!activeWatchParty) {
     return {
@@ -561,7 +559,7 @@ export async function endWatchParty(
     status: WATCH_CONSTANTS.ENDED_STATUS,
   };
 
-  saveWatchParty(endedWatchParty);
+  await saveWatchParty(endedWatchParty);
 
   const viewingTimestamp = new Date(endedWatchParty.viewingAt).getTime();
   const hasViewingStarted =
@@ -599,7 +597,7 @@ export async function handleDeletedWatchMessage(params: {
   guildId: string | null;
   guild?: Guild;
 }): Promise<void> {
-  const watchParty = findWatchPartyByMessageId(params.messageId);
+  const watchParty = await findWatchPartyByMessageId(params.messageId);
 
   if (!watchParty) {
     return;
@@ -627,7 +625,7 @@ export async function handleDeletedWatchMessage(params: {
     await cleanupSpectatorRolesForWatchParty(params.guild, watchParty);
   }
 
-  deleteWatchParty(watchParty.messageId);
+  await deleteWatchParty(watchParty.messageId);
 
   logger.info("Watch party deleted after main message deletion", {
     messageId: watchParty.messageId,
@@ -641,7 +639,7 @@ export async function handleWatchReactionAdd(params: {
   messageId: string;
   userId: string;
 }): Promise<void> {
-  const watchParty = addUserToWatchParty(params.messageId, params.userId);
+  const watchParty = await addUserToWatchParty(params.messageId, params.userId);
 
   if (!watchParty) {
     return;
@@ -671,7 +669,7 @@ export async function handleWatchReactionRemove(params: {
   messageId: string;
   userId: string;
 }): Promise<void> {
-  const watchParty = removeUserFromWatchParty(params.messageId, params.userId);
+  const watchParty = await removeUserFromWatchParty(params.messageId, params.userId);
 
   if (!watchParty) {
     return;
@@ -681,7 +679,7 @@ export async function handleWatchReactionRemove(params: {
     return;
   }
 
-  const hasAnotherWatchParty = userHasAnotherActiveWatchParty(
+  const hasAnotherWatchParty = await userHasAnotherActiveWatchParty(
     params.guild.id,
     params.userId,
     params.messageId,
@@ -711,7 +709,7 @@ export async function handleWatchRatingReactionAdd(params: {
   userId: string;
   emoji: string;
 }): Promise<void> {
-  const watchParty = findWatchPartyByRatingMessageId(params.messageId);
+  const watchParty = await findWatchPartyByRatingMessageId(params.messageId);
 
   if (!watchParty) {
     return;
@@ -723,7 +721,7 @@ export async function handleWatchRatingReactionAdd(params: {
     return;
   }
 
-  const updatedWatchParty = setWatchPartyUserRating({
+  const updatedWatchParty = await setWatchPartyUserRating({
     ratingMessageId: params.messageId,
     userId: params.userId,
     rating,
@@ -762,7 +760,7 @@ export async function handleWatchRatingReactionRemove(params: {
   userId: string;
   emoji: string;
 }): Promise<void> {
-  const watchParty = findWatchPartyByRatingMessageId(params.messageId);
+  const watchParty = await findWatchPartyByRatingMessageId(params.messageId);
 
   if (!watchParty) {
     return;
@@ -780,7 +778,7 @@ export async function handleWatchRatingReactionRemove(params: {
     return;
   }
 
-  const updatedWatchParty = removeWatchPartyUserRating({
+  const updatedWatchParty = await removeWatchPartyUserRating({
     ratingMessageId: params.messageId,
     userId: params.userId,
   });

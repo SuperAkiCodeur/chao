@@ -11,6 +11,7 @@ function getRequiredEnv(name: string): string {
 export const env = {
   DISCORD_TOKEN: getRequiredEnv("DISCORD_TOKEN"),
   CLIENT_ID: getRequiredEnv("CLIENT_ID"),
+  DATABASE_URL: getRequiredEnv("DATABASE_URL"),
   TMDB_API_KEY: getRequiredEnv("TMDB_API_KEY"),
   SPECTATOR_ROLE_ID: getRequiredEnv("SPECTATOR_ROLE_ID"),
   VOICE_TRIGGER_CHANNEL_ID: getRequiredEnv("VOICE_TRIGGER_CHANNEL_ID"),
