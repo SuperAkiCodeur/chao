@@ -22,5 +22,4 @@ export const env = {
   DISCORD_GUILD_ID: process.env.DISCORD_GUILD_ID,
   HENRIKDEV_API_KEY: process.env.HENRIKDEV_API_KEY,
   VALORANT_CHANNEL_ID: process.env.VALORANT_CHANNEL_ID,
-  VALORANT_ROLE_ID: process.env.VALORANT_ROLE_ID,
 } as const;

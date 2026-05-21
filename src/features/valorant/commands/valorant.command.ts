@@ -12,7 +12,6 @@ import {
   buildResultsEmbed,
   buildStatsEmbed,
   linkValorantAccount,
-  setupValorantRole,
 } from "../services/valorant.service.js";
 
 export const valorantCommand = {
@@ -69,11 +68,6 @@ export const valorantCommand = {
             .setRequired(false),
         ),
     )
-    .addSubcommand((sub) =>
-      sub
-        .setName("setup")
-        .setDescription("Poste le message d'attribution du rôle Valorant (admin)"),
-    )
     .setDefaultMemberPermissions(PermissionFlagsBits.SendMessages),
 
   async execute(interaction: ChatInputCommandInteraction): Promise<void> {
@@ -94,22 +88,6 @@ export const valorantCommand = {
     }
 
     const subcommand = interaction.options.getSubcommand(true);
-
-    if (subcommand === "setup") {
-      if (!interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild)) {
-        await interaction.reply({
-          content: "❌ Tu n'as pas la permission d'utiliser cette commande.",
-          flags: MessageFlags.Ephemeral,
-        });
-        return;
-      }
-
-      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-
-      const result = await setupValorantRole(interaction.client, interaction.guildId);
-      await interaction.editReply({ content: result.message });
-      return;
-    }
 
     // link répond en éphémère, les autres en public
     const isPublic = subcommand !== "link";
