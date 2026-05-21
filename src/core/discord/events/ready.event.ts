@@ -1,12 +1,12 @@
 import { Events } from "discord.js";
 import type { AppEvent } from "../types/appEvent.js";
 import { logger } from "../../app/logger.js";
-import { readWatchParties } from "../../../features/watch/repositories/watch.repository.js";
+import { findAllWatchParties } from "../../../features/watch/repositories/watch.repository.js";
 import { WATCH_CONSTANTS } from "../../../features/watch/domain/watch.constants.js";
 import {
-    scheduleWatchRatingClosure,
-    scheduleWatchStartAnnouncement,
-  } from "../../../features/watch/services/watchScheduler.service.js";
+  scheduleWatchRatingClosure,
+  scheduleWatchStartAnnouncement,
+} from "../../../features/watch/services/watchScheduler.service.js";
 
 export const readyEvent: AppEvent<Events.ClientReady> = {
   name: Events.ClientReady,
@@ -18,20 +18,15 @@ export const readyEvent: AppEvent<Events.ClientReady> = {
       userId: client.user.id,
     });
 
-    const data = readWatchParties();
-    const watchParties = Object.values(data.watchParties);
+    const watchParties = await findAllWatchParties();
 
-    const activeWatchParties = watchParties.filter((watchParty) => {
-      return watchParty.status === WATCH_CONSTANTS.ACTIVE_STATUS;
-    });
+    const activeWatchParties = watchParties.filter(
+      (wp) => wp.status === WATCH_CONSTANTS.ACTIVE_STATUS,
+    );
 
-    const watchPartiesWithOpenRatings = watchParties.filter((watchParty) => {
-      return Boolean(
-        watchParty.ratingMessageId &&
-        watchParty.ratingChannelId &&
-        watchParty.ratingClosesAt,
-      );
-    });
+    const watchPartiesWithOpenRatings = watchParties.filter((wp) =>
+      Boolean(wp.ratingMessageId && wp.ratingChannelId && wp.ratingClosesAt),
+    );
 
     for (const watchParty of activeWatchParties) {
       scheduleWatchStartAnnouncement(client, watchParty);

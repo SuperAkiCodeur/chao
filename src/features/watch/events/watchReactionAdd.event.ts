@@ -62,21 +62,7 @@ export const watchReactionAddEvent: AppEvent<Events.MessageReactionAdd> = {
         return;
       }
 
-      logger.info("[watchReactionAdd.event] reaction received", {
-        guildId: guild.id,
-        messageId: message.id,
-        userId: user.id,
-        emoji: emojiName,
-      });
-
       if (emojiName === WATCH_CONSTANTS.TICKET_EMOJI) {
-        logger.info("[watchReactionAdd.event] watch join reaction detected", {
-          guildId: guild.id,
-          messageId: message.id,
-          userId: user.id,
-          emoji: emojiName,
-        });
-
         await handleWatchReactionAdd({
           guild,
           messageId: message.id,
@@ -93,23 +79,9 @@ export const watchReactionAddEvent: AppEvent<Events.MessageReactionAdd> = {
         emojiName === WATCH_CONSTANTS.RATING_EMOJIS[4] ||
         emojiName === WATCH_CONSTANTS.RATING_EMOJIS[5]
       ) {
-        logger.info("[watchReactionAdd.event] watch rating reaction detected", {
-          guildId: guild.id,
-          messageId: message.id,
-          userId: user.id,
-          emoji: emojiName,
-        });
-
         await handleWatchRatingReactionAdd({
           guild,
           reaction: resolvedReaction,
-          messageId: message.id,
-          userId: user.id,
-          emoji: emojiName,
-        });
-
-        logger.info("[watchReactionAdd.event] watch rating reaction handled", {
-          guildId: guild.id,
           messageId: message.id,
           userId: user.id,
           emoji: emojiName,

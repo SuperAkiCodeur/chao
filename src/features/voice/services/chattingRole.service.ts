@@ -41,7 +41,7 @@ export async function syncChattingRoleFromVoiceState(
     return;
   }
 
-  if ((leftTemporaryChannel || hasChattingRole) && (isNowOutsideVoice || !joinedTemporaryChannel) && hasChattingRole) {
+  if (hasChattingRole && (isNowOutsideVoice || !joinedTemporaryChannel)) {
     await member.roles.remove(
       VOICE_CONSTANTS.CHATTING_ROLE_ID,
       "User left temporary voice channel",
