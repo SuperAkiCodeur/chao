@@ -1,3 +1,4 @@
+import { env } from "../../../core/config/env.js";
 import type {
   HenrikAccount,
   HenrikMatch,
@@ -33,8 +34,7 @@ export class ValorantApiError extends Error {
 // ---------------------------------------------------------------------------
 
 function buildHeaders(): HeadersInit {
-  const key = process.env.HENRIKDEV_API_KEY;
-  return key ? { Authorization: key } : {};
+  return env.HENRIKDEV_API_KEY ? { Authorization: env.HENRIKDEV_API_KEY } : {};
 }
 
 async function fetchHenrik<T>(path: string): Promise<T> {

@@ -1,4 +1,4 @@
-import { Events, type Interaction } from "discord.js";
+import { Events, MessageFlags, type Interaction } from "discord.js";
 import type { AppEvent } from "../types/appEvent.js";
 import { logger } from "../../app/logger.js";
 import { getCommand } from "../commandRegistry.js";
@@ -21,7 +21,7 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
       if (!interaction.replied && !interaction.deferred) {
         await interaction.reply({
           content: "❌ Commande inconnue.",
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
 
@@ -41,14 +41,14 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp({
           content: "❌ Une erreur est survenue pendant l’exécution de la commande.",
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         }).catch(() => null);
         return;
       }
 
       await interaction.reply({
         content: "❌ Une erreur est survenue pendant l’exécution de la commande.",
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       }).catch(() => null);
     }
   },

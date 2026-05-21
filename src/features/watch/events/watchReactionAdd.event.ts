@@ -23,8 +23,7 @@ async function resolveReaction(
   return reaction.fetch().catch((error) => {
     logger.error("[watchReactionAdd.event] failed to fetch partial reaction", {
       messageId: reaction.message.id,
-      errorMessage: error instanceof Error ? error.message : String(error),
-      errorStack: error instanceof Error ? error.stack : undefined,
+      error,
     });
 
     return null;
@@ -72,13 +71,7 @@ export const watchReactionAddEvent: AppEvent<Events.MessageReactionAdd> = {
         return;
       }
 
-      if (
-        emojiName === WATCH_CONSTANTS.RATING_EMOJIS[1] ||
-        emojiName === WATCH_CONSTANTS.RATING_EMOJIS[2] ||
-        emojiName === WATCH_CONSTANTS.RATING_EMOJIS[3] ||
-        emojiName === WATCH_CONSTANTS.RATING_EMOJIS[4] ||
-        emojiName === WATCH_CONSTANTS.RATING_EMOJIS[5]
-      ) {
+      if (Object.values(WATCH_CONSTANTS.RATING_EMOJIS).includes(emojiName as never)) {
         await handleWatchRatingReactionAdd({
           guild,
           reaction: resolvedReaction,

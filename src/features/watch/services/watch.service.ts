@@ -5,6 +5,7 @@ import type {
   MessageReaction,
 } from "discord.js";
 import { EmbedBuilder } from "discord.js";
+import { env } from "../../../core/config/env.js";
 import { logger } from "../../../core/app/logger.js";
 import {
   addSpectatorRoleByUserId,
@@ -120,48 +121,8 @@ function isSendableTextChannel(channel: unknown): channel is SendableTextChannel
   );
 }
 
-function getSpectatorRoleId(): string {
-  const spectatorRoleId = process.env.SPECTATOR_ROLE_ID;
-
-  if (!spectatorRoleId) {
-    throw new Error("SPECTATOR_ROLE_ID is missing");
-  }
-
-  return spectatorRoleId;
-}
-
-function getTicketChannelId(): string {
-  const ticketChannelId = process.env.TICKET_CHANNEL_ID;
-
-  if (!ticketChannelId) {
-    throw new Error("TICKET_CHANNEL_ID is missing");
-  }
-
-  return ticketChannelId;
-}
-
-function getCinemaCategoryId(): string {
-  const cinemaCategoryId = process.env.CINEMA_CATEGORY_ID;
-
-  if (!cinemaCategoryId) {
-    throw new Error("CINEMA_CATEGORY_ID is missing");
-  }
-
-  return cinemaCategoryId;
-}
-
-function getLetterboxdChannelId(): string {
-  const letterboxdChannelId = process.env.LETTERBOXD_CHANNEL_ID;
-
-  if (!letterboxdChannelId) {
-    throw new Error("LETTERBOXD_CHANNEL_ID is missing");
-  }
-
-  return letterboxdChannelId;
-}
-
 function isWatchStartChannelAllowed(channelId: string): boolean {
-  return channelId === getTicketChannelId();
+  return channelId === env.TICKET_CHANNEL_ID;
 }
 
 function isWatchEndChannelAllowed(
@@ -171,7 +132,7 @@ function isWatchEndChannelAllowed(
     return false;
   }
 
-  return channel.parentId === getCinemaCategoryId();
+  return channel.parentId === env.CINEMA_CATEGORY_ID;
 }
 
 function buildWatchRatingEmbed(watchParty: WatchParty): EmbedBuilder {
@@ -280,7 +241,7 @@ async function createWatchRatingMessage(
   client: Client,
   watchParty: WatchParty,
 ): Promise<WatchParty> {
-  const letterboxdChannelId = getLetterboxdChannelId();
+  const letterboxdChannelId = env.LETTERBOXD_CHANNEL_ID;
   const channel = await client.channels.fetch(letterboxdChannelId).catch(() => null);
 
   if (!channel || !isSendableTextChannel(channel) || !channel.isTextBased()) {
@@ -426,7 +387,7 @@ export async function startWatchParty(
 
   if (!isWatchStartChannelAllowed(interaction.channelId)) {
     return {
-      message: `❌ /watch start est utilisable uniquement dans le salon <#${getTicketChannelId()}>.`,
+      message: `❌ /watch start est utilisable uniquement dans le salon <#${env.TICKET_CHANNEL_ID}>.`,
     };
   }
 
@@ -490,7 +451,7 @@ export async function startWatchParty(
     guildId: interaction.guildId,
     channelId: interaction.channelId,
     messageId: message.id,
-    roleId: getSpectatorRoleId(),
+    roleId: env.SPECTATOR_ROLE_ID,
     title: resolvedTitle,
     mediaType: type,
     mediaId: media.mediaId,

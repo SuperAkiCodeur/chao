@@ -70,13 +70,7 @@ export const watchReactionRemoveEvent: AppEvent<Events.MessageReactionRemove> = 
         return;
       }
 
-      if (
-        emojiName === WATCH_CONSTANTS.RATING_EMOJIS[1] ||
-        emojiName === WATCH_CONSTANTS.RATING_EMOJIS[2] ||
-        emojiName === WATCH_CONSTANTS.RATING_EMOJIS[3] ||
-        emojiName === WATCH_CONSTANTS.RATING_EMOJIS[4] ||
-        emojiName === WATCH_CONSTANTS.RATING_EMOJIS[5]
-      ) {
+      if (Object.values(WATCH_CONSTANTS.RATING_EMOJIS).includes(emojiName as never)) {
         await handleWatchRatingReactionRemove({
           guild,
           messageId: message.id,

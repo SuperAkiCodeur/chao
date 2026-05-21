@@ -5,7 +5,6 @@ export const WATCH_CONSTANTS = {
   DEFAULT_EMBED_COLOR: 0xe91e63,
   ACTIVE_STATUS: "active",
   ENDED_STATUS: "ended",
-  STORAGE_FILE_NAME: "watchParties.json",
   RATING_DURATION_MS: 60 * 60 * 1000,
   RATING_EMOJIS: {
     1: "1️⃣",

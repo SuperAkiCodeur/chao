@@ -1,3 +1,4 @@
+import { env } from "../../../core/config/env.js";
 import { WATCH_CONSTANTS } from "../domain/watch.constants.js";
 import type {
   TmdbCredits,
@@ -9,34 +10,18 @@ import type {
 
 const TMDB_API_BASE_URL = "https://api.themoviedb.org/3";
 
-function getTmdbApiKey(): string {
-  const apiKey = process.env.TMDB_API_KEY;
-
-  if (!apiKey) {
-    throw new Error("TMDB_API_KEY is missing");
-  }
-
-  return apiKey;
-}
-
 function buildSearchUrl(type: WatchContentType, title: string): string {
-  const apiKey = getTmdbApiKey();
-
-  return `${TMDB_API_BASE_URL}/search/${type}?api_key=${apiKey}&query=${encodeURIComponent(
+  return `${TMDB_API_BASE_URL}/search/${type}?api_key=${env.TMDB_API_KEY}&query=${encodeURIComponent(
     title,
   )}&language=fr-FR&include_adult=false`;
 }
 
 function buildDetailsUrl(type: WatchContentType, mediaId: string): string {
-  const apiKey = getTmdbApiKey();
-
-  return `${TMDB_API_BASE_URL}/${type}/${mediaId}?api_key=${apiKey}&language=fr-FR`;
+  return `${TMDB_API_BASE_URL}/${type}/${mediaId}?api_key=${env.TMDB_API_KEY}&language=fr-FR`;
 }
 
 function buildCreditsUrl(type: WatchContentType, mediaId: string): string {
-  const apiKey = getTmdbApiKey();
-
-  return `${TMDB_API_BASE_URL}/${type}/${mediaId}/credits?api_key=${apiKey}&language=fr-FR`;
+  return `${TMDB_API_BASE_URL}/${type}/${mediaId}/credits?api_key=${env.TMDB_API_KEY}&language=fr-FR`;
 }
 
 async function fetchJson<T>(url: string): Promise<T> {

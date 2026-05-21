@@ -435,15 +435,3 @@ export async function buildStatsEmbed(params: {
   return { embed };
 }
 
-// ---------------------------------------------------------------------------
-// Résolution du joueur cible
-// ---------------------------------------------------------------------------
-
-export async function resolveTargetAccount(
-  callerDiscordUserId: string,
-  targetDiscordUserId: string | null,
-  guildId: string,
-): Promise<ValorantLinkedAccount | null> {
-  const userId = targetDiscordUserId ?? callerDiscordUserId;
-  return findLinkedAccount(userId, guildId);
-}

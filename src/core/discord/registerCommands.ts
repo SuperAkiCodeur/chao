@@ -1,15 +1,10 @@
 import { REST, Routes } from "discord.js";
+import { env } from "../config/env.js";
 import { logger } from "../app/logger.js";
 import { commandRegistry } from "./commandRegistry.js";
 
 export async function registerCommands(): Promise<void> {
-  const token = process.env.DISCORD_TOKEN;
-  const applicationId = process.env.CLIENT_ID;
-
-  if (!token) throw new Error("DISCORD_TOKEN is missing");
-  if (!applicationId) throw new Error("CLIENT_ID is missing");
-
-  const guildId = process.env.DISCORD_GUILD_ID;
+  const { DISCORD_TOKEN: token, CLIENT_ID: applicationId, DISCORD_GUILD_ID: guildId } = env;
 
   const commands = Array.from(commandRegistry.values()).map((command) =>
     command.data.toJSON(),
