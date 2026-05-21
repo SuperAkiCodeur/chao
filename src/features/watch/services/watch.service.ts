@@ -426,7 +426,7 @@ export async function startWatchParty(
 
   if (!isWatchStartChannelAllowed(interaction.channelId)) {
     return {
-      message: "❌ /watch start est utilisable uniquement dans le salon billetterie.",
+      message: `❌ /watch start est utilisable uniquement dans le salon <#${getTicketChannelId()}>.`,
     };
   }
 
