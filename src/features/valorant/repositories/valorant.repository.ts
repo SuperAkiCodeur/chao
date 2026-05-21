@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "../../../core/db/client.js";
-import { valorantLinks } from "../../../core/db/schema.js";
+import { valorantLinks, valorantSetupMessages } from "../../../core/db/schema.js";
 import type { ValorantLinkedAccount } from "../domain/valorant.types.js";
 
 function toLinkedAccount(
@@ -54,6 +54,31 @@ export async function saveLinkedAccount(
         region: account.region,
         linkedAt: account.linkedAt,
       },
+    });
+}
+
+export async function findSetupMessage(
+  guildId: string,
+): Promise<{ channelId: string; messageId: string } | null> {
+  const [row] = await db
+    .select()
+    .from(valorantSetupMessages)
+    .where(eq(valorantSetupMessages.guildId, guildId));
+
+  return row ? { channelId: row.channelId, messageId: row.messageId } : null;
+}
+
+export async function saveSetupMessage(
+  guildId: string,
+  channelId: string,
+  messageId: string,
+): Promise<void> {
+  await db
+    .insert(valorantSetupMessages)
+    .values({ guildId, channelId, messageId })
+    .onConflictDoUpdate({
+      target: valorantSetupMessages.guildId,
+      set: { channelId, messageId },
     });
 }
 

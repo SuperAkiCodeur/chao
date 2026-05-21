@@ -44,6 +44,12 @@ export const watchPartyRatings = pgTable(
 // Valorant
 // ---------------------------------------------------------------------------
 
+export const valorantSetupMessages = pgTable("valorant_setup_messages", {
+  guildId: text("guild_id").primaryKey(),
+  channelId: text("channel_id").notNull(),
+  messageId: text("message_id").notNull(),
+});
+
 export const valorantLinks = pgTable(
   "valorant_links",
   {

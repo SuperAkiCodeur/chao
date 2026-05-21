@@ -1,4 +1,5 @@
-import { EmbedBuilder } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, type Client } from "discord.js";
+import { env } from "../../../core/config/env.js";
 import { logger } from "../../../core/app/logger.js";
 import { VALORANT_CONSTANTS } from "../domain/valorant.constants.js";
 import type {
@@ -10,7 +11,9 @@ import type {
 import {
   findAllLinkedAccountsInGuild,
   findLinkedAccount,
+  findSetupMessage,
   saveLinkedAccount,
+  saveSetupMessage,
 } from "../repositories/valorant.repository.js";
 import {
   ValorantApiError,
@@ -435,3 +438,69 @@ export async function buildStatsEmbed(params: {
   return { embed };
 }
 
+// ---------------------------------------------------------------------------
+// setup
+// ---------------------------------------------------------------------------
+
+export const VALORANT_ROLE_BUTTON_ID = "valorant:role_toggle";
+
+export async function setupValorantRole(
+  client: Client,
+  guildId: string,
+): Promise<{ success: boolean; message: string }> {
+  const channelId = env.VALORANT_CHANNEL_ID;
+
+  if (!channelId) {
+    return { success: false, message: "❌ `VALORANT_CHANNEL_ID` n'est pas configuré." };
+  }
+
+  if (!env.VALORANT_ROLE_ID) {
+    return { success: false, message: "❌ `VALORANT_ROLE_ID` n'est pas configuré." };
+  }
+
+  const existing = await findSetupMessage(guildId);
+
+  if (existing) {
+    const channel = await client.channels.fetch(existing.channelId).catch(() => null);
+    const alreadyExists =
+      channel?.isTextBased() &&
+      "messages" in channel &&
+      await (channel as any).messages.fetch(existing.messageId).then(() => true).catch(() => false);
+
+    if (alreadyExists) {
+      return {
+        success: false,
+        message: `❌ Le message existe déjà dans <#${existing.channelId}>. Supprime-le d'abord si tu veux le recréer.`,
+      };
+    }
+  }
+
+  const channel = await client.channels.fetch(channelId).catch(() => null);
+
+  if (!channel || !channel.isTextBased() || !("send" in channel)) {
+    return { success: false, message: `❌ Salon <#${channelId}> introuvable ou non textuel.` };
+  }
+
+  const embed = new EmbedBuilder()
+    .setColor(VALORANT_CONSTANTS.EMBED_COLOR)
+    .setTitle("🎮 Rôle Valorant")
+    .setDescription(
+      `Clique sur le bouton ci-dessous pour obtenir ou retirer le rôle <@&${env.VALORANT_ROLE_ID}>.\n\nIl te donnera accès aux commandes et annonces Valorant du serveur.`,
+    );
+
+  const button = new ButtonBuilder()
+    .setCustomId(VALORANT_ROLE_BUTTON_ID)
+    .setLabel("Obtenir le rôle Valorant")
+    .setStyle(ButtonStyle.Primary)
+    .setEmoji("🎮");
+
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(button);
+
+  const sent = await (channel as any).send({ embeds: [embed], components: [row] });
+
+  await saveSetupMessage(guildId, channelId, sent.id);
+
+  logger.info("Valorant role setup message posted", { guildId, channelId, messageId: sent.id });
+
+  return { success: true, message: "✅ Message posté !" };
+}
