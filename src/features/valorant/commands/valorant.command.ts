@@ -57,7 +57,6 @@ export const valorantCommand = {
               { name: "Global", value: "global" },
               { name: "Par agent", value: "agent" },
               { name: "Par map", value: "map" },
-              { name: "Par arme", value: "weapon" },
               { name: "Temps de jeu", value: "playtime" },
             ),
         )

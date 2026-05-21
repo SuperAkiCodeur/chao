@@ -1,6 +1,6 @@
 export type ValorantRegion = "eu" | "na" | "ap" | "kr" | "latam" | "br";
 
-export type ValorantStatsType = "global" | "agent" | "map" | "weapon" | "playtime";
+export type ValorantStatsType = "global" | "agent" | "map" | "playtime";
 
 // ---------------------------------------------------------------------------
 // Henrik Dev API shapes

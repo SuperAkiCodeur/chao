@@ -295,12 +295,6 @@ export async function buildStatsEmbed(params: {
   guildId: string;
   type: ValorantStatsType;
 }): Promise<{ embed: EmbedBuilder } | { error: string }> {
-  if (params.type === "weapon") {
-    return {
-      error: "❌ Les statistiques par arme ne sont pas disponibles via cette API.",
-    };
-  }
-
   const linked = await findLinkedAccount(params.targetDiscordUserId, params.guildId);
 
   if (!linked) {
