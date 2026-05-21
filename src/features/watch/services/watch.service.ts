@@ -9,7 +9,7 @@ import { logger } from "../../../core/app/logger.js";
 import {
   addSpectatorRoleByUserId,
   removeSpectatorRoleByUserId,
-} from "../../../shared/services/spectatorRole.service.js";
+} from "./spectatorRole.service.js";
 import { WATCH_CONSTANTS } from "../domain/watch.constants.js";
 import {
   parseWatchViewingDate,
