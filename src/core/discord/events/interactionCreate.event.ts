@@ -4,6 +4,7 @@ import { env } from "../../config/env.js";
 import { logger } from "../../app/logger.js";
 import { getCommand } from "../commandRegistry.js";
 import { VALORANT_ROLE_BUTTON_ID } from "../../../features/valorant/services/valorant.service.js";
+import { handleSelfRoleButton, isSelfRoleButton } from "../../../features/selfrole/services/selfrole.service.js";
 
 async function handleValorantRoleButton(interaction: ButtonInteraction): Promise<void> {
   if (!interaction.inCachedGuild()) {
@@ -63,6 +64,8 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
     if (interaction.isButton()) {
       if (interaction.customId === VALORANT_ROLE_BUTTON_ID) {
         await handleValorantRoleButton(interaction);
+      } else if (isSelfRoleButton(interaction.customId)) {
+        await handleSelfRoleButton(interaction);
       }
       return;
     }
