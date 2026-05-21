@@ -207,7 +207,7 @@ export async function buildResultsEmbed(params: {
       const theirs = team === "red" ? match.teams.blue : match.teams.red;
       return `${ours.rounds_won}-${theirs.rounds_won}`;
     })();
-    const timestamp = Math.floor(new Date(match.metadata.started_at).getTime() / 1000);
+    const timestamp = match.metadata.game_start;
 
     return {
       name: `${result} ${match.metadata.map} · ${match.metadata.mode}`,

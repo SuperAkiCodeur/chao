@@ -46,7 +46,7 @@ export type HenrikMatch = {
     matchid: string;
     map: string;
     mode: string;
-    started_at: string;
+    game_start: number;
     game_length: number;
   };
   players: {
