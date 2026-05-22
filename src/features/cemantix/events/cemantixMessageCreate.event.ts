@@ -9,7 +9,7 @@ export const cemantixMessageCreateEvent: AppEvent<Events.MessageCreate> = {
 
   async execute(message: Message): Promise<void> {
     // Only handle messages in the dedicated Cémantix channel
-    if (message.channelId !== env.CEMANTIX_CHANNEL_ID) {
+    if (!env.CEMANTIX_CHANNEL_ID || message.channelId !== env.CEMANTIX_CHANNEL_ID) {
       return;
     }
 

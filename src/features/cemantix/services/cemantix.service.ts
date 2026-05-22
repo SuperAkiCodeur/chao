@@ -101,6 +101,11 @@ export function getTemperatureLabel(score: number): string {
 // ---------------------------------------------------------------------------
 
 async function fetchCemantixChannel(client: Client): Promise<TextChannel | null> {
+  if (!env.CEMANTIX_CHANNEL_ID) {
+    logger.warn("[cemantix] CEMANTIX_CHANNEL_ID is not set");
+    return null;
+  }
+
   const channel = await client.channels.fetch(env.CEMANTIX_CHANNEL_ID).catch(() => null);
 
   if (!channel || channel.type !== ChannelType.GuildText) {

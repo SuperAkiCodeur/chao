@@ -37,7 +37,7 @@ async function fetchEmbedding(word: string): Promise<number[]> {
     response = await fetch(HF_API_URL, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${env.HUGGINGFACE_API_KEY}`,
+        ...(env.HUGGINGFACE_API_KEY ? { Authorization: `Bearer ${env.HUGGINGFACE_API_KEY}` } : {}),
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
