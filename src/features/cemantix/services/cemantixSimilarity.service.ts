@@ -15,14 +15,57 @@ export function clearEmbeddingCache(): void {
 }
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function serializeError(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  return String(error);
+}
+
+/**
+ * Flattens the HuggingFace response into a 1-D embedding vector.
+ * The API may return:
+ *   - number[]      → already flat (rare for sentence-transformers)
+ *   - number[][]    → [[...embedding...]]  ← most common
+ *   - number[][][]  → [[[token1], [token2], ...]] (token-level, unlikely here)
+ */
+function extractEmbedding(data: unknown): number[] {
+  if (!Array.isArray(data) || data.length === 0) {
+    throw new Error(`Empty or non-array response: ${JSON.stringify(data).slice(0, 120)}`);
+  }
+
+  // number[][] → take first row
+  if (Array.isArray(data[0])) {
+    const inner = data[0];
+    if (!Array.isArray(inner) || inner.length === 0) {
+      throw new Error(`Nested array is empty: ${JSON.stringify(data).slice(0, 120)}`);
+    }
+    // number[][][] → take first token of first row
+    if (Array.isArray(inner[0])) {
+      return inner[0] as number[];
+    }
+    return inner as number[];
+  }
+
+  // Already flat number[]
+  if (typeof data[0] === "number") {
+    return data as number[];
+  }
+
+  throw new Error(`Unrecognised embedding shape: ${JSON.stringify(data).slice(0, 120)}`);
+}
+
+// ---------------------------------------------------------------------------
 // Embedding fetch
 // ---------------------------------------------------------------------------
 
 async function fetchEmbedding(word: string): Promise<number[]> {
   const cached = embeddingCache.get(word);
+  if (cached) return cached;
 
-  if (cached) {
-    return cached;
+  if (!env.HUGGINGFACE_API_KEY) {
+    throw new Error("HUGGINGFACE_API_KEY n'est pas configuré dans .env");
   }
 
   const controller = new AbortController();
@@ -37,7 +80,7 @@ async function fetchEmbedding(word: string): Promise<number[]> {
     response = await fetch(HF_API_URL, {
       method: "POST",
       headers: {
-        ...(env.HUGGINGFACE_API_KEY ? { Authorization: `Bearer ${env.HUGGINGFACE_API_KEY}` } : {}),
+        Authorization: `Bearer ${env.HUGGINGFACE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -52,17 +95,14 @@ async function fetchEmbedding(word: string): Promise<number[]> {
 
   if (!response.ok) {
     const body = await response.text().catch(() => "(no body)");
-    throw new Error(`HuggingFace API error ${response.status}: ${body}`);
+    throw new Error(`HuggingFace ${response.status}: ${body}`);
   }
 
-  const data = await response.json() as number[];
+  const raw = await response.json();
+  const embedding = extractEmbedding(raw);
 
-  if (!Array.isArray(data) || data.length === 0) {
-    throw new Error(`Unexpected HuggingFace response format for word "${word}"`);
-  }
-
-  embeddingCache.set(word, data);
-  return data;
+  embeddingCache.set(word, embedding);
+  return embedding;
 }
 
 // ---------------------------------------------------------------------------
@@ -80,9 +120,7 @@ function cosineSimilarity(a: number[], b: number[]): number {
     normB += b[i] * b[i];
   }
 
-  if (normA === 0 || normB === 0) {
-    return 0;
-  }
+  if (normA === 0 || normB === 0) return 0;
 
   return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 }
@@ -93,7 +131,7 @@ function cosineSimilarity(a: number[], b: number[]): number {
 
 /**
  * Returns a score between 0 and 100.
- * 100 means semantically identical, 0 means no relation.
+ * 100 = same word, 0 = no semantic relation.
  */
 export async function computeSimilarityScore(
   word: string,
@@ -105,19 +143,18 @@ export async function computeSimilarityScore(
   ]);
 
   const similarity = cosineSimilarity(embWord, embSecret);
-  // Clamp to [0, 100] — cosine can be slightly negative for unrelated words
   return Math.max(0, Math.min(100, Math.round(similarity * 100)));
 }
 
-/**
- * Pre-warms the embedding for the secret word so that
- * the first player's guess doesn't pay the cold-start penalty.
- */
 export async function preWarmSecretEmbedding(secretWord: string): Promise<void> {
   try {
     await fetchEmbedding(secretWord);
     logger.info("[cemantix] Secret word embedding pre-warmed");
   } catch (error) {
-    logger.warn("[cemantix] Failed to pre-warm secret word embedding", { error });
+    logger.warn("[cemantix] Failed to pre-warm secret word embedding", {
+      error: serializeError(error),
+    });
   }
 }
+
+export { serializeError };

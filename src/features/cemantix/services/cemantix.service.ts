@@ -24,6 +24,7 @@ import {
   clearEmbeddingCache,
   computeSimilarityScore,
   preWarmSecretEmbedding,
+  serializeError,
 } from "./cemantixSimilarity.service.js";
 
 // ---------------------------------------------------------------------------
@@ -365,7 +366,10 @@ export async function handleCemantixGuess(message: Message<true>): Promise<void>
   try {
     score = await computeSimilarityScore(raw, game.secretWord);
   } catch (error) {
-    logger.error("[cemantix] Failed to compute similarity", { word: raw, error });
+    logger.error("[cemantix] Failed to compute similarity", {
+      word: raw,
+      error: serializeError(error),
+    });
     await message
       .reply("❌ Service temporairement indisponible, réessaie dans quelques secondes.")
       .catch(() => null);
