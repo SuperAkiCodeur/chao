@@ -90,6 +90,13 @@ export async function updateCemantixRankingMessageId(
     .where(eq(cemantixGamesTable.date, date));
 }
 
+export async function deleteCemantixGame(date: string): Promise<void> {
+  // Top guesses cascade-delete via FK
+  await db
+    .delete(cemantixGamesTable)
+    .where(eq(cemantixGamesTable.date, date));
+}
+
 // ---------------------------------------------------------------------------
 // Top guesses
 // ---------------------------------------------------------------------------

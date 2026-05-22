@@ -11,6 +11,7 @@ import { CEMANTIX_CONSTANTS } from "../domain/cemantix.constants.js";
 import { CEMANTIX_WORDLIST } from "../domain/cemantix.wordlist.js";
 import type { CemantixGame, CemantixTopGuess } from "../domain/cemantix.types.js";
 import {
+  deleteCemantixGame,
   findCemantixGame,
   getCemantixTopGuesses,
   markCemantixGameSolved,
@@ -236,15 +237,22 @@ async function refreshRankingMessage(
 // Start a new daily game
 // ---------------------------------------------------------------------------
 
-export async function startDailyCemantixGame(client: Client): Promise<void> {
+export async function startDailyCemantixGame(
+  client: Client,
+  force = false,
+): Promise<void> {
   const date = getCurrentParisDayString();
 
-  // Idempotent — don't start if already running
   const existing = await findCemantixGame(date);
 
   if (existing) {
-    logger.info("[cemantix] Game already exists for today, skipping start", { date });
-    return;
+    if (!force) {
+      logger.info("[cemantix] Game already exists for today, skipping start", { date });
+      return;
+    }
+    // Force restart: wipe today's game (top guesses cascade-delete via FK)
+    await deleteCemantixGame(date);
+    logger.info("[cemantix] Force-deleted existing game for restart", { date });
   }
 
   clearEmbeddingCache();
@@ -383,6 +391,33 @@ export async function handleCemantixGuess(message: Message<true>): Promise<void>
   if (enteredTop) {
     await refreshRankingMessage(message.client, game, topGuesses);
   }
+}
+
+// ---------------------------------------------------------------------------
+// Force-end (admin command)
+// ---------------------------------------------------------------------------
+
+export async function endCemantixGame(client: Client): Promise<boolean> {
+  const date = getCurrentParisDayString();
+  const game = await findCemantixGame(date);
+
+  if (!game) {
+    return false;
+  }
+
+  await deleteCemantixGame(date);
+  clearEmbeddingCache();
+
+  const channel = await fetchCemantixChannel(client);
+
+  if (channel) {
+    await unlockChannel(channel).catch((error: unknown) => {
+      logger.warn("[cemantix] Failed to unlock channel after force-end", { error });
+    });
+  }
+
+  logger.info("[cemantix] Game force-ended by admin", { date });
+  return true;
 }
 
 // ---------------------------------------------------------------------------
