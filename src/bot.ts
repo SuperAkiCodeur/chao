@@ -8,6 +8,7 @@ export function createBot() {
     intents: [
       GatewayIntentBits.Guilds,
       GatewayIntentBits.GuildMessages,
+      GatewayIntentBits.MessageContent, // privileged — must be enabled in Discord Dev Portal
       GatewayIntentBits.GuildMembers,
       GatewayIntentBits.GuildVoiceStates,
     ],
