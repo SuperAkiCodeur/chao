@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "../../../core/db/client.js";
 import {
   cemantixGames as cemantixGamesTable,
@@ -95,6 +95,38 @@ export async function deleteCemantixGame(date: string): Promise<void> {
   await db
     .delete(cemantixGamesTable)
     .where(eq(cemantixGamesTable.date, date));
+}
+
+// ---------------------------------------------------------------------------
+// Leaderboard
+// ---------------------------------------------------------------------------
+
+export type CemantixLeaderboardEntry = {
+  userId: string;
+  userName: string;
+  wins: number;
+};
+
+/**
+ * Returns the all-time win leaderboard (up to 10 players, most wins first).
+ * Only counts games where isSolved = true and winnerId is set.
+ */
+export async function getCemantixLeaderboard(): Promise<CemantixLeaderboardEntry[]> {
+  const rows = await db
+    .select({
+      userId: cemantixGamesTable.winnerId,
+      userName: cemantixGamesTable.winnerName,
+      wins: sql<number>`count(*)::integer`,
+    })
+    .from(cemantixGamesTable)
+    .where(eq(cemantixGamesTable.isSolved, true))
+    .groupBy(cemantixGamesTable.winnerId, cemantixGamesTable.winnerName)
+    .orderBy(desc(sql`count(*)`))
+    .limit(10);
+
+  return rows.filter(
+    (r): r is CemantixLeaderboardEntry => r.userId !== null && r.userName !== null,
+  );
 }
 
 // ---------------------------------------------------------------------------

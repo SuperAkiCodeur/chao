@@ -13,12 +13,14 @@ import type { CemantixGame, CemantixTopGuess } from "../domain/cemantix.types.js
 import {
   deleteCemantixGame,
   findCemantixGame,
+  getCemantixLeaderboard,
   getCemantixTopGuesses,
   markCemantixGameSolved,
   saveCemantixGame,
   updateCemantixAnnouncementMessageId,
   updateCemantixRankingMessageId,
   upsertCemantixTopGuess,
+  type CemantixLeaderboardEntry,
 } from "../repositories/cemantix.repository.js";
 import {
   clearEmbeddingCache,
@@ -33,7 +35,6 @@ import {
 
 export function getCurrentParisDayString(): string {
   const now = new Date();
-  // Format date in Paris timezone as "MM/DD/YYYY", then rearrange to "YYYY-MM-DD"
   const [month, day, year] = new Intl.DateTimeFormat("en-US", {
     timeZone: CEMANTIX_CONSTANTS.TIMEZONE,
     year: "numeric",
@@ -46,7 +47,7 @@ export function getCurrentParisDayString(): string {
   return `${year}-${month}-${day}`;
 }
 
-export function isPast8hInParis(): boolean {
+export function isPast10hInParis(): boolean {
   const parisNow = new Date(
     new Date().toLocaleString("en-US", { timeZone: CEMANTIX_CONSTANTS.TIMEZONE }),
   );
@@ -57,7 +58,7 @@ function getDailyWord(date: string): string {
   let hash = 0;
   for (let i = 0; i < date.length; i++) {
     hash = (hash << 5) - hash + date.charCodeAt(i);
-    hash |= 0; // convert to 32-bit int
+    hash |= 0;
   }
   return CEMANTIX_WORDLIST[Math.abs(hash) % CEMANTIX_WORDLIST.length];
 }
@@ -80,7 +81,6 @@ function isValidWordInput(raw: string): boolean {
   if (!raw || raw.length > CEMANTIX_CONSTANTS.MAX_WORD_LENGTH) {
     return false;
   }
-  // No spaces (single word) — allow letters, hyphens, apostrophes
   return /^[a-zàâäéèêëîïôöùûüÿçœæ'-]+$/i.test(raw) && !raw.includes(" ");
 }
 
@@ -158,10 +158,7 @@ function buildAnnouncementEmbed(date: string): EmbedBuilder {
     );
 }
 
-function buildRankingEmbed(
-  date: string,
-  topGuesses: CemantixTopGuess[],
-): EmbedBuilder {
+function buildRankingEmbed(date: string, topGuesses: CemantixTopGuess[]): EmbedBuilder {
   const [year, month, day] = date.split("-");
   const formatted = new Intl.DateTimeFormat("fr-FR", {
     day: "numeric",
@@ -195,9 +192,26 @@ function buildVictoryEmbed(
     .setTitle("🎉 Mot du jour trouvé !")
     .setDescription(
       `**${winnerName}** a trouvé le mot secret : **${secretWord}** !\n\n` +
-      "Bravo à lui ! Le salon est verrouillé jusqu'à demain matin. 🔒\n\n" +
+      "Bravo à lui ! Le salon est verrouillé jusqu'à demain à 10h. 🔒\n\n" +
       "**Top 5 du jour :**\n" +
       lines.join("\n"),
+    );
+}
+
+function buildLeaderboardEmbed(entries: CemantixLeaderboardEntry[]): EmbedBuilder {
+  const lines = entries.map((e, i) => {
+    const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `**#${i + 1}**`;
+    const wins = e.wins === 1 ? "1 victoire" : `${e.wins} victoires`;
+    return `${medal}  ${e.userName} — ${wins}`;
+  });
+
+  return new EmbedBuilder()
+    .setColor(0xf39c12)
+    .setTitle("📊 Classement général Cémantix")
+    .setDescription(
+      lines.length > 0
+        ? lines.join("\n")
+        : "Aucune victoire enregistrée pour l'instant.",
     );
 }
 
@@ -212,13 +226,10 @@ async function refreshRankingMessage(
 ): Promise<void> {
   const channel = await fetchCemantixChannel(client);
 
-  if (!channel) {
-    return;
-  }
+  if (!channel) return;
 
   const embed = buildRankingEmbed(game.date, topGuesses);
 
-  // Try to edit the existing ranking message
   if (game.rankingMessageId) {
     const existing = await channel.messages
       .fetch(game.rankingMessageId)
@@ -232,7 +243,6 @@ async function refreshRankingMessage(
     }
   }
 
-  // No existing message (first entry or was deleted) — send a new one
   const sent = await channel.send({ embeds: [embed] });
   await updateCemantixRankingMessageId(game.date, sent.id);
 
@@ -243,22 +253,14 @@ async function refreshRankingMessage(
 // Start a new daily game
 // ---------------------------------------------------------------------------
 
-export async function startDailyCemantixGame(
-  client: Client,
-  force = false,
-): Promise<void> {
+export async function startDailyCemantixGame(client: Client): Promise<void> {
   const date = getCurrentParisDayString();
 
   const existing = await findCemantixGame(date);
 
   if (existing) {
-    if (!force) {
-      logger.info("[cemantix] Game already exists for today, skipping start", { date });
-      return;
-    }
-    // Force restart: wipe today's game (top guesses cascade-delete via FK)
-    await deleteCemantixGame(date);
-    logger.info("[cemantix] Force-deleted existing game for restart", { date });
+    logger.info("[cemantix] Game already exists for today, skipping start", { date });
+    return;
   }
 
   clearEmbeddingCache();
@@ -288,7 +290,7 @@ export async function startDailyCemantixGame(
     return;
   }
 
-  // Unlock channel (was locked after previous game's win)
+  // Unlock channel for the new game
   await unlockChannel(channel).catch((error: unknown) => {
     logger.warn("[cemantix] Failed to unlock channel", { error });
   });
@@ -317,9 +319,8 @@ export async function restoreCemantixState(client: Client): Promise<void> {
   const game = await findCemantixGame(date);
 
   if (!game) {
-    // If it's already past the game hour and no game exists, start one now
-    if (isPast8hInParis()) {
-      logger.info("[cemantix] No game found after 8h, starting one now", { date });
+    if (isPast10hInParis()) {
+      logger.info("[cemantix] No game found after 10h, starting one now", { date });
       await startDailyCemantixGame(client);
     }
     return;
@@ -344,14 +345,14 @@ export async function handleCemantixGuess(message: Message<true>): Promise<void>
   const raw = message.content.trim().toLowerCase();
 
   if (!isValidWordInput(raw)) {
-    return; // silently ignore non-word messages
+    return;
   }
 
   const date = getCurrentParisDayString();
   const game = await findCemantixGame(date);
 
   if (!game || game.isSolved) {
-    return; // no active game or already solved
+    return;
   }
 
   // ── Win detection ─────────────────────────────────────────────────────────
@@ -388,9 +389,7 @@ export async function handleCemantixGuess(message: Message<true>): Promise<void>
   });
 
   // ── Reply to the player ───────────────────────────────────────────────────
-  const rankLine = enteredTop
-    ? ` — **Top ${CEMANTIX_CONSTANTS.TOP_GUESSES_COUNT}** ! 🎯`
-    : "";
+  const rankLine = enteredTop ? ` — **Top ${CEMANTIX_CONSTANTS.TOP_GUESSES_COUNT}** ! 🎯` : "";
 
   await message
     .reply(`${temp} — **${score}/100** pour « ${raw} »${rankLine}`)
@@ -400,33 +399,6 @@ export async function handleCemantixGuess(message: Message<true>): Promise<void>
   if (enteredTop) {
     await refreshRankingMessage(message.client, game, topGuesses);
   }
-}
-
-// ---------------------------------------------------------------------------
-// Force-end (admin command)
-// ---------------------------------------------------------------------------
-
-export async function endCemantixGame(client: Client): Promise<boolean> {
-  const date = getCurrentParisDayString();
-  const game = await findCemantixGame(date);
-
-  if (!game) {
-    return false;
-  }
-
-  await deleteCemantixGame(date);
-  clearEmbeddingCache();
-
-  const channel = await fetchCemantixChannel(client);
-
-  if (channel) {
-    await unlockChannel(channel).catch((error: unknown) => {
-      logger.warn("[cemantix] Failed to unlock channel after force-end", { error });
-    });
-  }
-
-  logger.info("[cemantix] Game force-ended by admin", { date });
-  return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -445,16 +417,23 @@ async function handleWin(message: Message<true>, game: CemantixGame): Promise<vo
   });
 
   const topGuesses = await getCemantixTopGuesses(game.date);
-  const embed = buildVictoryEmbed(winnerName, game.secretWord, topGuesses);
+  const victoryEmbed = buildVictoryEmbed(winnerName, game.secretWord, topGuesses);
 
-  await message.reply({ embeds: [embed] }).catch(() => null);
+  await message.reply({ embeds: [victoryEmbed] }).catch(() => null);
 
-  // Lock channel until tomorrow at 8h
+  // Lock channel until tomorrow at 10h
   const channel = await fetchCemantixChannel(message.client);
 
   if (channel) {
     await lockChannel(channel).catch((error: unknown) => {
       logger.warn("[cemantix] Failed to lock channel after win", { error });
+    });
+
+    // Post all-time leaderboard
+    const leaderboard = await getCemantixLeaderboard();
+    const leaderboardEmbed = buildLeaderboardEmbed(leaderboard);
+    await channel.send({ embeds: [leaderboardEmbed] }).catch((error: unknown) => {
+      logger.warn("[cemantix] Failed to post leaderboard", { error });
     });
   }
 
