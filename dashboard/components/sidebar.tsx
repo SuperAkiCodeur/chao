@@ -42,9 +42,6 @@ export function Sidebar() {
 
       {/* Nav */}
       <nav className="flex-1 p-3 space-y-0.5">
-        <p className="px-3 pt-2 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-sidebar-muted">
-          Navigation
-        </p>
         {navItems.map(({ href, label, icon: Icon }) => {
           const active = pathname === href;
           return (
