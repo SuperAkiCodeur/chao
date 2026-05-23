@@ -346,30 +346,76 @@ function TimeoutDialog({ member, onClose }: { member: DiscordMember; onClose: ()
 
 export function MembresClient({ members, roles }: { members: DiscordMember[]; roles: DiscordRole[] }) {
   const [query, setQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
   const [dialog, setDialog] = useState<DialogState>({ type: "none" });
 
+  // Build list of roles that at least one member has (excluding @everyone)
+  const assignedRoles = useMemo(() => {
+    const memberRoleIds = new Set(members.flatMap((m) => m.roles));
+    return roles
+      .filter((r) => r.name !== "@everyone" && memberRoleIds.has(r.id))
+      .sort((a, b) => b.position - a.position);
+  }, [members, roles]);
+
   const filtered = useMemo(() => {
-    if (!query.trim()) return members;
-    const q = query.toLowerCase();
-    return members.filter(
-      (m) => displayName(m).toLowerCase().includes(q) || m.user.username.toLowerCase().includes(q),
-    );
-  }, [members, query]);
+    return members.filter((m) => {
+      const matchQuery = !query.trim() ||
+        displayName(m).toLowerCase().includes(query.toLowerCase()) ||
+        m.user.username.toLowerCase().includes(query.toLowerCase());
+      const matchRole = !roleFilter || m.roles.includes(roleFilter);
+      return matchQuery && matchRole;
+    });
+  }, [members, query, roleFilter]);
 
   function close() { setDialog({ type: "none" }); }
 
+  const selectedRole = assignedRoles.find((r) => r.id === roleFilter);
+
   return (
     <>
-      {/* Search */}
-      <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-        <Input
-          className="pl-9"
-          placeholder="Rechercher un membre…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
+      {/* Search + role filter */}
+      <div className="flex gap-2 mb-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Input
+            className="pl-9"
+            placeholder="Rechercher un membre…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+        <div className="relative">
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            className="h-9 rounded-lg border border-border bg-muted/40 pl-3 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none"
+            style={selectedRole ? { color: roleColor(selectedRole.color) } : {}}
+          >
+            <option value="">Tous les rôles</option>
+            {assignedRoles.map((r) => (
+              <option key={r.id} value={r.id}>{r.name}</option>
+            ))}
+          </select>
+          <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">▾</span>
+        </div>
       </div>
+
+      {/* Active filter indicator */}
+      {roleFilter && selectedRole && (
+        <div className="flex items-center gap-2 mb-3 -mt-1">
+          <span className="text-xs text-muted-foreground">Filtré par :</span>
+          <span
+            className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-medium"
+            style={{ backgroundColor: `${roleColor(selectedRole.color)}20`, color: roleColor(selectedRole.color) }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: roleColor(selectedRole.color) }} />
+            {selectedRole.name}
+          </span>
+          <button onClick={() => setRoleFilter("")} className="text-xs text-muted-foreground hover:text-foreground">✕</button>
+          <span className="text-xs text-muted-foreground">— {filtered.length} membre{filtered.length !== 1 ? "s" : ""}</span>
+        </div>
+      )}
+
 
       {/* List */}
       <div className="space-y-1">
@@ -398,10 +444,7 @@ export function MembresClient({ members, roles }: { members: DiscordMember[]; ro
                     <p className="text-sm font-medium text-foreground leading-none truncate">{displayName(m)}</p>
                     {timedOut && <Badge variant="warning" className="text-[10px] px-1.5 py-0">sourdine</Badge>}
                   </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <p className="text-xs text-muted-foreground">@{m.user.username}</p>
-                    <RolePills roleIds={m.roles} roles={roles} max={2} />
-                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">@{m.user.username}</p>
                 </div>
               </div>
 
