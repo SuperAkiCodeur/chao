@@ -220,39 +220,43 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
       </button>
 
       {panelVisible && (
-        <form
-          onSubmit={handleSubmit}
-          onAnimationEnd={handlePanelAnimEnd}
-          className={`border-t border-border ${panelAnimClass}`}
-        >
-          <div className="p-5 space-y-4">
-            {fields.map((f) => (
-              <div key={f.key} className="grid grid-cols-2 gap-4 items-start">
-                <div>
-                  <p className="text-xs font-medium text-foreground">{f.label}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{f.description}</p>
-                </div>
-                <SelectDropdown
-                  name={f.key}
-                  options={f.kind === "channel" ? textChannels : roleOptions}
-                  value={vals[f.key] ?? ""}
-                  onChange={(v) => setVals((prev) => ({ ...prev, [f.key]: v }))}
-                  placeholder={f.kind === "channel" ? "Choisir un salon…" : "Choisir un rôle…"}
-                />
+        /* Wrapper de l'animation : grid-template-rows 0fr→1fr change la hauteur physique.
+           overflow:hidden + display:grid sont dans la classe @utility et disparaissent
+           après onAnimationEnd → les dropdowns internes ne sont plus clippés. */
+        <div className={panelAnimClass} onAnimationEnd={handlePanelAnimEnd}>
+          {/* min-h-0 requis : permet au grid item de se réduire à 0 hauteur */}
+          <div className="min-h-0">
+            <form onSubmit={handleSubmit} className="border-t border-border">
+              <div className="p-5 space-y-4">
+                {fields.map((f) => (
+                  <div key={f.key} className="grid grid-cols-2 gap-4 items-start">
+                    <div>
+                      <p className="text-xs font-medium text-foreground">{f.label}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{f.description}</p>
+                    </div>
+                    <SelectDropdown
+                      name={f.key}
+                      options={f.kind === "channel" ? textChannels : roleOptions}
+                      value={vals[f.key] ?? ""}
+                      onChange={(v) => setVals((prev) => ({ ...prev, [f.key]: v }))}
+                      placeholder={f.kind === "channel" ? "Choisir un salon…" : "Choisir un rôle…"}
+                    />
+                  </div>
+                ))}
               </div>
-            ))}
+              <div className="px-5 pb-4 flex items-center justify-between border-t border-border pt-3">
+                <div>
+                  {error && <p className="text-xs text-destructive">{error}</p>}
+                  {saved && <p className="text-xs text-emerald-700">✓ Enregistré</p>}
+                </div>
+                <Button type="submit" size="sm" disabled={pending}>
+                  <Save className="h-3.5 w-3.5" />
+                  {pending ? "Enregistrement…" : "Enregistrer"}
+                </Button>
+              </div>
+            </form>
           </div>
-          <div className="px-5 pb-4 flex items-center justify-between border-t border-border pt-3">
-            <div>
-              {error && <p className="text-xs text-destructive">{error}</p>}
-              {saved && <p className="text-xs text-emerald-700">✓ Enregistré</p>}
-            </div>
-            <Button type="submit" size="sm" disabled={pending}>
-              <Save className="h-3.5 w-3.5" />
-              {pending ? "Enregistrement…" : "Enregistrer"}
-            </Button>
-          </div>
-        </form>
+        </div>
       )}
     </div>
   );
