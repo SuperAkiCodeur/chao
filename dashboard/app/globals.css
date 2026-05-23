@@ -88,6 +88,50 @@
   --animate-fade-in: fade-in 0.2s  ease-out both;
 }
 
+/* ── Mode nuit ───────────────────────────────────────────────────────── */
+html.dark {
+  --background:    28 22%  9%;   /* #18140F encre chaude sombre */
+  --foreground:    38 20% 85%;   /* #D9D0BF crème chaud */
+
+  --card:          28 20% 12%;   /* #1F1A13 */
+  --card-foreground: 38 20% 85%;
+
+  --popover:       28 20% 12%;
+  --popover-foreground: 38 20% 85%;
+
+  --primary:       15 65% 52%;   /* terracotta légèrement plus vif */
+  --primary-foreground: 38 26% 95%;
+
+  --secondary:     28 15% 18%;
+  --secondary-foreground: 38 12% 65%;
+
+  --muted:         28 16% 15%;
+  --muted-foreground: 32  8% 52%;
+
+  --accent:        28 15% 17%;
+  --accent-foreground: 38 20% 85%;
+
+  --destructive:    5 65% 52%;
+  --destructive-foreground: 38 26% 95%;
+
+  --border:        28 14% 22%;
+  --input:         28 15% 15%;
+  --ring:          15 65% 52%;
+
+  --sidebar:               28 22%  7%;
+  --sidebar-foreground:    38 20% 85%;
+  --sidebar-border:        28 16% 13%;
+  --sidebar-accent:        28 18% 11%;
+  --sidebar-accent-foreground: 38 20% 85%;
+  --sidebar-muted:         32  8% 48%;
+
+  --success: 145 45% 40%;
+  --warning:  32 80% 48%;
+}
+
+/* ── Curseur ─────────────────────────────────────────────────────────── */
+button, [role="button"] { cursor: pointer; }
+
 * { border-color: hsl(var(--border)); }
 
 body {

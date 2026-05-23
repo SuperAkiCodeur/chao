@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { LayoutDashboard, Gamepad2, Clapperboard, Users, ScrollText, LogOut } from "lucide-react";
+import { ThemeToggle } from "./ThemeToggle";
 
 // Logo officiel Valorant (V avec la coupure caractéristique sur le côté droit)
 function ValorantIcon({ className }: { className?: string }) {
@@ -72,7 +73,10 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Logout */}
+      {/* Theme + Logout */}
+      <div className="p-3 border-t border-sidebar-border">
+        <ThemeToggle />
+      </div>
       <div className="p-3 border-t border-sidebar-border">
         <button
           type="button"
