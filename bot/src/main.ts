@@ -1,4 +1,3 @@
-import "dotenv/config";
 import { createBot } from "./bot.js";
 
 async function bootstrap(): Promise<void> {

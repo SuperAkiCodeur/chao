@@ -5,7 +5,6 @@
   "main": "dist/main.js",
   "type": "module",
   "scripts": {
-    "dev": "tsx src/main.ts",
     "build": "tsc",
     "start": "node dist/main.js",
     "register:commands": "tsx src/registerCommands.ts",
@@ -18,7 +17,6 @@
   "license": "ISC",
   "dependencies": {
     "discord.js": "^14.26.4",
-    "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
     "postgres": "^3.4.9"
   },
