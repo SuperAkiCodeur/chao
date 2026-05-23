@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { watchParties, watchPartyUsers, watchPartyRatings } from "@/lib/schema";
 import { eq, desc, count, avg } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clapperboard, Users } from "lucide-react";
+import { Clapperboard } from "lucide-react";
 import { WatchClient } from "./WatchClient";
 import { FeatureSettings, type DiscordChannel, type DiscordRole } from "@/components/FeatureSettings";
 import { ApiAttribution } from "@/components/ApiAttribution";
@@ -59,8 +59,7 @@ async function getDiscord() {
 
 export default async function WatchPage() {
   const [parties, { channels, roles }, settings] = await Promise.all([getData(), getDiscord(), getAllSettings()]);
-  const active = parties.filter((p) => p.status === "active");
-  const totalParticipations = parties.reduce((s, p) => s + p.participants, 0);
+  const upcoming = parties.filter((p) => p.status === "active");
 
   return (
     <div className="space-y-6">
@@ -69,42 +68,42 @@ export default async function WatchPage() {
         <p className="text-sm text-muted-foreground mt-0.5">Séances programmées et historique des diffusions</p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-        <Card>
-          <CardContent className="p-5">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-600/10">
-                <Clapperboard className="h-4 w-4 text-rose-600" />
-              </div>
+      {/* Films programmés */}
+      <Card>
+        <CardContent className="p-5">
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-600/10 shrink-0">
+              <Clapperboard className="h-4 w-4 text-rose-600" />
             </div>
-            <p className="text-2xl font-bold tracking-tight text-foreground">{active.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">En cours</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-5">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                <Clapperboard className="h-4 w-4 text-primary" />
-              </div>
+            <p className="text-sm font-medium text-foreground">Prochainement</p>
+          </div>
+          {upcoming.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Aucun film programmé.</p>
+          ) : (
+            <div className="space-y-2">
+              {upcoming.map((p) => {
+                const date = new Date(p.viewingAt);
+                return (
+                  <div key={p.messageId} className="flex items-center justify-between gap-4 rounded-lg bg-muted/40 px-3 py-2.5">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{p.title}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{p.mediaType === "movie" ? "Film" : "Série"}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-xs font-medium text-foreground">
+                        {date.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            <p className="text-2xl font-bold tracking-tight text-foreground">{parties.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">Total séances</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-5">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-700/10">
-                <Users className="h-4 w-4 text-emerald-700" />
-              </div>
-            </div>
-            <p className="text-2xl font-bold tracking-tight text-foreground">{totalParticipations}</p>
-            <p className="text-xs text-muted-foreground mt-1">Participations totales</p>
-          </CardContent>
-        </Card>
-      </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* List */}
       <Card>

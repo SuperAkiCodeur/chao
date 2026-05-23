@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { FeatureSettings, type DiscordChannel, type DiscordRole } from "@/components/FeatureSettings";
 import { ApiAttribution } from "@/components/ApiAttribution";
 import { getAllSettings } from "@/lib/settings";
+import { ClearHistoryButton } from "./ClearHistoryButton";
 
 export const dynamic = "force-dynamic";
 
@@ -176,7 +177,10 @@ export default async function CemantixPage() {
       {/* Historique */}
       <Card>
         <CardHeader className="pb-4">
-          <CardTitle className="text-sm font-semibold text-foreground">Historique des parties</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm font-semibold text-foreground">Historique des parties</CardTitle>
+            <ClearHistoryButton />
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-1">

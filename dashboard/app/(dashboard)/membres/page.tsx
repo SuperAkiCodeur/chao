@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, Shield, Clock } from "lucide-react";
+import { Users, Activity } from "lucide-react";
 import { MembresClient, type DiscordMember, type DiscordRole } from "./MembresClient";
 import { FeatureSettings } from "@/components/FeatureSettings";
 import { getAllSettings } from "@/lib/settings";
@@ -19,6 +19,19 @@ async function getMembers(): Promise<DiscordMember[]> {
   return res.json() as Promise<DiscordMember[]>;
 }
 
+async function getOnlineCount(): Promise<number> {
+  const guildId = process.env.DISCORD_GUILD_ID;
+  const botToken = process.env.DISCORD_BOT_TOKEN;
+  if (!guildId || !botToken) return 0;
+  const res = await fetch(
+    `https://discord.com/api/v10/guilds/${guildId}?with_counts=true`,
+    { headers: { Authorization: `Bot ${botToken}` }, cache: "no-store" },
+  );
+  if (!res.ok) return 0;
+  const guild = await res.json() as { approximate_presence_count?: number };
+  return guild.approximate_presence_count ?? 0;
+}
+
 async function getRoles(): Promise<DiscordRole[]> {
   const guildId = process.env.DISCORD_GUILD_ID;
   const botToken = process.env.DISCORD_BOT_TOKEN;
@@ -34,11 +47,9 @@ async function getRoles(): Promise<DiscordRole[]> {
 }
 
 export default async function MembresPage() {
-  const [members, roles, settings] = await Promise.all([getMembers(), getRoles(), getAllSettings()]);
-
-  const timedOut = members.filter(
-    (m) => m.communication_disabled_until && new Date(m.communication_disabled_until) > new Date(),
-  );
+  const [members, roles, settings, onlineCount] = await Promise.all([
+    getMembers(), getRoles(), getAllSettings(), getOnlineCount(),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -48,7 +59,7 @@ export default async function MembresPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3">
         <Card>
           <CardContent className="p-5">
             <div className="flex items-start justify-between mb-3">
@@ -64,25 +75,13 @@ export default async function MembresPage() {
         <Card>
           <CardContent className="p-5">
             <div className="flex items-start justify-between mb-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-600/10">
-                <Clock className="h-4 w-4 text-amber-600" />
-              </div>
-            </div>
-            <p className="text-2xl font-bold tracking-tight text-foreground">{timedOut.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">En sourdine</p>
-            <p className="text-xs text-muted-foreground/60 mt-0.5">actuellement</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-5">
-            <div className="flex items-start justify-between mb-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-700/10">
-                <Shield className="h-4 w-4 text-emerald-700" />
+                <Activity className="h-4 w-4 text-emerald-700" />
               </div>
             </div>
-            <p className="text-2xl font-bold tracking-tight text-foreground">3</p>
-            <p className="text-xs text-muted-foreground mt-1">Actions dispo</p>
-            <p className="text-xs text-muted-foreground/60 mt-0.5">sourdine · expulsion · ban</p>
+            <p className="text-2xl font-bold tracking-tight text-foreground">{onlineCount}</p>
+            <p className="text-xs text-muted-foreground mt-1">Connectés</p>
+            <p className="text-xs text-muted-foreground/60 mt-0.5">en ligne actuellement</p>
           </CardContent>
         </Card>
       </div>
