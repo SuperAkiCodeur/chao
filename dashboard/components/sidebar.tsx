@@ -52,15 +52,23 @@ export function Sidebar() {
               key={href}
               href={href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150",
+                "relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium",
+                "transition-all duration-200 ease-out",
                 active
-                  ? "bg-primary/15 text-primary"
-                  : "text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground",
+                  ? "bg-primary/15 text-primary translate-x-0.5"
+                  : "text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground hover:translate-x-0.5",
               )}
             >
+              {/* Barre verticale active */}
+              <span
+                className={cn(
+                  "absolute left-0 top-1/2 -translate-y-1/2 w-0.5 rounded-full bg-primary",
+                  "transition-all duration-200 ease-out",
+                  active ? "h-4 opacity-100" : "h-0 opacity-0",
+                )}
+              />
               <Icon className="h-4 w-4 shrink-0" />
               {label}
-              {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />}
             </Link>
           );
         })}

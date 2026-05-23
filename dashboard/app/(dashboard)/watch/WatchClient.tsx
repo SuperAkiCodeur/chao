@@ -178,7 +178,7 @@ function PartyRow({
   const isPast = date < new Date();
 
   return (
-    <div className="flex items-center justify-between rounded-lg px-3 py-3 hover:bg-muted/40 transition-colors">
+    <div className="flex items-center justify-between rounded-lg px-3 py-3 hover:bg-muted/40 hover:translate-x-0.5 transition-all duration-150">
       <div className="flex items-center gap-2.5 min-w-0">
         <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${isActive ? "bg-warning" : "bg-border"}`} />
         <div className="min-w-0">

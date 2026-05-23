@@ -85,7 +85,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between animate-fade-up" style={{ animationDelay: "0ms" }}>
         <div>
           <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Vue d'ensemble du bot Chao</p>
@@ -97,7 +97,7 @@ export default async function HomePage() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 animate-fade-up" style={{ animationDelay: "60ms" }}>
         {stats.map(({ label, value, sub, icon: Icon, color, bg }) => (
           <Card key={label}>
             <CardContent className="p-5">
@@ -115,7 +115,7 @@ export default async function HomePage() {
       </div>
 
       {/* Bottom grid */}
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2 animate-fade-up" style={{ animationDelay: "120ms" }}>
         {/* Partie du jour */}
         <Card>
           <CardHeader className="pb-4">

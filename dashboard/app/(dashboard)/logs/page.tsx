@@ -88,7 +88,7 @@ export default async function LogsPage() {
                       return (
                         <div
                           key={log.id}
-                          className="flex items-start justify-between gap-4 rounded-lg px-3 py-2.5 hover:bg-muted/40 transition-colors"
+                          className="flex items-start justify-between gap-4 rounded-lg px-3 py-2.5 hover:bg-muted/40 hover:translate-x-0.5 transition-all duration-150"
                         >
                           <div className="flex items-start gap-3 min-w-0">
                             <Badge variant={config.variant} className="shrink-0 mt-px">

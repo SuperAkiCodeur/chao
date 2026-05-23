@@ -120,7 +120,7 @@ export default async function CemantixPage() {
                 {leaderboard.map((entry, i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-muted/40 transition-colors"
+                    className="flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-muted/40 hover:translate-x-0.5 transition-all duration-150"
                   >
                     <div className="flex items-center gap-2.5">
                       <span className="w-5 text-center text-sm">
@@ -152,7 +152,7 @@ export default async function CemantixPage() {
               {topGuesses.map((g, i) => {
                 const pct = g.score;
                 return (
-                  <div key={g.word} className="flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-muted/40 transition-colors">
+                  <div key={g.word} className="flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-muted/40 hover:translate-x-0.5 transition-all duration-150">
                     <span className="w-5 text-center text-sm shrink-0">
                       {MEDALS[i] ?? <span className="text-xs text-muted-foreground">#{i + 1}</span>}
                     </span>
@@ -183,7 +183,7 @@ export default async function CemantixPage() {
             {recentGames.map((game) => (
               <div
                 key={game.date}
-                className="flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-muted/40 transition-colors"
+                className="flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-muted/40 hover:translate-x-0.5 transition-all duration-150"
               >
                 <div className="flex items-center gap-2.5">
                   <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${game.isSolved ? "bg-success" : "bg-border"}`} />

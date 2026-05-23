@@ -394,7 +394,7 @@ function RoleDropdown({
           <button
             type="button"
             onClick={() => { onChange(""); setOpen(false); }}
-            className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 transition-colors"
+            className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 hover:translate-x-0.5 transition-all duration-150"
           >
             <span className="h-2 w-2 rounded-full bg-muted-foreground/40 shrink-0" />
             <span className="text-muted-foreground flex-1 text-left">Tous les rôles</span>
@@ -408,7 +408,7 @@ function RoleDropdown({
               key={r.id}
               type="button"
               onClick={() => { onChange(r.id); setOpen(false); }}
-              className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 transition-colors"
+              className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 hover:translate-x-0.5 transition-all duration-150"
             >
               <span
                 className="h-2 w-2 rounded-full shrink-0"
@@ -500,7 +500,7 @@ export function MembresClient({ members, roles }: { members: DiscordMember[]; ro
           return (
             <div
               key={m.user.id}
-              className="flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-muted/40 transition-colors cursor-pointer"
+              className="flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-muted/40 hover:translate-x-0.5 transition-all duration-150 cursor-pointer"
               onClick={() => setDialog({ type: "detail", member: m })}
             >
               {/* Left: avatar + name + roles */}
