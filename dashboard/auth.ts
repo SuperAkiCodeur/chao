@@ -13,18 +13,36 @@ async function isGuildAdmin(userId: string): Promise<boolean> {
   }
 
   try {
-    // Récupère le membre dans le serveur
-    const memberRes = await fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${userId}`, {
-      headers: { Authorization: `Bot ${botToken}` },
-    });
-    if (!memberRes.ok) return false;
+    const headers = { Authorization: `Bot ${botToken}` };
+
+    // Récupère en parallèle : membre, guild (pour owner_id), rôles
+    const [memberRes, guildRes, rolesRes] = await Promise.all([
+      fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${userId}`, { headers }),
+      fetch(`https://discord.com/api/v10/guilds/${guildId}`, { headers }),
+      fetch(`https://discord.com/api/v10/guilds/${guildId}/roles`, { headers }),
+    ]);
+
+    if (!memberRes.ok) {
+      console.error(`[auth] Membre ${userId} introuvable dans le serveur (${memberRes.status})`);
+      return false;
+    }
+
     const member = await memberRes.json() as { roles: string[] };
 
-    // Récupère les rôles du serveur
-    const rolesRes = await fetch(`https://discord.com/api/v10/guilds/${guildId}/roles`, {
-      headers: { Authorization: `Bot ${botToken}` },
-    });
-    if (!rolesRes.ok) return false;
+    // Le propriétaire du serveur est toujours admin (sans rôle explicite)
+    if (guildRes.ok) {
+      const guild = await guildRes.json() as { owner_id: string };
+      if (guild.owner_id === userId) {
+        console.log(`[auth] ${userId} est propriétaire du serveur → accès autorisé`);
+        return true;
+      }
+    }
+
+    if (!rolesRes.ok) {
+      console.error(`[auth] Impossible de récupérer les rôles (${rolesRes.status})`);
+      return false;
+    }
+
     const allRoles = await rolesRes.json() as { id: string; permissions: string }[];
 
     // IDs des rôles qui ont la permission ADMINISTRATOR
@@ -34,7 +52,11 @@ async function isGuildAdmin(userId: string): Promise<boolean> {
         .map((r) => r.id),
     );
 
-    return member.roles.some((roleId) => adminRoleIds.has(roleId));
+    const hasAdminRole = member.roles.some((roleId) => adminRoleIds.has(roleId));
+    if (!hasAdminRole) {
+      console.error(`[auth] ${userId} refusé — aucun rôle admin parmi : [${member.roles.join(", ")}]`);
+    }
+    return hasAdminRole;
   } catch (err) {
     console.error("[auth] Erreur lors de la vérification des permissions :", err);
     return false;
