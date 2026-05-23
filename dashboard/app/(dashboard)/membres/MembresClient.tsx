@@ -353,47 +353,52 @@ function RoleDropdown({
   value: string;
   onChange: (v: string) => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [animClass, setAnimClass] = useState("");
   const ref = useRef<HTMLDivElement>(null);
+  const selected = roles.find((r) => r.id === value);
 
-  // Close on outside click
+  function doOpen() { setVisible(true); setAnimClass("animate-expand-down"); }
+  function doClose() { if (visible) setAnimClass("animate-expand-up"); }
+  function handleAnimEnd() {
+    if (animClass === "animate-expand-up") setVisible(false);
+    setAnimClass("");
+  }
+
   useEffect(() => {
     function handler(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node)) doClose();
     }
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  const selected = roles.find((r) => r.id === value);
+  }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div ref={ref} className="relative shrink-0">
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => visible ? doClose() : doOpen()}
         className="flex h-9 items-center gap-2 rounded-lg border border-border bg-muted/40 pl-3 pr-2.5 text-sm text-foreground hover:bg-muted/60 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50 whitespace-nowrap"
       >
         {selected ? (
           <>
-            <span
-              className="h-2 w-2 rounded-full shrink-0"
-              style={{ backgroundColor: roleColor(selected.color) }}
-            />
+            <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: roleColor(selected.color) }} />
             <span style={{ color: roleColor(selected.color) }}>{selected.name}</span>
           </>
         ) : (
           <span className="text-muted-foreground">Tous les rôles</span>
         )}
-        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground ml-1" />
+        <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground ml-1 transition-transform duration-200 ${visible && animClass !== "animate-expand-up" ? "rotate-180" : ""}`} />
       </button>
 
-      {open && (
-        <div className="absolute right-0 top-full mt-1 z-50 min-w-[180px] rounded-lg border border-border bg-card shadow-xl py-1 overflow-hidden">
-          {/* All roles option */}
+      {visible && (
+        <div
+          className={`absolute right-0 top-full mt-1 z-50 min-w-[180px] rounded-lg border border-border bg-card shadow-xl py-1 ${animClass}`}
+          onAnimationEnd={handleAnimEnd}
+        >
           <button
             type="button"
-            onClick={() => { onChange(""); setOpen(false); }}
+            onClick={() => { onChange(""); doClose(); }}
             className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 hover:translate-x-0.5 transition-all duration-150"
           >
             <span className="h-2 w-2 rounded-full bg-muted-foreground/40 shrink-0" />
@@ -407,13 +412,10 @@ function RoleDropdown({
             <button
               key={r.id}
               type="button"
-              onClick={() => { onChange(r.id); setOpen(false); }}
+              onClick={() => { onChange(r.id); doClose(); }}
               className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 hover:translate-x-0.5 transition-all duration-150"
             >
-              <span
-                className="h-2 w-2 rounded-full shrink-0"
-                style={{ backgroundColor: roleColor(r.color) }}
-              />
+              <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: roleColor(r.color) }} />
               <span className="flex-1 text-left text-foreground">{r.name}</span>
               {value === r.id && <Check className="h-3.5 w-3.5 text-primary" />}
             </button>

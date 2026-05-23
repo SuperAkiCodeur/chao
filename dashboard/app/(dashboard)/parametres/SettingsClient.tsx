@@ -49,26 +49,33 @@ function SelectDropdown({
   onChange: (v: string) => void;
   placeholder?: string;
 }) {
-  const [open, setOpen] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [animClass, setAnimClass] = useState("");
   const ref = useRef<HTMLDivElement>(null);
   const selected = options.find((o) => o.id === value);
 
+  function doOpen() { setVisible(true); setAnimClass("animate-expand-down"); }
+  function doClose() { if (visible) setAnimClass("animate-expand-up"); }
+  function handleAnimEnd() {
+    if (animClass === "animate-expand-up") setVisible(false);
+    setAnimClass("");
+  }
+
   useEffect(() => {
     function handler(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node)) doClose();
     }
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, []);
+  }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>
-      {/* Hidden input so it's included in FormData */}
       <input type="hidden" name={name} value={value} />
       <div ref={ref} className="relative">
         <button
           type="button"
-          onClick={() => setOpen((o) => !o)}
+          onClick={() => visible ? doClose() : doOpen()}
           className="flex h-9 w-full items-center gap-2 rounded-lg border border-border bg-muted/40 pl-3 pr-2.5 text-sm text-foreground hover:bg-muted/60 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50"
         >
           {selected ? (
@@ -84,14 +91,17 @@ function SelectDropdown({
           ) : (
             <span className="text-muted-foreground flex-1 text-left">{placeholder}</span>
           )}
-          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0 ml-1" />
+          <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground shrink-0 ml-1 transition-transform duration-200 ${visible && animClass !== "animate-expand-up" ? "rotate-180" : ""}`} />
         </button>
 
-        {open && (
-          <div className="absolute left-0 top-full mt-1 z-50 w-full min-w-[220px] rounded-lg border border-border bg-card shadow-xl py-1 max-h-64 overflow-y-auto">
+        {visible && (
+          <div
+            className={`absolute left-0 top-full mt-1 z-50 w-full min-w-[220px] rounded-lg border border-border bg-card shadow-xl py-1 max-h-64 overflow-y-auto ${animClass}`}
+            onAnimationEnd={handleAnimEnd}
+          >
             <button
               type="button"
-              onClick={() => { onChange(""); setOpen(false); }}
+              onClick={() => { onChange(""); doClose(); }}
               className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 transition-colors"
             >
               <span className="text-muted-foreground flex-1 text-left">— Aucun —</span>
@@ -102,7 +112,7 @@ function SelectDropdown({
               <button
                 key={o.id}
                 type="button"
-                onClick={() => { onChange(o.id); setOpen(false); }}
+                onClick={() => { onChange(o.id); doClose(); }}
                 className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 transition-colors"
               >
                 {o.icon}
@@ -153,7 +163,7 @@ function Section({
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
+    <div className="rounded-xl border border-border bg-card">
       <div className="px-5 py-4 border-b border-border">
         <p className="text-sm font-semibold text-foreground">{title}</p>
         <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
