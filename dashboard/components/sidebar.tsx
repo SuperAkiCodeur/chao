@@ -21,9 +21,8 @@ export function Sidebar() {
     <aside className="flex h-screen w-56 flex-col bg-sidebar border-r border-sidebar-border shrink-0">
       {/* Logo */}
       <div className="flex h-14 items-center gap-2.5 px-5 border-b border-sidebar-border">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/20 text-sm">
-          🤖
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.png" alt="Chao" className="h-7 w-7 object-contain" />
         <span className="font-semibold text-sm tracking-wide text-sidebar-foreground">Chao</span>
       </div>
 
