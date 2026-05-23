@@ -27,6 +27,7 @@ function roleColor(color: number) {
 type Option = { id: string; label: string; color?: string; icon?: React.ReactNode };
 
 const DROPDOWN_CLOSE_MS = 180;
+const ACCORDION_OPEN_MS  = 300;
 const ACCORDION_CLOSE_MS = 240;
 
 function SelectDropdown({ name, options, value, onChange, placeholder = "Sélectionner…", searchPlaceholder = "Rechercher…" }: {
@@ -44,6 +45,7 @@ function SelectDropdown({ name, options, value, onChange, placeholder = "Sélect
     : options;
 
   function startClose() {
+    if (isClosing) return;
     setIsClosing(true);
     setTimeout(() => {
       setOpen(false);
@@ -53,22 +55,15 @@ function SelectDropdown({ name, options, value, onChange, placeholder = "Sélect
   }
 
   function handleOpen() {
-    if (open) {
-      startClose();
-      return;
-    }
+    if (open) { startClose(); return; }
     setOpen(true);
     setQuery("");
     setTimeout(() => searchRef.current?.focus(), 10);
   }
 
-  function handleClose() {
-    if (open && !isClosing) startClose();
-  }
-
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) handleClose();
+      if (ref.current && !ref.current.contains(e.target as Node)) startClose();
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -105,7 +100,7 @@ function SelectDropdown({ name, options, value, onChange, placeholder = "Sélect
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Escape" && handleClose()}
+                onKeyDown={(e) => e.key === "Escape" && startClose()}
                 placeholder={searchPlaceholder}
                 className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 outline-none"
               />
@@ -117,7 +112,7 @@ function SelectDropdown({ name, options, value, onChange, placeholder = "Sélect
             {/* Options list */}
             <div className="py-1 max-h-52 overflow-y-auto">
               {!query && (
-                <button type="button" onClick={() => { onChange(""); handleClose(); }}
+                <button type="button" onClick={() => { onChange(""); startClose(); }}
                   className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 transition-colors">
                   <span className="text-muted-foreground flex-1 text-left">— Aucun —</span>
                   {!value && <Check className="h-3.5 w-3.5 text-primary" />}
@@ -132,7 +127,7 @@ function SelectDropdown({ name, options, value, onChange, placeholder = "Sélect
                 <p className="px-3 py-2 text-xs text-muted-foreground/60 italic">Aucun résultat pour « {query} »</p>
               ) : (
                 filtered.map((o) => (
-                  <button key={o.id} type="button" onClick={() => { onChange(o.id); handleClose(); }}
+                  <button key={o.id} type="button" onClick={() => { onChange(o.id); startClose(); }}
                     className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 transition-colors">
                     {o.icon}
                     {o.color && <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: o.color }} />}
@@ -159,6 +154,8 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
 }) {
   const [open, setOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  // overflow-hidden seulement pendant l'animation — sinon les dropdowns internes seraient clippés
+  const [isAnimating, setIsAnimating] = useState(false);
   const [vals, setVals] = useState<Record<string, string>>(settings);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -167,12 +164,16 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
   function toggle() {
     if (open) {
       setIsClosing(true);
+      setIsAnimating(true);
       setTimeout(() => {
         setOpen(false);
         setIsClosing(false);
+        setIsAnimating(false);
       }, ACCORDION_CLOSE_MS);
     } else {
       setOpen(true);
+      setIsAnimating(true);
+      setTimeout(() => setIsAnimating(false), ACCORDION_OPEN_MS);
     }
   }
 
@@ -220,7 +221,10 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
       </button>
 
       {(open || isClosing) && (
-        <form onSubmit={handleSubmit} className={`border-t border-border overflow-hidden ${isClosing ? "animate-accordion-up" : "animate-accordion-down"}`}>
+        <form
+          onSubmit={handleSubmit}
+          className={`border-t border-border ${isAnimating ? (isClosing ? "overflow-hidden animate-accordion-up" : "overflow-hidden animate-accordion-down") : ""}`}
+        >
           <div className="p-5 space-y-4">
             {fields.map((f) => (
               <div key={f.key} className="grid grid-cols-2 gap-4 items-start">
