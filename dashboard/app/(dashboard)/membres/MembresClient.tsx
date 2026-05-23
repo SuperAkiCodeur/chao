@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition, useMemo } from "react";
-import { Shield, Clock, UserX, UserMinus, Search, ChevronRight } from "lucide-react";
+import { useState, useTransition, useMemo, useRef, useEffect } from "react";
+import { Shield, Clock, UserX, UserMinus, Search, ChevronRight, ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -342,6 +342,88 @@ function TimeoutDialog({ member, onClose }: { member: DiscordMember; onClose: ()
   );
 }
 
+// ── Role dropdown ─────────────────────────────────────────────────────────────
+
+function RoleDropdown({
+  roles,
+  value,
+  onChange,
+}: {
+  roles: DiscordRole[];
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Close on outside click
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const selected = roles.find((r) => r.id === value);
+
+  return (
+    <div ref={ref} className="relative shrink-0">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex h-9 items-center gap-2 rounded-lg border border-border bg-muted/40 pl-3 pr-2.5 text-sm text-foreground hover:bg-muted/60 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50 whitespace-nowrap"
+      >
+        {selected ? (
+          <>
+            <span
+              className="h-2 w-2 rounded-full shrink-0"
+              style={{ backgroundColor: roleColor(selected.color) }}
+            />
+            <span style={{ color: roleColor(selected.color) }}>{selected.name}</span>
+          </>
+        ) : (
+          <span className="text-muted-foreground">Tous les rôles</span>
+        )}
+        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground ml-1" />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-1 z-50 min-w-[180px] rounded-lg border border-border bg-card shadow-xl py-1 overflow-hidden">
+          {/* All roles option */}
+          <button
+            type="button"
+            onClick={() => { onChange(""); setOpen(false); }}
+            className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 transition-colors"
+          >
+            <span className="h-2 w-2 rounded-full bg-muted-foreground/40 shrink-0" />
+            <span className="text-muted-foreground flex-1 text-left">Tous les rôles</span>
+            {!value && <Check className="h-3.5 w-3.5 text-primary" />}
+          </button>
+
+          {roles.length > 0 && <div className="my-1 border-t border-border" />}
+
+          {roles.map((r) => (
+            <button
+              key={r.id}
+              type="button"
+              onClick={() => { onChange(r.id); setOpen(false); }}
+              className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 transition-colors"
+            >
+              <span
+                className="h-2 w-2 rounded-full shrink-0"
+                style={{ backgroundColor: roleColor(r.color) }}
+              />
+              <span className="flex-1 text-left text-foreground">{r.name}</span>
+              {value === r.id && <Check className="h-3.5 w-3.5 text-primary" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function MembresClient({ members, roles }: { members: DiscordMember[]; roles: DiscordRole[] }) {
@@ -384,20 +466,11 @@ export function MembresClient({ members, roles }: { members: DiscordMember[]; ro
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
-        <div className="relative">
-          <select
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-            className="h-9 rounded-lg border border-border bg-muted/40 pl-3 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none"
-            style={selectedRole ? { color: roleColor(selectedRole.color) } : {}}
-          >
-            <option value="">Tous les rôles</option>
-            {assignedRoles.map((r) => (
-              <option key={r.id} value={r.id}>{r.name}</option>
-            ))}
-          </select>
-          <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">▾</span>
-        </div>
+        <RoleDropdown
+          roles={assignedRoles}
+          value={roleFilter}
+          onChange={setRoleFilter}
+        />
       </div>
 
       {/* Active filter indicator */}
