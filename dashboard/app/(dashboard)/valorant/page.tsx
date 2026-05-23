@@ -5,17 +5,28 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Crosshair } from "lucide-react";
 import { ValorantClient } from "./ValorantClient";
+import { FeatureSettings, type DiscordChannel, type DiscordRole } from "@/components/FeatureSettings";
+import { ApiAttribution } from "@/components/ApiAttribution";
+import { getAllSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
 const DEFAULT_GUILD_ID = process.env.DISCORD_GUILD_ID ?? "";
+const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN!;
 
 async function getData() {
   return db.select().from(valorantLinks).orderBy(desc(valorantLinks.linkedAt));
 }
 
+async function getChannels(): Promise<DiscordChannel[]> {
+  const res = await fetch(`https://discord.com/api/v10/guilds/${DEFAULT_GUILD_ID}/channels`, {
+    headers: { Authorization: `Bot ${BOT_TOKEN}` }, cache: "no-store",
+  });
+  return res.ok ? res.json() : [];
+}
+
 export default async function ValorantPage() {
-  const accounts = await getData();
+  const [accounts, channels, settings] = await Promise.all([getData(), getChannels(), getAllSettings()]);
 
   return (
     <div className="space-y-6">
@@ -52,6 +63,21 @@ export default async function ValorantPage() {
           <ValorantClient accounts={accounts} defaultGuildId={DEFAULT_GUILD_ID} />
         </CardContent>
       </Card>
+
+      <FeatureSettings
+        channels={channels}
+        roles={[] as DiscordRole[]}
+        settings={settings}
+        fields={[
+          { key: "valorant_channel_id", label: "Salon Valorant", description: "Salon où le bot poste les résultats", kind: "channel" },
+        ]}
+      />
+
+      <ApiAttribution
+        name="HenrikDev API"
+        url="https://henrikdev.xyz/"
+        description="statistiques et résultats Valorant via l'API Riot Games"
+      />
     </div>
   );
 }

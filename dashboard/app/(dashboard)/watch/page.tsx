@@ -4,6 +4,9 @@ import { eq, desc, count, avg } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clapperboard, Users } from "lucide-react";
 import { WatchClient } from "./WatchClient";
+import { FeatureSettings, type DiscordChannel, type DiscordRole } from "@/components/FeatureSettings";
+import { ApiAttribution } from "@/components/ApiAttribution";
+import { getAllSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
@@ -39,8 +42,21 @@ async function getData() {
   );
 }
 
+const GUILD_ID = process.env.DISCORD_GUILD_ID!;
+const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN!;
+
+async function getDiscord() {
+  const [chRes, roRes] = await Promise.all([
+    fetch(`https://discord.com/api/v10/guilds/${GUILD_ID}/channels`, { headers: { Authorization: `Bot ${BOT_TOKEN}` }, cache: "no-store" }),
+    fetch(`https://discord.com/api/v10/guilds/${GUILD_ID}/roles`, { headers: { Authorization: `Bot ${BOT_TOKEN}` }, cache: "no-store" }),
+  ]);
+  const channels: DiscordChannel[] = chRes.ok ? await chRes.json() : [];
+  const roles: DiscordRole[] = roRes.ok ? await roRes.json() : [];
+  return { channels, roles };
+}
+
 export default async function WatchPage() {
-  const parties = await getData();
+  const [parties, { channels, roles }, settings] = await Promise.all([getData(), getDiscord(), getAllSettings()]);
   const active = parties.filter((p) => p.status === "active");
   const totalParticipations = parties.reduce((s, p) => s + p.participants, 0);
 
@@ -97,6 +113,22 @@ export default async function WatchPage() {
           <WatchClient parties={parties} />
         </CardContent>
       </Card>
+
+      <FeatureSettings
+        channels={channels}
+        roles={roles}
+        settings={settings}
+        fields={[
+          { key: "watch_channel_id", label: "Salon d'annonces", description: "Salon où les séances sont publiées", kind: "channel" },
+          { key: "watch_spectator_role_id", label: "Rôle spectateur", description: "Rôle attribué aux participants", kind: "role" },
+        ]}
+      />
+
+      <ApiAttribution
+        name="The Movie Database (TMDB)"
+        url="https://www.themoviedb.org/"
+        description="métadonnées des films et séries"
+      />
     </div>
   );
 }

@@ -3,8 +3,22 @@ import { cemantixGames, cemantixTopGuesses } from "@/lib/schema";
 import { eq, desc, sql } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { FeatureSettings, type DiscordChannel, type DiscordRole } from "@/components/FeatureSettings";
+import { ApiAttribution } from "@/components/ApiAttribution";
+import { getAllSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
+
+const GUILD_ID = process.env.DISCORD_GUILD_ID!;
+const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN!;
+
+async function getDiscord() {
+  const res = await fetch(`https://discord.com/api/v10/guilds/${GUILD_ID}/channels`, {
+    headers: { Authorization: `Bot ${BOT_TOKEN}` }, cache: "no-store",
+  });
+  const channels: DiscordChannel[] = res.ok ? await res.json() : [];
+  return { channels, roles: [] as DiscordRole[] };
+}
 
 async function getData() {
   const today = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Paris" });
@@ -39,7 +53,8 @@ async function getData() {
 const MEDALS = ["🥇", "🥈", "🥉"];
 
 export default async function CemantixPage() {
-  const { todayGame, topGuesses, recentGames, leaderboard } = await getData();
+  const [{ todayGame, topGuesses, recentGames, leaderboard }, { channels, roles }, settings] =
+    await Promise.all([getData(), getDiscord(), getAllSettings()]);
 
   return (
     <div className="space-y-6">
@@ -185,6 +200,21 @@ export default async function CemantixPage() {
           </div>
         </CardContent>
       </Card>
+
+      <FeatureSettings
+        channels={channels}
+        roles={roles}
+        settings={settings}
+        fields={[
+          { key: "cemantix_channel_id", label: "Salon de jeu", description: "Salon où le bot démarre la partie quotidienne", kind: "channel" },
+        ]}
+      />
+
+      <ApiAttribution
+        name="Cohere"
+        url="https://cohere.com/"
+        description="modèle embed-multilingual-v3.0 pour le calcul de similarité sémantique"
+      />
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Gamepad2, Clapperboard, Crosshair, Users, ScrollText, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Gamepad2, Clapperboard, Crosshair, Users, ScrollText, LogOut } from "lucide-react";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -12,7 +12,6 @@ const navItems = [
   { href: "/valorant", label: "Valorant", icon: Crosshair },
   { href: "/membres", label: "Membres", icon: Users },
   { href: "/logs", label: "Logs", icon: ScrollText },
-  { href: "/parametres", label: "Paramètres", icon: Settings },
 ];
 
 export function Sidebar() {

@@ -2,6 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Shield, Clock } from "lucide-react";
 import { MembresClient, type DiscordMember, type DiscordRole } from "./MembresClient";
+import { FeatureSettings } from "@/components/FeatureSettings";
+import { getAllSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +34,7 @@ async function getRoles(): Promise<DiscordRole[]> {
 }
 
 export default async function MembresPage() {
-  const [members, roles] = await Promise.all([getMembers(), getRoles()]);
+  const [members, roles, settings] = await Promise.all([getMembers(), getRoles(), getAllSettings()]);
 
   const timedOut = members.filter(
     (m) => m.communication_disabled_until && new Date(m.communication_disabled_until) > new Date(),
@@ -103,6 +105,15 @@ export default async function MembresPage() {
           )}
         </CardContent>
       </Card>
+
+      <FeatureSettings
+        channels={[]}
+        roles={roles}
+        settings={settings}
+        fields={[
+          { key: "member_role_id", label: "Rôle automatique", description: "Attribué dès qu'un membre rejoint le serveur", kind: "role" },
+        ]}
+      />
     </div>
   );
 }
