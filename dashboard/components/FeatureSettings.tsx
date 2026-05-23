@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useRef, useEffect } from "react";
-import { Check, ChevronDown, Save, Hash, Volume2, Settings } from "lucide-react";
+import { Check, ChevronDown, Save, Hash, Volume2, Settings, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { saveSection } from "@/app/(dashboard)/parametres/actions";
 import type { ActionResult } from "@/app/(dashboard)/parametres/actions";
@@ -26,16 +26,38 @@ function roleColor(color: number) {
 
 type Option = { id: string; label: string; color?: string; icon?: React.ReactNode };
 
-function SelectDropdown({ name, options, value, onChange, placeholder = "Sélectionner…" }: {
-  name: string; options: Option[]; value: string; onChange: (v: string) => void; placeholder?: string;
+function SelectDropdown({ name, options, value, onChange, placeholder = "Sélectionner…", searchPlaceholder = "Rechercher…" }: {
+  name: string; options: Option[]; value: string; onChange: (v: string) => void; placeholder?: string; searchPlaceholder?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
   const ref = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
   const selected = options.find((o) => o.id === value);
+
+  const filtered = query.trim()
+    ? options.filter((o) => o.label.toLowerCase().includes(query.toLowerCase()))
+    : options;
+
+  function handleOpen() {
+    setOpen((o) => {
+      if (!o) {
+        // Reset search when opening
+        setQuery("");
+        setTimeout(() => searchRef.current?.focus(), 10);
+      }
+      return !o;
+    });
+  }
+
+  function handleClose() {
+    setOpen(false);
+    setQuery("");
+  }
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node)) handleClose();
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -47,7 +69,7 @@ function SelectDropdown({ name, options, value, onChange, placeholder = "Sélect
       <div ref={ref} className="relative">
         <button
           type="button"
-          onClick={() => setOpen((o) => !o)}
+          onClick={handleOpen}
           className="flex h-9 w-full items-center gap-2 rounded-lg border border-border bg-muted/40 pl-3 pr-2.5 text-sm hover:bg-muted/60 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50"
         >
           {selected ? (
@@ -63,30 +85,52 @@ function SelectDropdown({ name, options, value, onChange, placeholder = "Sélect
         </button>
 
         {open && (
-          <div className="absolute left-0 top-full mt-1 z-50 w-full min-w-[200px] rounded-lg border border-border bg-card shadow-xl py-1 max-h-56 overflow-y-auto">
-            <button type="button" onClick={() => { onChange(""); setOpen(false); }}
-              className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 transition-colors">
-              <span className="text-muted-foreground flex-1 text-left">— Aucun —</span>
-              {!value && <Check className="h-3.5 w-3.5 text-primary" />}
-            </button>
-            {options.length === 0 ? (
-              <p className="px-3 py-2 text-xs text-muted-foreground/60 italic">
-                Aucun salon trouvé — vérifie que DISCORD_BOT_TOKEN et DISCORD_GUILD_ID sont bien configurés sur Vercel.
-              </p>
-            ) : (
-              <>
-                <div className="my-1 border-t border-border" />
-                {options.map((o) => (
-                  <button key={o.id} type="button" onClick={() => { onChange(o.id); setOpen(false); }}
+          <div className="absolute left-0 top-full mt-1 z-50 w-full min-w-[200px] rounded-lg border border-border bg-card shadow-xl">
+            {/* Search input */}
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
+              <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <input
+                ref={searchRef}
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Escape" && handleClose()}
+                placeholder={searchPlaceholder}
+                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 outline-none"
+              />
+              {query && (
+                <button type="button" onClick={() => setQuery("")} className="text-muted-foreground/60 hover:text-foreground transition-colors text-xs">✕</button>
+              )}
+            </div>
+
+            {/* Options list */}
+            <div className="py-1 max-h-52 overflow-y-auto">
+              {!query && (
+                <button type="button" onClick={() => { onChange(""); handleClose(); }}
+                  className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 transition-colors">
+                  <span className="text-muted-foreground flex-1 text-left">— Aucun —</span>
+                  {!value && <Check className="h-3.5 w-3.5 text-primary" />}
+                </button>
+              )}
+
+              {options.length === 0 ? (
+                <p className="px-3 py-2 text-xs text-muted-foreground/60 italic">
+                  Aucun élément trouvé — vérifie que DISCORD_BOT_TOKEN et DISCORD_GUILD_ID sont configurés.
+                </p>
+              ) : filtered.length === 0 ? (
+                <p className="px-3 py-2 text-xs text-muted-foreground/60 italic">Aucun résultat pour « {query} »</p>
+              ) : (
+                filtered.map((o) => (
+                  <button key={o.id} type="button" onClick={() => { onChange(o.id); handleClose(); }}
                     className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 transition-colors">
                     {o.icon}
                     {o.color && <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: o.color }} />}
                     <span className="flex-1 text-left truncate text-foreground" style={o.color ? { color: o.color } : {}}>{o.label}</span>
                     {value === o.id && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
                   </button>
-                ))}
-              </>
-            )}
+                ))
+              )}
+            </div>
           </div>
         )}
       </div>
