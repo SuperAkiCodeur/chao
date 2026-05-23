@@ -1,22 +1,24 @@
 import { Events, type GuildMember } from "discord.js";
 import type { AppEvent } from "../../../core/discord/types/appEvent.js";
-import { env } from "../../../core/config/env.js";
 import { logger } from "../../../core/app/logger.js";
 import { insertLog } from "../../../core/db/logger.js";
+import { getSetting, SETTING_KEYS } from "../../../core/db/settings.js";
 
 export const memberJoinEvent: AppEvent<Events.GuildMemberAdd> = {
   name: Events.GuildMemberAdd,
 
   async execute(member: GuildMember): Promise<void> {
-    if (!env.MEMBER_ROLE_ID) {
+    const memberRoleId = await getSetting(SETTING_KEYS.MEMBER_ROLE_ID);
+
+    if (!memberRoleId) {
       return;
     }
 
-    const role = member.guild.roles.cache.get(env.MEMBER_ROLE_ID);
+    const role = member.guild.roles.cache.get(memberRoleId);
 
     if (!role) {
-      logger.warn("[members] MEMBER_ROLE_ID set but role not found in guild", {
-        roleId: env.MEMBER_ROLE_ID,
+      logger.warn("[members] member_role_id set but role not found in guild", {
+        roleId: memberRoleId,
         guildId: member.guild.id,
       });
       return;

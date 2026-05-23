@@ -1,7 +1,7 @@
 import { Events, type Message } from "discord.js";
 import type { AppEvent } from "../../../core/discord/types/appEvent.js";
 import { logger } from "../../../core/app/logger.js";
-import { env } from "../../../core/config/env.js";
+import { getSetting, SETTING_KEYS } from "../../../core/db/settings.js";
 import { handleCemantixGuess } from "../services/cemantix.service.js";
 
 export const cemantixMessageCreateEvent: AppEvent<Events.MessageCreate> = {
@@ -9,7 +9,8 @@ export const cemantixMessageCreateEvent: AppEvent<Events.MessageCreate> = {
 
   async execute(message: Message): Promise<void> {
     // Only handle messages in the dedicated Cémantix channel
-    if (!env.CEMANTIX_CHANNEL_ID || message.channelId !== env.CEMANTIX_CHANNEL_ID) {
+    const cemantixChannelId = await getSetting(SETTING_KEYS.CEMANTIX_CHANNEL_ID);
+    if (!cemantixChannelId || message.channelId !== cemantixChannelId) {
       return;
     }
 

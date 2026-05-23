@@ -7,6 +7,7 @@ import type {
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlags } from "discord.js";
 import { env } from "../../../core/config/env.js";
 import { logger } from "../../../core/app/logger.js";
+import { getSetting, SETTING_KEYS } from "../../../core/db/settings.js";
 import {
   addSpectatorRoleByUserId,
   removeSpectatorRoleByUserId,
@@ -371,7 +372,7 @@ export async function startWatchParty(
     guildId: interaction.guildId,
     channelId: interaction.channelId,
     messageId: message.id,
-    roleId: env.SPECTATOR_ROLE_ID,
+    roleId: await getSetting(SETTING_KEYS.WATCH_SPECTATOR_ROLE_ID) ?? "",
     title: resolvedTitle,
     mediaType: type,
     mediaId: media.mediaId,

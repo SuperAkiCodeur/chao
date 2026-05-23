@@ -5,8 +5,8 @@ import {
   SlashCommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { env } from "../../../core/config/env.js";
 import { logger } from "../../../core/app/logger.js";
+import { getSetting, SETTING_KEYS } from "../../../core/db/settings.js";
 import { VALORANT_CONSTANTS } from "../domain/valorant.constants.js";
 import type { ValorantStatsType } from "../domain/valorant.types.js";
 import {
@@ -147,9 +147,10 @@ export const valorantCommand = {
       return;
     }
 
-    if (env.VALORANT_CHANNEL_ID && interaction.channelId !== env.VALORANT_CHANNEL_ID) {
+    const valorantChannelId = await getSetting(SETTING_KEYS.VALORANT_CHANNEL_ID);
+    if (valorantChannelId && interaction.channelId !== valorantChannelId) {
       await interaction.reply({
-        content: `❌ Cette commande est réservée au salon <#${env.VALORANT_CHANNEL_ID}>.`,
+        content: `❌ Cette commande est réservée au salon <#${valorantChannelId}>.`,
         flags: MessageFlags.Ephemeral,
       });
       return;

@@ -5,8 +5,8 @@ import {
   type Message,
   type TextChannel,
 } from "discord.js";
-import { env } from "../../../core/config/env.js";
 import { logger } from "../../../core/app/logger.js";
+import { getSetting, SETTING_KEYS } from "../../../core/db/settings.js";
 import { CEMANTIX_CONSTANTS } from "../domain/cemantix.constants.js";
 import { CEMANTIX_WORDLIST } from "../domain/cemantix.wordlist.js";
 import type { CemantixGame, CemantixTopGuess } from "../domain/cemantix.types.js";
@@ -103,12 +103,13 @@ export function getTemperatureLabel(score: number): string {
 // ---------------------------------------------------------------------------
 
 async function fetchCemantixChannel(client: Client): Promise<TextChannel | null> {
-  if (!env.CEMANTIX_CHANNEL_ID) {
-    logger.warn("[cemantix] CEMANTIX_CHANNEL_ID is not set");
+  const cemantixChannelId = await getSetting(SETTING_KEYS.CEMANTIX_CHANNEL_ID);
+  if (!cemantixChannelId) {
+    logger.warn("[cemantix] cemantix_channel_id not configured in dashboard settings");
     return null;
   }
 
-  const channel = await client.channels.fetch(env.CEMANTIX_CHANNEL_ID).catch(() => null);
+  const channel = await client.channels.fetch(cemantixChannelId).catch(() => null);
 
   if (!channel || channel.type !== ChannelType.GuildText) {
     return null;
@@ -285,9 +286,7 @@ export async function startDailyCemantixGame(client: Client): Promise<void> {
   const channel = await fetchCemantixChannel(client);
 
   if (!channel) {
-    logger.error("[cemantix] Channel not found or not a text channel", {
-      channelId: env.CEMANTIX_CHANNEL_ID,
-    });
+    logger.error("[cemantix] Channel not found or not a text channel (check dashboard settings)");
     return;
   }
 
