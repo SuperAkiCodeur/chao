@@ -1,4 +1,5 @@
 import {
+  EmbedBuilder,
   MessageFlags,
   PermissionFlagsBits,
   SlashCommandBuilder,
@@ -13,6 +14,59 @@ import {
   buildStatsEmbed,
   linkValorantAccount,
 } from "../services/valorant.service.js";
+
+// ---------------------------------------------------------------------------
+// Help embed
+// ---------------------------------------------------------------------------
+
+function buildHelpEmbed(): EmbedBuilder {
+  return new EmbedBuilder()
+    .setColor(0xff4655) // rouge Valorant
+    .setTitle("🎮 Commandes Valorant")
+    .setDescription("Toutes les commandes disponibles et comment les utiliser.")
+    .addFields(
+      {
+        name: "`/valorant link riot_id: <RiotID#Tag>`",
+        value:
+          "Lie ton compte Riot à ton profil Discord.\n" +
+          "→ Nécessaire avant d'utiliser les autres commandes.\n" +
+          "Exemple : `/valorant link riot_id: Player#EUW`",
+      },
+      {
+        name: "`/valorant results [player]`",
+        value:
+          "Affiche les derniers matchs d'un joueur avec K/D, résultats et rang.\n" +
+          "→ Sans option : tes propres résultats.\n" +
+          "Exemple : `/valorant results player: @Akash`",
+      },
+      {
+        name: "`/valorant stats type: <type> [player]`",
+        value:
+          "Statistiques détaillées selon le type choisi :\n" +
+          "• **Global** — K/D, winrate, headshot%, etc.\n" +
+          "• **Par agent** — stats par personnage joué\n" +
+          "• **Par map** — winrate par carte\n" +
+          "• **Temps de jeu** — heures passées en jeu\n" +
+          "→ Sans option player : tes propres stats.\n" +
+          "Exemple : `/valorant stats type: Par agent player: @Akash`",
+      },
+      {
+        name: "`/valorant leaderboard`",
+        value:
+          "Classement des membres du serveur par rang Valorant.\n" +
+          "→ Seuls les joueurs ayant fait `/valorant link` apparaissent.",
+      },
+      {
+        name: "`/valorant help`",
+        value: "Affiche ce message d'aide.",
+      },
+    )
+    .setFooter({ text: "Toutes les données proviennent de tracker.gg via Henrik API" });
+}
+
+// ---------------------------------------------------------------------------
+// Command
+// ---------------------------------------------------------------------------
 
 export const valorantCommand = {
   data: new SlashCommandBuilder()
@@ -68,6 +122,11 @@ export const valorantCommand = {
             .setRequired(false),
         ),
     )
+    .addSubcommand((sub) =>
+      sub
+        .setName("help")
+        .setDescription("Affiche toutes les commandes Valorant disponibles"),
+    )
     .setDefaultMemberPermissions(PermissionFlagsBits.SendMessages),
 
   async execute(interaction: ChatInputCommandInteraction): Promise<void> {
@@ -79,6 +138,14 @@ export const valorantCommand = {
       return;
     }
 
+    const subcommand = interaction.options.getSubcommand(true);
+
+    // help répond partout, sans restriction de salon
+    if (subcommand === "help") {
+      await interaction.reply({ embeds: [buildHelpEmbed()], flags: MessageFlags.Ephemeral });
+      return;
+    }
+
     if (env.VALORANT_CHANNEL_ID && interaction.channelId !== env.VALORANT_CHANNEL_ID) {
       await interaction.reply({
         content: `❌ Cette commande est réservée au salon <#${env.VALORANT_CHANNEL_ID}>.`,
@@ -86,8 +153,6 @@ export const valorantCommand = {
       });
       return;
     }
-
-    const subcommand = interaction.options.getSubcommand(true);
 
     // link répond en éphémère, les autres en public
     const isPublic = subcommand !== "link";
