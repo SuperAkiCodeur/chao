@@ -26,10 +26,14 @@ function roleColor(color: number) {
 
 type Option = { id: string; label: string; color?: string; icon?: React.ReactNode };
 
+const DROPDOWN_CLOSE_MS = 180;
+const ACCORDION_CLOSE_MS = 240;
+
 function SelectDropdown({ name, options, value, onChange, placeholder = "Sélectionner…", searchPlaceholder = "Rechercher…" }: {
   name: string; options: Option[]; value: string; onChange: (v: string) => void; placeholder?: string; searchPlaceholder?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const [query, setQuery] = useState("");
   const ref = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -39,20 +43,27 @@ function SelectDropdown({ name, options, value, onChange, placeholder = "Sélect
     ? options.filter((o) => o.label.toLowerCase().includes(query.toLowerCase()))
     : options;
 
+  function startClose() {
+    setIsClosing(true);
+    setTimeout(() => {
+      setOpen(false);
+      setIsClosing(false);
+      setQuery("");
+    }, DROPDOWN_CLOSE_MS);
+  }
+
   function handleOpen() {
-    setOpen((o) => {
-      if (!o) {
-        // Reset search when opening
-        setQuery("");
-        setTimeout(() => searchRef.current?.focus(), 10);
-      }
-      return !o;
-    });
+    if (open) {
+      startClose();
+      return;
+    }
+    setOpen(true);
+    setQuery("");
+    setTimeout(() => searchRef.current?.focus(), 10);
   }
 
   function handleClose() {
-    setOpen(false);
-    setQuery("");
+    if (open && !isClosing) startClose();
   }
 
   useEffect(() => {
@@ -61,7 +72,7 @@ function SelectDropdown({ name, options, value, onChange, placeholder = "Sélect
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, []);
+  }, [open, isClosing]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>
@@ -81,11 +92,11 @@ function SelectDropdown({ name, options, value, onChange, placeholder = "Sélect
           ) : (
             <span className="text-muted-foreground flex-1 text-left">{placeholder}</span>
           )}
-          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0 ml-1" />
+          <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground shrink-0 ml-1 transition-transform duration-200 ${open && !isClosing ? "rotate-180" : ""}`} />
         </button>
 
-        {open && (
-          <div className="absolute left-0 top-full mt-1 z-50 w-full min-w-[200px] rounded-lg border border-border bg-card shadow-xl overflow-hidden animate-expand-down">
+        {(open || isClosing) && (
+          <div className={`absolute left-0 top-full mt-1 z-50 w-full min-w-[200px] rounded-lg border border-border bg-card shadow-xl overflow-hidden ${isClosing ? "animate-expand-up" : "animate-expand-down"}`}>
             {/* Search input */}
             <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
               <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
@@ -147,10 +158,23 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
   settings: Record<string, string>;
 }) {
   const [open, setOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const [vals, setVals] = useState<Record<string, string>>(settings);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
+
+  function toggle() {
+    if (open) {
+      setIsClosing(true);
+      setTimeout(() => {
+        setOpen(false);
+        setIsClosing(false);
+      }, ACCORDION_CLOSE_MS);
+    } else {
+      setOpen(true);
+    }
+  }
 
   // 0=text 2=voice 5=announcement 13=stage 15=forum — exclude 4=category, 1/3=DM
   const textChannels: Option[] = channels
@@ -185,18 +209,18 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
       {/* Toggle header */}
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={toggle}
         className="flex w-full items-center justify-between px-5 py-3.5 hover:bg-muted/30 transition-colors"
       >
         <div className="flex items-center gap-2">
           <Settings className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Configuration</span>
         </div>
-        <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
+        <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${open && !isClosing ? "rotate-180" : ""}`} />
       </button>
 
-      {open && (
-        <form onSubmit={handleSubmit} className="border-t border-border overflow-hidden animate-accordion-down">
+      {(open || isClosing) && (
+        <form onSubmit={handleSubmit} className={`border-t border-border overflow-hidden ${isClosing ? "animate-accordion-up" : "animate-accordion-down"}`}>
           <div className="p-5 space-y-4">
             {fields.map((f) => (
               <div key={f.key} className="grid grid-cols-2 gap-4 items-start">
