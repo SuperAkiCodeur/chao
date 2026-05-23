@@ -5,13 +5,12 @@ import { watchParties } from "@/lib/schema";
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { addLog } from "@/lib/logger";
+import { getSetting, SETTING_KEYS } from "@/lib/settings";
 
 export type ActionResult = { success: true } | { success: false; error: string };
 
 const GUILD_ID = process.env.DISCORD_GUILD_ID!;
 const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN!;
-const TICKET_CHANNEL_ID = process.env.TICKET_CHANNEL_ID!;
-const SPECTATOR_ROLE_ID = process.env.SPECTATOR_ROLE_ID!;
 
 function discordHeaders() {
   return { Authorization: `Bot ${BOT_TOKEN}`, "Content-Type": "application/json" };
@@ -29,8 +28,13 @@ export async function launchWatchParty(formData: FormData): Promise<ActionResult
     return { success: false, error: "Titre, date et heure sont requis." };
   }
 
+  const [TICKET_CHANNEL_ID, SPECTATOR_ROLE_ID] = await Promise.all([
+    getSetting(SETTING_KEYS.WATCH_CHANNEL_ID),
+    getSetting(SETTING_KEYS.WATCH_SPECTATOR_ROLE_ID),
+  ]);
+
   if (!TICKET_CHANNEL_ID || !SPECTATOR_ROLE_ID) {
-    return { success: false, error: "TICKET_CHANNEL_ID et SPECTATOR_ROLE_ID doivent être configurés." };
+    return { success: false, error: "Configure le salon et le rôle spectateur dans les Paramètres." };
   }
 
   const viewingAt = new Date(`${date}T${time}:00`);
@@ -113,12 +117,15 @@ export async function endWatchParty(messageId: string, title: string): Promise<A
 // ── Annuler ───────────────────────────────────────────────────────────────────
 
 export async function cancelWatchParty(messageId: string, title: string): Promise<ActionResult> {
+  const TICKET_CHANNEL_ID = await getSetting(SETTING_KEYS.WATCH_CHANNEL_ID);
   try {
     // Delete the Discord message (best-effort)
-    await fetch(`https://discord.com/api/v10/channels/${TICKET_CHANNEL_ID}/messages/${messageId}`, {
-      method: "DELETE",
-      headers: discordHeaders(),
-    }).catch(() => null);
+    if (TICKET_CHANNEL_ID) {
+      await fetch(`https://discord.com/api/v10/channels/${TICKET_CHANNEL_ID}/messages/${messageId}`, {
+        method: "DELETE",
+        headers: discordHeaders(),
+      }).catch(() => null);
+    }
 
     // Delete from DB (cascade handles users + ratings)
     await db

@@ -93,6 +93,12 @@ export const dashboardLogs = pgTable("dashboard_logs", {
   createdAt: text("created_at").notNull(),
 });
 
+export const dashboardSettings = pgTable("dashboard_settings", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
 export const valorantLinks = pgTable(
   "valorant_links",
   {
