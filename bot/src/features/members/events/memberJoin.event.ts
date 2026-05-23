@@ -2,6 +2,7 @@ import { Events, type GuildMember } from "discord.js";
 import type { AppEvent } from "../../../core/discord/types/appEvent.js";
 import { env } from "../../../core/config/env.js";
 import { logger } from "../../../core/app/logger.js";
+import { insertLog } from "../../../core/db/logger.js";
 
 export const memberJoinEvent: AppEvent<Events.GuildMemberAdd> = {
   name: Events.GuildMemberAdd,
@@ -27,6 +28,13 @@ export const memberJoinEvent: AppEvent<Events.GuildMemberAdd> = {
         userId: member.id,
         roleId: role.id,
         guildId: member.guild.id,
+      });
+      void insertLog({
+        type: "member",
+        action: "joined",
+        description: `👤 ${member.user.username} a rejoint le serveur`,
+        userId: member.id,
+        userName: member.user.username,
       });
     } catch (error) {
       logger.error("[members] Failed to add role to new member", {

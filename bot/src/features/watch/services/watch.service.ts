@@ -40,6 +40,7 @@ import {
 } from "../repositories/watch.repository.js";
 import { fetchTmdbMedia } from "./tmdb.service.js";
 import { buildWatchAnnouncement } from "./watchAnnouncement.service.js";
+import { insertLog } from "../../../core/db/logger.js";
 import {
   cancelWatchStartAnnouncement,
   scheduleWatchRatingClosure,
@@ -390,6 +391,19 @@ export async function startWatchParty(
     mediaId: watchParty.mediaId,
     title: watchParty.title,
     viewingAt: watchParty.viewingAt,
+  });
+
+  const typeLabel = type === "movie" ? "Film" : "Série";
+  const viewingFormatted = new Date(viewingDate).toLocaleString("fr-FR", {
+    day: "2-digit", month: "long", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris",
+  });
+  void insertLog({
+    type: "watch",
+    action: "party_created",
+    description: `📺 ${typeLabel} programmé : « ${resolvedTitle} » le ${viewingFormatted}`,
+    userId: interaction.user.id,
+    userName: interaction.user.username,
+    metadata: { title: resolvedTitle, mediaType: type, viewingAt: viewingDate.toISOString() },
   });
 
   return {

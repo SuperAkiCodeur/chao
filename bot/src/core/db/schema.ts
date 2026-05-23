@@ -1,4 +1,4 @@
-import { boolean, integer, pgTable, primaryKey, text } from "drizzle-orm/pg-core";
+import { boolean, integer, pgTable, primaryKey, serial, text } from "drizzle-orm/pg-core";
 
 export const watchParties = pgTable("watch_parties", {
   messageId: text("message_id").primaryKey(),
@@ -77,6 +77,21 @@ export const cemantixTopGuesses = pgTable(
 // ---------------------------------------------------------------------------
 // Valorant
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Dashboard Logs
+// ---------------------------------------------------------------------------
+
+export const dashboardLogs = pgTable("dashboard_logs", {
+  id: serial("id").primaryKey(),
+  type: text("type").notNull(), // 'cemantix' | 'watch' | 'valorant' | 'member' | 'moderation'
+  action: text("action").notNull(),
+  description: text("description").notNull(),
+  userId: text("user_id"),
+  userName: text("user_name"),
+  metadata: text("metadata"), // JSON string
+  createdAt: text("created_at").notNull(),
+});
 
 export const valorantLinks = pgTable(
   "valorant_links",

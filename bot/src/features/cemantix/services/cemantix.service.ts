@@ -28,6 +28,7 @@ import {
   preWarmSecretEmbedding,
   serializeError,
 } from "./cemantixSimilarity.service.js";
+import { insertLog } from "../../../core/db/logger.js";
 
 // ---------------------------------------------------------------------------
 // Helpers — date & word
@@ -308,6 +309,13 @@ export async function startDailyCemantixGame(client: Client): Promise<void> {
     channelId: channel.id,
     announcementMessageId: announcement.id,
   });
+
+  void insertLog({
+    type: "cemantix",
+    action: "new_game",
+    description: `🎮 Nouvelle partie démarrée — mot secret choisi`,
+    metadata: { date },
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -442,5 +450,14 @@ async function handleWin(message: Message<true>, game: CemantixGame): Promise<vo
     winnerId: message.author.id,
     winnerName,
     secretWord: game.secretWord,
+  });
+
+  void insertLog({
+    type: "cemantix",
+    action: "solved",
+    description: `🏆 ${winnerName} a trouvé le mot secret « ${game.secretWord} »`,
+    userId: message.author.id,
+    userName: winnerName,
+    metadata: { date: game.date, secretWord: game.secretWord },
   });
 }
