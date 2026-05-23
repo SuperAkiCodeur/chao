@@ -137,7 +137,7 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
+    <div className="rounded-xl border border-border bg-card">
       {/* Toggle header */}
       <button
         type="button"
