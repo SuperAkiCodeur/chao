@@ -53,7 +53,7 @@ export const CEMANTIX_WORDLIST: readonly string[] = [
 
   // Temps & saisons
   "matin", "soir", "nuit", "jour", "printemps", "été", "automne",
-  "hiver", "semaine", "mois", "année", "siècle", "instant", "aube",
+  "hiver", "semaine", "mois", "année", "siècle", "instant", "minuit",
 
   // Personnes & société
   "famille", "ami", "enfant", "père", "mère", "frère", "sœur",
