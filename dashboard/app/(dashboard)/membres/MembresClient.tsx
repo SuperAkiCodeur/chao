@@ -13,7 +13,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { kickMember, banMember, timeoutMember } from "./actions";
+import { kickMember, banMember, timeoutMember, updateMemberRoles } from "./actions";
 import type { ActionResult } from "./actions";
 
 export type DiscordRole = {
@@ -36,7 +36,8 @@ type DialogState =
   | { type: "detail"; member: DiscordMember }
   | { type: "kick"; member: DiscordMember }
   | { type: "ban"; member: DiscordMember }
-  | { type: "timeout"; member: DiscordMember };
+  | { type: "timeout"; member: DiscordMember }
+  | { type: "roles"; member: DiscordMember };
 
 const TIMEOUT_OPTIONS = [
   { label: "1 heure", value: 3600 },
@@ -118,7 +119,7 @@ function DetailDialog({
   member: DiscordMember;
   roles: DiscordRole[];
   onClose: () => void;
-  onAction: (type: "kick" | "ban" | "timeout") => void;
+  onAction: (type: "kick" | "ban" | "timeout" | "roles") => void;
 }) {
   const roleMap = new Map(roles.map((r) => [r.id, r]));
   const memberRoles = member.roles
@@ -191,34 +192,45 @@ function DetailDialog({
         )}
 
         {/* Action buttons */}
-        <div className="flex gap-2 pt-1">
+        <div className="space-y-2 pt-1">
           <Button
             size="sm"
             variant="outline"
-            className="flex-1 border-amber-600/30 text-amber-600 hover:bg-amber-600/10 hover:text-amber-600"
-            onClick={() => { onClose(); onAction("timeout"); }}
+            className="w-full border-primary/30 text-primary hover:bg-primary/10 hover:text-primary"
+            onClick={() => { onClose(); onAction("roles"); }}
           >
-            <Clock className="h-3.5 w-3.5" />
-            Sourdine
+            <Shield className="h-3.5 w-3.5" />
+            Gérer les rôles
           </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="flex-1 border-orange-600/30 text-orange-600 hover:bg-orange-600/10 hover:text-orange-600"
-            onClick={() => { onClose(); onAction("kick"); }}
-          >
-            <UserMinus className="h-3.5 w-3.5" />
-            Expulser
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="flex-1 border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
-            onClick={() => { onClose(); onAction("ban"); }}
-          >
-            <UserX className="h-3.5 w-3.5" />
-            Bannir
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex-1 border-amber-600/30 text-amber-600 hover:bg-amber-600/10 hover:text-amber-600"
+              onClick={() => { onClose(); onAction("timeout"); }}
+            >
+              <Clock className="h-3.5 w-3.5" />
+              Sourdine
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex-1 border-orange-600/30 text-orange-600 hover:bg-orange-600/10 hover:text-orange-600"
+              onClick={() => { onClose(); onAction("kick"); }}
+            >
+              <UserMinus className="h-3.5 w-3.5" />
+              Expulser
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex-1 border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              onClick={() => { onClose(); onAction("ban"); }}
+            >
+              <UserX className="h-3.5 w-3.5" />
+              Bannir
+            </Button>
+          </div>
         </div>
       </div>
     </DialogContent>
@@ -336,6 +348,88 @@ function TimeoutDialog({ member, onClose }: { member: DiscordMember; onClose: ()
         <Button variant="ghost" size="sm" onClick={onClose}>Annuler</Button>
         <Button size="sm" disabled={pending} onClick={handle}>
           {pending ? "Application…" : "Appliquer"}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  );
+}
+
+// ── Roles editor dialog ───────────────────────────────────────────────────────
+
+function RolesDialog({
+  member,
+  roles,
+  onClose,
+}: {
+  member: DiscordMember;
+  roles: DiscordRole[];
+  onClose: () => void;
+}) {
+  const [selected, setSelected] = useState<Set<string>>(new Set(member.roles));
+  const [error, setError] = useState<string | null>(null);
+  const [pending, start] = useTransition();
+
+  const manageable = roles
+    .filter((r) => r.name !== "@everyone")
+    .sort((a, b) => b.position - a.position);
+
+  function toggle(roleId: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(roleId)) next.delete(roleId); else next.add(roleId);
+      return next;
+    });
+  }
+
+  function handle() {
+    setError(null);
+    start(async () => {
+      const res: ActionResult = await updateMemberRoles(member.user.id, displayName(member), [...selected]);
+      if (res.success) onClose(); else setError(res.error);
+    });
+  }
+
+  return (
+    <DialogContent className="max-w-sm">
+      <DialogHeader>
+        <DialogTitle>Rôles — {displayName(member)}</DialogTitle>
+        <DialogDescription>Cochez ou décochez les rôles à attribuer.</DialogDescription>
+      </DialogHeader>
+
+      <div className="max-h-72 overflow-y-auto space-y-0.5 py-1">
+        {manageable.map((r) => {
+          const color = roleColor(r.color);
+          const checked = selected.has(r.id);
+          return (
+            <button
+              key={r.id}
+              type="button"
+              onClick={() => toggle(r.id)}
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 hover:bg-muted/40 transition-colors text-left"
+            >
+              {/* Checkbox */}
+              <div className={`h-4 w-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+                checked ? "border-primary bg-primary" : "border-border bg-transparent"
+              }`}>
+                {checked && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
+              </div>
+              {/* Color dot */}
+              <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+              {/* Name */}
+              <span className="text-sm flex-1 truncate" style={{ color: r.color !== 0 ? color : undefined }}>
+                {r.name}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {error && <p className="text-xs text-destructive">{error}</p>}
+
+      <DialogFooter>
+        <Button variant="ghost" size="sm" onClick={onClose}>Annuler</Button>
+        <Button size="sm" disabled={pending} onClick={handle}>
+          {pending ? "Enregistrement…" : "Enregistrer"}
         </Button>
       </DialogFooter>
     </DialogContent>
@@ -562,6 +656,13 @@ export function MembresClient({ members, roles }: { members: DiscordMember[]; ro
             onClose={close}
             onAction={(type) => setDialog({ type, member: dialog.member })}
           />
+        )}
+      </Dialog>
+
+      {/* Roles dialog */}
+      <Dialog open={dialog.type === "roles"} onOpenChange={(o) => !o && close()}>
+        {dialog.type === "roles" && (
+          <RolesDialog member={dialog.member} roles={roles} onClose={close} />
         )}
       </Dialog>
 

@@ -63,6 +63,36 @@ export async function banMember(userId: string, userName: string, reason: string
   }
 }
 
+export async function updateMemberRoles(
+  userId: string,
+  userName: string,
+  roleIds: string[],
+): Promise<ActionResult> {
+  try {
+    const res = await fetch(`https://discord.com/api/v10/guilds/${GUILD_ID}/members/${userId}`, {
+      method: "PATCH",
+      headers: discordHeaders(),
+      body: JSON.stringify({ roles: roleIds }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({})) as { message?: string };
+      return { success: false, error: err.message ?? `Erreur ${res.status}` };
+    }
+    void addLog({
+      type: "moderation",
+      action: "roles_updated",
+      description: `🎭 Rôles de ${userName} modifiés`,
+      userId,
+      userName,
+      metadata: { roleIds },
+    });
+    revalidatePath("/membres");
+    return { success: true };
+  } catch {
+    return { success: false, error: "Impossible de joindre l'API Discord." };
+  }
+}
+
 const TIMEOUT_LABELS: Record<string, string> = {
   "3600": "1 heure",
   "86400": "24 heures",
