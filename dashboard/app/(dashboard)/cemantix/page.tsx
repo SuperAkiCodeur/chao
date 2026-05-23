@@ -16,6 +16,7 @@ async function getDiscord() {
   const res = await fetch(`https://discord.com/api/v10/guilds/${GUILD_ID}/channels`, {
     headers: { Authorization: `Bot ${BOT_TOKEN}` }, cache: "no-store",
   });
+  if (!res.ok) console.error("[cemantix] channels fetch failed", res.status, await res.text().catch(() => ""));
   const channels: DiscordChannel[] = res.ok ? await res.json() : [];
   return { channels, roles: [] as DiscordRole[] };
 }

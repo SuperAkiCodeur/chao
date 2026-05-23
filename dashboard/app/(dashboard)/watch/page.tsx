@@ -50,6 +50,8 @@ async function getDiscord() {
     fetch(`https://discord.com/api/v10/guilds/${GUILD_ID}/channels`, { headers: { Authorization: `Bot ${BOT_TOKEN}` }, cache: "no-store" }),
     fetch(`https://discord.com/api/v10/guilds/${GUILD_ID}/roles`, { headers: { Authorization: `Bot ${BOT_TOKEN}` }, cache: "no-store" }),
   ]);
+  if (!chRes.ok) console.error("[watch] channels fetch failed", chRes.status, await chRes.text().catch(() => ""));
+  if (!roRes.ok) console.error("[watch] roles fetch failed", roRes.status, await roRes.text().catch(() => ""));
   const channels: DiscordChannel[] = chRes.ok ? await chRes.json() : [];
   const roles: DiscordRole[] = roRes.ok ? await roRes.json() : [];
   return { channels, roles };

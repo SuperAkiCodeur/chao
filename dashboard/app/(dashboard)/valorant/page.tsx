@@ -22,6 +22,7 @@ async function getChannels(): Promise<DiscordChannel[]> {
   const res = await fetch(`https://discord.com/api/v10/guilds/${DEFAULT_GUILD_ID}/channels`, {
     headers: { Authorization: `Bot ${BOT_TOKEN}` }, cache: "no-store",
   });
+  if (!res.ok) console.error("[valorant] channels fetch failed", res.status, await res.text().catch(() => ""));
   return res.ok ? res.json() : [];
 }
 

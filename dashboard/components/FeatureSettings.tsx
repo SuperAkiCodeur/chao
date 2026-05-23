@@ -69,16 +69,24 @@ function SelectDropdown({ name, options, value, onChange, placeholder = "Sélect
               <span className="text-muted-foreground flex-1 text-left">— Aucun —</span>
               {!value && <Check className="h-3.5 w-3.5 text-primary" />}
             </button>
-            <div className="my-1 border-t border-border" />
-            {options.map((o) => (
-              <button key={o.id} type="button" onClick={() => { onChange(o.id); setOpen(false); }}
-                className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 transition-colors">
-                {o.icon}
-                {o.color && <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: o.color }} />}
-                <span className="flex-1 text-left truncate text-foreground" style={o.color ? { color: o.color } : {}}>{o.label}</span>
-                {value === o.id && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
-              </button>
-            ))}
+            {options.length === 0 ? (
+              <p className="px-3 py-2 text-xs text-muted-foreground/60 italic">
+                Aucun salon trouvé — vérifie que DISCORD_BOT_TOKEN et DISCORD_GUILD_ID sont bien configurés sur Vercel.
+              </p>
+            ) : (
+              <>
+                <div className="my-1 border-t border-border" />
+                {options.map((o) => (
+                  <button key={o.id} type="button" onClick={() => { onChange(o.id); setOpen(false); }}
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 transition-colors">
+                    {o.icon}
+                    {o.color && <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: o.color }} />}
+                    <span className="flex-1 text-left truncate text-foreground" style={o.color ? { color: o.color } : {}}>{o.label}</span>
+                    {value === o.id && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
+                  </button>
+                ))}
+              </>
+            )}
           </div>
         )}
       </div>
@@ -100,13 +108,14 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
+  // 0=text 2=voice 5=announcement 13=stage 15=forum — exclude 4=category, 1/3=DM
   const textChannels: Option[] = channels
-    .filter((c) => c.type === 0 || c.type === 5)
+    .filter((c) => c.type !== 4)
     .sort((a, b) => a.position - b.position)
     .map((c) => ({
       id: c.id,
       label: c.name,
-      icon: c.type === 2
+      icon: c.type === 2 || c.type === 13
         ? <Volume2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
         : <Hash className="h-3.5 w-3.5 text-muted-foreground shrink-0" />,
     }));
