@@ -2,7 +2,7 @@ import { env } from "../../../core/config/env.js";
 import { logger } from "../../../core/app/logger.js";
 import { CEMANTIX_CONSTANTS } from "../domain/cemantix.constants.js";
 
-const HF_API_URL = `https://api-inference.huggingface.co/models/${CEMANTIX_CONSTANTS.HF_MODEL}`;
+const HF_API_URL = `https://router.huggingface.co/hf-inference/models/${CEMANTIX_CONSTANTS.HF_MODEL}/pipeline/feature-extraction`;
 
 // ---------------------------------------------------------------------------
 // In-memory embedding cache — cleared at each new game
