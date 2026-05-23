@@ -194,6 +194,12 @@ body::after {
   to   { background-position: 200% center; }
 }
 
+/* Écran de chargement — remplit le logo de bas en haut */
+@keyframes logo-fill {
+  from { clip-path: inset(100% 0 0 0); }
+  to   { clip-path: inset(0% 0 0 0); }
+}
+
 @utility animate-expand-down    { animation: expand-down    0.22s ease-out both; }
 @utility animate-expand-up      { animation: expand-up      0.18s ease-in  both; }
 /* display:grid + overflow:hidden activés pendant animation seulement (onAnimationEnd les retire) */

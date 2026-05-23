@@ -6,6 +6,7 @@ import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { LayoutDashboard, Gamepad2, Clapperboard, Users, ScrollText, LogOut } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
+import { LogoSVG } from "./LogoSVG";
 
 // Logo officiel Valorant (V avec la coupure caractéristique sur le côté droit)
 function ValorantIcon({ className }: { className?: string }) {
@@ -37,8 +38,7 @@ export function Sidebar() {
     <aside className="flex h-screen w-56 flex-col bg-sidebar border-r border-sidebar-border shrink-0">
       {/* Logo */}
       <div className="flex h-14 items-center gap-2.5 px-5 border-b border-sidebar-border">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo.png" alt="Chao" className="h-7 w-7 object-contain" />
+        <LogoSVG className="h-7 w-auto text-sidebar-foreground" />
         <span className="font-semibold text-sm tracking-wide text-sidebar-foreground">Chao</span>
       </div>
 
