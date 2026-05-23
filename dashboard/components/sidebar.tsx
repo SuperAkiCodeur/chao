@@ -3,14 +3,28 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Gamepad2, Clapperboard, Crosshair, Users, ScrollText, LogOut } from "lucide-react";
+import { LayoutDashboard, Gamepad2, Clapperboard, Users, ScrollText, LogOut } from "lucide-react";
+
+// Logo officiel Valorant (V avec la coupure caractéristique sur le côté droit)
+function ValorantIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
+      {/* Trait gauche */}
+      <polygon points="0,1 3.5,1 12,21 8.5,21" />
+      {/* Trait droit bas */}
+      <polygon points="12,21 15.5,21 19,12 15.5,12" />
+      {/* Trait droit haut (séparé par la coupure) */}
+      <polygon points="16.5,10 20,10 23,1 19.5,1" />
+    </svg>
+  );
+}
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/cemantix", label: "Cémantix", icon: Gamepad2 },
-  { href: "/watch", label: "Cinéma", icon: Clapperboard },
-  { href: "/valorant", label: "Valorant", icon: Crosshair },
   { href: "/membres", label: "Membres", icon: Users },
+  { href: "/watch", label: "Cinéma", icon: Clapperboard },
+  { href: "/cemantix", label: "Cémantix", icon: Gamepad2 },
+  { href: "/valorant", label: "Valorant", icon: ValorantIcon },
   { href: "/logs", label: "Logs", icon: ScrollText },
 ];
 
