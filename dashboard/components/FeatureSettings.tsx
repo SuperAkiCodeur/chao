@@ -85,7 +85,7 @@ function SelectDropdown({ name, options, value, onChange, placeholder = "Sélect
         </button>
 
         {open && (
-          <div className="absolute left-0 top-full mt-1 z-50 w-full min-w-[200px] rounded-lg border border-border bg-card shadow-xl animate-scale-in">
+          <div className="absolute left-0 top-full mt-1 z-50 w-full min-w-[200px] rounded-lg border border-border bg-card shadow-xl animate-expand-down">
             {/* Search input */}
             <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
               <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
@@ -196,7 +196,7 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
       </button>
 
       {open && (
-        <form onSubmit={handleSubmit} className="border-t border-border animate-slide-down">
+        <form onSubmit={handleSubmit} className="border-t border-border animate-accordion-down">
           <div className="p-5 space-y-4">
             {fields.map((f) => (
               <div key={f.key} className="grid grid-cols-2 gap-4 items-start">
