@@ -12,13 +12,12 @@ const TYPE_CONFIG: Record<string, { label: string; variant: "default" | "seconda
   moderation: { label: "Modération", variant: "warning" },
 };
 
-const DISCORD_TYPES  = ["member", "moderation"];
-const FEATURE_TYPES  = ["cemantix", "watch", "valorant"];
-
 const FILTERS = [
-  { id: "all",      label: "Tout"     },
-  { id: "discord",  label: "Discord"  },
-  { id: "features", label: "Features" },
+  { id: "all",      label: "Tout",     types: null                      },
+  { id: "discord",  label: "Discord",  types: ["member", "moderation"]  },
+  { id: "cemantix", label: "Cémantix", types: ["cemantix"]              },
+  { id: "watch",    label: "Cinéma",   types: ["watch"]                 },
+  { id: "valorant", label: "Valorant", types: ["valorant"]              },
 ] as const;
 
 type FilterId = typeof FILTERS[number]["id"];
@@ -43,10 +42,11 @@ function formatFull(iso: string): string {
 export function LogsClient({ logs }: { logs: Log[] }) {
   const [active, setActive] = useState<FilterId>("all");
 
+  const activeFilter = FILTERS.find((f) => f.id === active)!;
+
   const filtered = logs.filter((log) => {
-    if (active === "discord")  return DISCORD_TYPES.includes(log.type);
-    if (active === "features") return FEATURE_TYPES.includes(log.type);
-    return true;
+    if (activeFilter.types === null) return true;
+    return (activeFilter.types as readonly string[]).includes(log.type);
   });
 
   // Group by day
@@ -62,9 +62,12 @@ export function LogsClient({ logs }: { logs: Log[] }) {
   return (
     <div className="space-y-6">
       {/* Filter bar */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5 flex-wrap">
         {FILTERS.map((f) => {
           const isActive = active === f.id;
+          const count = f.types === null
+            ? logs.length
+            : logs.filter((l) => (f.types as readonly string[]).includes(l.type)).length;
           return (
             <button
               key={f.id}
@@ -76,12 +79,9 @@ export function LogsClient({ logs }: { logs: Log[] }) {
               }`}
             >
               {f.label}
-              {f.id !== "all" && (
-                <span className={`ml-1.5 text-[10px] ${isActive ? "opacity-60" : "opacity-40"}`}>
-                  {f.id === "discord"  ? logs.filter(l => DISCORD_TYPES.includes(l.type)).length  : ""}
-                  {f.id === "features" ? logs.filter(l => FEATURE_TYPES.includes(l.type)).length : ""}
-                </span>
-              )}
+              <span className={`ml-1.5 text-[10px] ${isActive ? "opacity-60" : "opacity-40"}`}>
+                {count}
+              </span>
             </button>
           );
         })}
