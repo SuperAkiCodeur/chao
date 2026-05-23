@@ -8,7 +8,7 @@ import { LayoutDashboard, Gamepad2, Clapperboard, Crosshair, Users, ScrollText, 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/cemantix", label: "Cémantix", icon: Gamepad2 },
-  { href: "/watch", label: "Watch", icon: Clapperboard },
+  { href: "/watch", label: "Cinéma", icon: Clapperboard },
   { href: "/valorant", label: "Valorant", icon: Crosshair },
   { href: "/membres", label: "Membres", icon: Users },
   { href: "/logs", label: "Logs", icon: ScrollText },
