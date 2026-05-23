@@ -19,7 +19,10 @@ export function clearEmbeddingCache(): void {
 // ---------------------------------------------------------------------------
 
 function serializeError(error: unknown): string {
-  if (error instanceof Error) return error.message;
+  if (error instanceof Error) {
+    const cause = (error as Error & { cause?: unknown }).cause;
+    return cause ? `${error.message} — cause: ${String(cause)}` : error.message;
+  }
   return String(error);
 }
 
