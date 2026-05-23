@@ -45,16 +45,27 @@ function formatDate(iso?: string | null): string | null {
   return isNaN(d.getTime()) ? null : d.toLocaleDateString("fr-FR");
 }
 
-export async function searchTmdbAction(title: string, type: string): Promise<TmdbResult | null> {
-  if (!TMDB_KEY) return null;
+export type TmdbSearchResponse =
+  | { ok: true; result: TmdbResult }
+  | { ok: false; error: string };
+
+export async function searchTmdbAction(title: string, type: string): Promise<TmdbSearchResponse> {
+  if (!TMDB_KEY) {
+    return { ok: false, error: "TMDB_API_KEY manquant — ajoute-le dans les variables d'environnement Vercel." };
+  }
   const mediaType = type === "tv" ? "tv" : "movie";
   try {
     const searchRes = await fetch(
       `${TMDB_BASE}/search/${mediaType}?api_key=${TMDB_KEY}&query=${encodeURIComponent(title)}&language=fr-FR&include_adult=false`,
     );
-    if (!searchRes.ok) return null;
+    if (!searchRes.ok) {
+      console.error("[tmdb] search failed", searchRes.status, await searchRes.text().catch(() => ""));
+      return { ok: false, error: `Erreur TMDB (${searchRes.status}). Réessaie.` };
+    }
     const searchData = await searchRes.json() as { results?: Array<{ id: number; title?: string; name?: string }> };
-    if (!searchData.results?.length) return null;
+    if (!searchData.results?.length) {
+      return { ok: false, error: "Aucun résultat pour ce titre. Essaie le titre original (anglais/VO)." };
+    }
 
     const best = searchData.results[0];
     const mediaId = String(best.id);
@@ -84,17 +95,21 @@ export async function searchTmdbAction(title: string, type: string): Promise<Tmd
     const releaseRaw = mediaType === "movie" ? details.release_date : details.first_air_date;
 
     return {
-      mediaId,
-      resolvedTitle,
-      posterUrl: details.poster_path ? `${POSTER_BASE}${details.poster_path}` : null,
-      overview: details.overview?.trim() || null,
-      genres: details.genres?.map(g => g.name) ?? [],
-      releaseDate: formatDate(releaseRaw),
-      runtime: formatRuntime(runtimeMin),
-      director,
+      ok: true,
+      result: {
+        mediaId,
+        resolvedTitle,
+        posterUrl: details.poster_path ? `${POSTER_BASE}${details.poster_path}` : null,
+        overview: details.overview?.trim() || null,
+        genres: details.genres?.map(g => g.name) ?? [],
+        releaseDate: formatDate(releaseRaw),
+        runtime: formatRuntime(runtimeMin),
+        director,
+      },
     };
-  } catch {
-    return null;
+  } catch (err) {
+    console.error("[tmdb] search error", err);
+    return { ok: false, error: "Erreur réseau lors de la recherche TMDB." };
   }
 }
 

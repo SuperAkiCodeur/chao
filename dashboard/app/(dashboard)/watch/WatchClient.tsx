@@ -14,7 +14,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { launchWatchParty, searchTmdbAction, endWatchParty, cancelWatchParty } from "./actions";
-import type { ActionResult, TmdbResult } from "./actions";
+import type { ActionResult, TmdbResult, TmdbSearchResponse } from "./actions";
 
 type Party = {
   messageId: string;
@@ -48,9 +48,9 @@ function LaunchDialog({ onClose }: { onClose: () => void }) {
     if (!fv.title.trim()) { setError("Entre un titre."); return; }
     setError(null);
     start(async () => {
-      const tmdb = await searchTmdbAction(fv.title, fv.mediaType);
-      if (!tmdb) { setError("Aucun résultat TMDB. Vérifie le titre et réessaie."); return; }
-      setState({ step: "confirm", tmdb, fv });
+      const res: TmdbSearchResponse = await searchTmdbAction(fv.title, fv.mediaType);
+      if (!res.ok) { setError(res.error); return; }
+      setState({ step: "confirm", tmdb: res.result, fv });
     });
   }
 
