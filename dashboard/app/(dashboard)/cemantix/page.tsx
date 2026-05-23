@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { cemantixGames, cemantixTopGuesses } from "@/lib/schema";
 import { eq, desc, sql } from "drizzle-orm";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export const dynamic = "force-dynamic";
@@ -9,10 +9,7 @@ export const dynamic = "force-dynamic";
 async function getData() {
   const today = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Paris" });
 
-  const [todayGame] = await db
-    .select()
-    .from(cemantixGames)
-    .where(eq(cemantixGames.date, today));
+  const [todayGame] = await db.select().from(cemantixGames).where(eq(cemantixGames.date, today));
 
   const topGuesses = todayGame
     ? await db
@@ -29,10 +26,7 @@ async function getData() {
     .limit(10);
 
   const leaderboard = await db
-    .select({
-      winnerName: cemantixGames.winnerName,
-      wins: sql<number>`count(*)::integer`,
-    })
+    .select({ winnerName: cemantixGames.winnerName, wins: sql<number>`count(*)::integer` })
     .from(cemantixGames)
     .where(eq(cemantixGames.isSolved, true))
     .groupBy(cemantixGames.winnerId, cemantixGames.winnerName)
@@ -42,103 +36,122 @@ async function getData() {
   return { todayGame, topGuesses, recentGames, leaderboard };
 }
 
+const MEDALS = ["🥇", "🥈", "🥉"];
+
 export default async function CemantixPage() {
   const { todayGame, topGuesses, recentGames, leaderboard } = await getData();
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Cémantix</h1>
-        <p className="text-muted-foreground">Suivi des parties quotidiennes</p>
+        <h1 className="text-xl font-semibold text-foreground">Cémantix</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">Parties quotidiennes de devinette sémantique</p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2">
         {/* Partie du jour */}
         <Card>
-          <CardHeader>
-            <CardTitle>Partie du jour</CardTitle>
-            <CardDescription>{todayGame?.date ?? "Aucune partie démarrée"}</CardDescription>
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold text-foreground">Partie du jour</CardTitle>
+              {todayGame ? (
+                <Badge variant={todayGame.isSolved ? "success" : "warning"}>
+                  {todayGame.isSolved ? "Résolu" : "En cours"}
+                </Badge>
+              ) : (
+                <Badge variant="muted">Pas démarrée</Badge>
+              )}
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-2">
             {todayGame ? (
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Mot secret</span>
-                  <span className="font-mono font-semibold">{todayGame.secretWord}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Statut</span>
-                  <Badge variant={todayGame.isSolved ? "success" : "warning"}>
-                    {todayGame.isSolved ? "✅ Résolu" : "🟡 En cours"}
-                  </Badge>
+              <>
+                <div className="rounded-lg bg-muted/40 px-4 py-3 flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">Mot secret</span>
+                  <span className="font-mono font-bold text-foreground">{todayGame.secretWord}</span>
                 </div>
                 {todayGame.winnerName && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Gagnant</span>
-                    <span className="font-medium">🏆 {todayGame.winnerName}</span>
+                  <div className="rounded-lg bg-muted/40 px-4 py-3 flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Gagnant</span>
+                    <span className="text-sm font-medium text-foreground">🏆 {todayGame.winnerName}</span>
                   </div>
                 )}
                 {todayGame.solvedAt && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Résolu à</span>
-                    <span>{new Date(todayGame.solvedAt).toLocaleTimeString("fr-FR")}</span>
+                  <div className="rounded-lg bg-muted/40 px-4 py-3 flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Résolu à</span>
+                    <span className="text-sm text-foreground">
+                      {new Date(todayGame.solvedAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                    </span>
                   </div>
                 )}
-              </div>
+              </>
             ) : (
-              <p className="text-sm text-muted-foreground">La partie démarre à 10h00 (heure de Paris).</p>
+              <p className="text-sm text-muted-foreground py-2">Démarre à 10h00 heure de Paris.</p>
             )}
           </CardContent>
         </Card>
 
         {/* Classement général */}
         <Card>
-          <CardHeader>
-            <CardTitle>Classement général</CardTitle>
-            <CardDescription>Toutes les victoires</CardDescription>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-sm font-semibold text-foreground">Classement général</CardTitle>
           </CardHeader>
           <CardContent>
             {leaderboard.length === 0 ? (
               <p className="text-sm text-muted-foreground">Aucune victoire enregistrée.</p>
             ) : (
-              <ol className="space-y-2">
+              <div className="space-y-1">
                 {leaderboard.map((entry, i) => (
-                  <li key={i} className="flex items-center justify-between text-sm">
-                    <span className="flex items-center gap-2">
-                      <span className="w-6 text-center">
-                        {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}.`}
+                  <div
+                    key={i}
+                    className="flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-muted/40 transition-colors"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-5 text-center text-sm">
+                        {MEDALS[i] ?? <span className="text-xs text-muted-foreground font-medium">{i + 1}</span>}
                       </span>
-                      <span className="font-medium">{entry.winnerName}</span>
-                    </span>
-                    <Badge variant="secondary">{entry.wins} victoire{entry.wins > 1 ? "s" : ""}</Badge>
-                  </li>
+                      <span className="text-sm font-medium text-foreground">{entry.winnerName}</span>
+                    </div>
+                    <Badge variant="secondary">
+                      {entry.wins} victoire{entry.wins > 1 ? "s" : ""}
+                    </Badge>
+                  </div>
                 ))}
-              </ol>
+              </div>
             )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Top 10 du jour */}
+      {/* Top mots du jour */}
       {topGuesses.length > 0 && (
         <Card>
-          <CardHeader>
-            <CardTitle>Top {topGuesses.length} mots du jour</CardTitle>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-sm font-semibold text-foreground">
+              Top {topGuesses.length} — {todayGame?.date}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {topGuesses.map((g, i) => (
-                <div key={g.word} className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-2">
-                    <span className="w-6 text-center text-muted-foreground">
-                      {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`}
+            <div className="space-y-1">
+              {topGuesses.map((g, i) => {
+                const pct = g.score;
+                return (
+                  <div key={g.word} className="flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-muted/40 transition-colors">
+                    <span className="w-5 text-center text-sm shrink-0">
+                      {MEDALS[i] ?? <span className="text-xs text-muted-foreground">#{i + 1}</span>}
                     </span>
-                    <span className="font-mono font-medium">{g.word}</span>
-                    <span className="text-xs text-muted-foreground">par {g.userName}</span>
-                  </span>
-                  <span className="font-semibold">{g.score}/100</span>
-                </div>
-              ))}
+                    <span className="font-mono text-sm font-medium text-foreground w-24 truncate">{g.word}</span>
+                    <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-primary/70 transition-all"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-semibold text-foreground w-12 text-right">{g.score}/100</span>
+                    <span className="text-xs text-muted-foreground w-20 truncate text-right">{g.userName}</span>
+                  </div>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
@@ -146,20 +159,27 @@ export default async function CemantixPage() {
 
       {/* Historique */}
       <Card>
-        <CardHeader>
-          <CardTitle>Historique des parties</CardTitle>
-          <CardDescription>10 dernières parties</CardDescription>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-sm font-semibold text-foreground">Historique des parties</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
+          <div className="space-y-1">
             {recentGames.map((game) => (
-              <div key={game.date} className="flex items-center justify-between text-sm py-1 border-b last:border-0">
-                <span className="text-muted-foreground">{game.date}</span>
-                <span className="font-mono font-medium">{game.secretWord}</span>
-                <span>{game.winnerName ?? "—"}</span>
-                <Badge variant={game.isSolved ? "success" : "outline"}>
-                  {game.isSolved ? "Résolu" : "Non résolu"}
-                </Badge>
+              <div
+                key={game.date}
+                className="flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-muted/40 transition-colors"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${game.isSolved ? "bg-success" : "bg-border"}`} />
+                  <span className="text-xs text-muted-foreground w-24">{game.date}</span>
+                  <span className="font-mono text-sm font-medium text-foreground">{game.secretWord}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground">{game.winnerName ?? "—"}</span>
+                  <Badge variant={game.isSolved ? "success" : "muted"}>
+                    {game.isSolved ? "Résolu" : "Non résolu"}
+                  </Badge>
+                </div>
               </div>
             ))}
           </div>
