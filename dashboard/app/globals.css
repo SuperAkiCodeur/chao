@@ -83,13 +83,9 @@
   --font-sans: var(--font-space-mono);
   --font-mono: var(--font-space-mono);
 
-  /* Animation tokens */
-  --animate-fade-up:      fade-up       0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-fade-in:      fade-in       0.2s  ease-out both;
-  --animate-expand-down:    expand-down    0.22s ease-out both;
-  --animate-expand-up:      expand-up      0.18s ease-in  both;
-  --animate-accordion-down: accordion-down 0.3s  ease-out both;
-  --animate-accordion-up:   accordion-up   0.24s ease-in  both;
+  /* Animation tokens (fade uniquement — les store sont définis via @utility) */
+  --animate-fade-up: fade-up 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade-in: fade-in 0.2s  ease-out both;
 }
 
 * { border-color: hsl(var(--border)); }
