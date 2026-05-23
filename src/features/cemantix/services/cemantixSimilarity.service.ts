@@ -2,7 +2,7 @@ import { env } from "../../../core/config/env.js";
 import { logger } from "../../../core/app/logger.js";
 import { CEMANTIX_CONSTANTS } from "../domain/cemantix.constants.js";
 
-const HF_API_URL = `https://router.huggingface.co/hf-inference/models/${CEMANTIX_CONSTANTS.HF_MODEL}/pipeline/feature-extraction`;
+const COHERE_EMBED_URL = "https://api.cohere.com/v2/embed";
 
 // ---------------------------------------------------------------------------
 // In-memory embedding cache — cleared at each new game
@@ -26,39 +26,6 @@ function serializeError(error: unknown): string {
   return String(error);
 }
 
-/**
- * Flattens the HuggingFace response into a 1-D embedding vector.
- * The API may return:
- *   - number[]      → already flat (rare for sentence-transformers)
- *   - number[][]    → [[...embedding...]]  ← most common
- *   - number[][][]  → [[[token1], [token2], ...]] (token-level, unlikely here)
- */
-function extractEmbedding(data: unknown): number[] {
-  if (!Array.isArray(data) || data.length === 0) {
-    throw new Error(`Empty or non-array response: ${JSON.stringify(data).slice(0, 120)}`);
-  }
-
-  // number[][] → take first row
-  if (Array.isArray(data[0])) {
-    const inner = data[0];
-    if (!Array.isArray(inner) || inner.length === 0) {
-      throw new Error(`Nested array is empty: ${JSON.stringify(data).slice(0, 120)}`);
-    }
-    // number[][][] → take first token of first row
-    if (Array.isArray(inner[0])) {
-      return inner[0] as number[];
-    }
-    return inner as number[];
-  }
-
-  // Already flat number[]
-  if (typeof data[0] === "number") {
-    return data as number[];
-  }
-
-  throw new Error(`Unrecognised embedding shape: ${JSON.stringify(data).slice(0, 120)}`);
-}
-
 // ---------------------------------------------------------------------------
 // Embedding fetch
 // ---------------------------------------------------------------------------
@@ -67,8 +34,8 @@ async function fetchEmbedding(word: string): Promise<number[]> {
   const cached = embeddingCache.get(word);
   if (cached) return cached;
 
-  if (!env.HUGGINGFACE_API_KEY) {
-    throw new Error("HUGGINGFACE_API_KEY n'est pas configuré dans .env");
+  if (!env.COHERE_API_KEY) {
+    throw new Error("COHERE_API_KEY n'est pas configuré dans .env");
   }
 
   const controller = new AbortController();
@@ -80,15 +47,18 @@ async function fetchEmbedding(word: string): Promise<number[]> {
   let response: Response;
 
   try {
-    response = await fetch(HF_API_URL, {
+    response = await fetch(COHERE_EMBED_URL, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${env.HUGGINGFACE_API_KEY}`,
+        Authorization: `Bearer ${env.COHERE_API_KEY}`,
         "Content-Type": "application/json",
+        Accept: "application/json",
       },
       body: JSON.stringify({
-        inputs: word,
-        options: { wait_for_model: true },
+        texts: [word],
+        model: CEMANTIX_CONSTANTS.COHERE_MODEL,
+        input_type: "search_query",
+        embedding_types: ["float"],
       }),
       signal: controller.signal,
     });
@@ -98,11 +68,20 @@ async function fetchEmbedding(word: string): Promise<number[]> {
 
   if (!response.ok) {
     const body = await response.text().catch(() => "(no body)");
-    throw new Error(`HuggingFace ${response.status}: ${body}`);
+    throw new Error(`Cohere API ${response.status}: ${body}`);
   }
 
-  const raw = await response.json();
-  const embedding = extractEmbedding(raw);
+  const raw = (await response.json()) as {
+    embeddings?: { float?: number[][] };
+  };
+
+  const embedding = raw?.embeddings?.float?.[0];
+
+  if (!embedding || embedding.length === 0) {
+    throw new Error(
+      `Unexpected Cohere response shape: ${JSON.stringify(raw).slice(0, 120)}`,
+    );
+  }
 
   embeddingCache.set(word, embedding);
   return embedding;
