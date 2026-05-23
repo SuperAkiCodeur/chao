@@ -41,8 +41,8 @@ export default async function ValorantPage() {
         <Card>
           <CardContent className="p-5">
             <div className="flex items-start justify-between mb-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-400/10">
-                <Crosshair className="h-4 w-4 text-red-400" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-600/10">
+                <Crosshair className="h-4 w-4 text-red-600" />
               </div>
             </div>
             <p className="text-2xl font-bold tracking-tight text-foreground">{accounts.length}</p>

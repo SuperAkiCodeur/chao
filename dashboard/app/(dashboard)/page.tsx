@@ -53,8 +53,8 @@ export default async function HomePage() {
       value: String(totalGames),
       sub: topWinner?.winnerName ? `Meilleur : ${topWinner.winnerName} (${topWinner.wins})` : "Aucune encore",
       icon: Trophy,
-      color: "text-yellow-400",
-      bg: "bg-yellow-400/10",
+      color: "text-amber-600",
+      bg: "bg-amber-600/10",
     },
     {
       label: "Cémantix aujourd'hui",
@@ -69,16 +69,16 @@ export default async function HomePage() {
       value: String(activeWatches),
       sub: "diffusions en cours",
       icon: Clapperboard,
-      color: "text-pink-400",
-      bg: "bg-pink-400/10",
+      color: "text-rose-600",
+      bg: "bg-rose-600/10",
     },
     {
       label: "Comptes Valorant",
       value: String(totalValorant),
       sub: "joueurs enregistrés",
       icon: Crosshair,
-      color: "text-red-400",
-      bg: "bg-red-400/10",
+      color: "text-red-600",
+      bg: "bg-red-600/10",
     },
   ];
 

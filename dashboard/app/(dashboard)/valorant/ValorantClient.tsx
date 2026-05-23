@@ -27,12 +27,12 @@ type Account = {
 };
 
 const REGION_COLORS: Record<string, string> = {
-  eu: "text-blue-400",
-  na: "text-red-400",
-  ap: "text-yellow-400",
-  kr: "text-pink-400",
-  br: "text-green-400",
-  latam: "text-orange-400",
+  eu: "text-blue-600",
+  na: "text-red-600",
+  ap: "text-amber-600",
+  kr: "text-rose-600",
+  br: "text-green-700",
+  latam: "text-orange-600",
 };
 
 const REGIONS = ["eu", "na", "ap", "kr", "br", "latam"];

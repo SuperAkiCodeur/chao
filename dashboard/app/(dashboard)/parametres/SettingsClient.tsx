@@ -165,7 +165,7 @@ function Section({
         <div className="px-5 pb-4 flex items-center justify-between">
           <div>
             {error && <p className="text-xs text-destructive">{error}</p>}
-            {saved && <p className="text-xs text-emerald-400">✓ Enregistré</p>}
+            {saved && <p className="text-xs text-emerald-700">✓ Enregistré</p>}
           </div>
           <Button type="submit" size="sm" disabled={pending}>
             <Save className="h-3.5 w-3.5" />

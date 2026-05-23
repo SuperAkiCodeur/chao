@@ -74,8 +74,8 @@ export default async function WatchPage() {
         <Card>
           <CardContent className="p-5">
             <div className="flex items-start justify-between mb-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-pink-400/10">
-                <Clapperboard className="h-4 w-4 text-pink-400" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-600/10">
+                <Clapperboard className="h-4 w-4 text-rose-600" />
               </div>
             </div>
             <p className="text-2xl font-bold tracking-tight text-foreground">{active.length}</p>
@@ -96,8 +96,8 @@ export default async function WatchPage() {
         <Card>
           <CardContent className="p-5">
             <div className="flex items-start justify-between mb-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-400/10">
-                <Users className="h-4 w-4 text-emerald-400" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-700/10">
+                <Users className="h-4 w-4 text-emerald-700" />
               </div>
             </div>
             <p className="text-2xl font-bold tracking-tight text-foreground">{totalParticipations}</p>

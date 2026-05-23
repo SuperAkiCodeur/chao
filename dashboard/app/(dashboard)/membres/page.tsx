@@ -64,8 +64,8 @@ export default async function MembresPage() {
         <Card>
           <CardContent className="p-5">
             <div className="flex items-start justify-between mb-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-yellow-400/10">
-                <Clock className="h-4 w-4 text-yellow-400" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-600/10">
+                <Clock className="h-4 w-4 text-amber-600" />
               </div>
             </div>
             <p className="text-2xl font-bold tracking-tight text-foreground">{timedOut.length}</p>
@@ -76,8 +76,8 @@ export default async function MembresPage() {
         <Card>
           <CardContent className="p-5">
             <div className="flex items-start justify-between mb-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-400/10">
-                <Shield className="h-4 w-4 text-emerald-400" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-700/10">
+                <Shield className="h-4 w-4 text-emerald-700" />
               </div>
             </div>
             <p className="text-2xl font-bold tracking-tight text-foreground">3</p>

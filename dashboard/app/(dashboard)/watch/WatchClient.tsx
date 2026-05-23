@@ -195,7 +195,7 @@ function PartyRow({
         {isActive ? (
           <>
             {isPast && (
-              <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs border-emerald-500/30 text-emerald-400 hover:bg-emerald-400/10 hover:text-emerald-400" onClick={onEnd}>
+              <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs border-emerald-700/30 text-emerald-700 hover:bg-emerald-700/10 hover:text-emerald-700" onClick={onEnd}>
                 <CheckCircle className="h-3 w-3" />
                 Terminer
               </Button>

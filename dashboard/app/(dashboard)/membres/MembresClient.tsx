@@ -163,7 +163,7 @@ function DetailDialog({
             <Row
               label="Sourdine jusqu'au"
               value={
-                <span className="text-yellow-400">
+                <span className="text-amber-600">
                   {new Date(member.communication_disabled_until!).toLocaleString("fr-FR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                 </span>
               }
@@ -195,7 +195,7 @@ function DetailDialog({
           <Button
             size="sm"
             variant="outline"
-            className="flex-1 border-yellow-500/30 text-yellow-400 hover:bg-yellow-400/10 hover:text-yellow-400"
+            className="flex-1 border-amber-600/30 text-amber-600 hover:bg-amber-600/10 hover:text-amber-600"
             onClick={() => { onClose(); onAction("timeout"); }}
           >
             <Clock className="h-3.5 w-3.5" />
@@ -204,7 +204,7 @@ function DetailDialog({
           <Button
             size="sm"
             variant="outline"
-            className="flex-1 border-orange-500/30 text-orange-400 hover:bg-orange-400/10 hover:text-orange-400"
+            className="flex-1 border-orange-600/30 text-orange-600 hover:bg-orange-600/10 hover:text-orange-600"
             onClick={() => { onClose(); onAction("kick"); }}
           >
             <UserMinus className="h-3.5 w-3.5" />
@@ -525,14 +525,14 @@ export function MembresClient({ members, roles }: { members: DiscordMember[]; ro
               <div className="flex items-center gap-1 shrink-0 ml-3" onClick={(e) => e.stopPropagation()}>
                 <button
                   onClick={(e) => { e.stopPropagation(); setDialog({ type: "timeout", member: m }); }}
-                  className="rounded-md p-1.5 text-muted-foreground hover:text-yellow-400 hover:bg-yellow-400/10 transition-colors"
+                  className="rounded-md p-1.5 text-muted-foreground hover:text-amber-600 hover:bg-amber-600/10 transition-colors"
                   title="Mettre en sourdine"
                 >
                   <Clock className="h-3.5 w-3.5" />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); setDialog({ type: "kick", member: m }); }}
-                  className="rounded-md p-1.5 text-muted-foreground hover:text-orange-400 hover:bg-orange-400/10 transition-colors"
+                  className="rounded-md p-1.5 text-muted-foreground hover:text-orange-600 hover:bg-orange-600/10 transition-colors"
                   title="Expulser"
                 >
                   <UserMinus className="h-3.5 w-3.5" />
