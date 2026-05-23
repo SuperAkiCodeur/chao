@@ -16,8 +16,6 @@ export type SettingField = {
   kind: "channel" | "role";
 };
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
 function roleColor(color: number) {
   return color === 0 ? "#4e5058" : `#${color.toString(16).padStart(6, "0")}`;
 }
@@ -26,48 +24,51 @@ function roleColor(color: number) {
 
 type Option = { id: string; label: string; color?: string; icon?: React.ReactNode };
 
-const DROPDOWN_CLOSE_MS = 180;
-const ACCORDION_OPEN_MS  = 300;
-const ACCORDION_CLOSE_MS = 240;
-
 function SelectDropdown({ name, options, value, onChange, placeholder = "Sélectionner…", searchPlaceholder = "Rechercher…" }: {
   name: string; options: Option[]; value: string; onChange: (v: string) => void; placeholder?: string; searchPlaceholder?: string;
 }) {
-  const [open, setOpen] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [animClass, setAnimClass] = useState("");
   const [query, setQuery] = useState("");
   const ref = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const selected = options.find((o) => o.id === value);
+  const isOpening = animClass === "animate-expand-down";
 
   const filtered = query.trim()
     ? options.filter((o) => o.label.toLowerCase().includes(query.toLowerCase()))
     : options;
 
-  function startClose() {
-    if (isClosing) return;
-    setIsClosing(true);
-    setTimeout(() => {
-      setOpen(false);
-      setIsClosing(false);
-      setQuery("");
-    }, DROPDOWN_CLOSE_MS);
+  function doOpen() {
+    setVisible(true);
+    setAnimClass("animate-expand-down");
+    setTimeout(() => searchRef.current?.focus(), 10);
   }
 
-  function handleOpen() {
-    if (open) { startClose(); return; }
-    setOpen(true);
-    setQuery("");
-    setTimeout(() => searchRef.current?.focus(), 10);
+  function doClose() {
+    if (!visible) return;
+    setAnimClass("animate-expand-up");
+  }
+
+  function handleAnimEnd() {
+    if (animClass === "animate-expand-up") {
+      setVisible(false);
+      setQuery("");
+    }
+    setAnimClass("");
+  }
+
+  function handleToggle() {
+    if (visible) doClose(); else doOpen();
   }
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) startClose();
+      if (ref.current && !ref.current.contains(e.target as Node)) doClose();
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, [open, isClosing]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>
@@ -75,7 +76,7 @@ function SelectDropdown({ name, options, value, onChange, placeholder = "Sélect
       <div ref={ref} className="relative">
         <button
           type="button"
-          onClick={handleOpen}
+          onClick={handleToggle}
           className="flex h-9 w-full items-center gap-2 rounded-lg border border-border bg-muted/40 pl-3 pr-2.5 text-sm hover:bg-muted/60 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50"
         >
           {selected ? (
@@ -87,12 +88,14 @@ function SelectDropdown({ name, options, value, onChange, placeholder = "Sélect
           ) : (
             <span className="text-muted-foreground flex-1 text-left">{placeholder}</span>
           )}
-          <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground shrink-0 ml-1 transition-transform duration-200 ${open && !isClosing ? "rotate-180" : ""}`} />
+          <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground shrink-0 ml-1 transition-transform duration-200 ${visible && isOpening || (visible && !animClass) ? "rotate-180" : ""}`} />
         </button>
 
-        {(open || isClosing) && (
-          <div className={`absolute left-0 top-full mt-1 z-50 w-full min-w-[200px] rounded-lg border border-border bg-card shadow-xl overflow-hidden ${isClosing ? "animate-expand-up" : "animate-expand-down"}`}>
-            {/* Search input */}
+        {visible && (
+          <div
+            className={`absolute left-0 top-full mt-1 z-50 w-full min-w-[200px] rounded-lg border border-border bg-card shadow-xl ${animClass}`}
+            onAnimationEnd={handleAnimEnd}
+          >
             <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
               <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               <input
@@ -100,7 +103,7 @@ function SelectDropdown({ name, options, value, onChange, placeholder = "Sélect
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Escape" && startClose()}
+                onKeyDown={(e) => e.key === "Escape" && doClose()}
                 placeholder={searchPlaceholder}
                 className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 outline-none"
               />
@@ -109,16 +112,14 @@ function SelectDropdown({ name, options, value, onChange, placeholder = "Sélect
               )}
             </div>
 
-            {/* Options list */}
             <div className="py-1 max-h-52 overflow-y-auto">
               {!query && (
-                <button type="button" onClick={() => { onChange(""); startClose(); }}
+                <button type="button" onClick={() => { onChange(""); doClose(); }}
                   className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 transition-colors">
                   <span className="text-muted-foreground flex-1 text-left">— Aucun —</span>
                   {!value && <Check className="h-3.5 w-3.5 text-primary" />}
                 </button>
               )}
-
               {options.length === 0 ? (
                 <p className="px-3 py-2 text-xs text-muted-foreground/60 italic">
                   Aucun élément trouvé — vérifie que DISCORD_BOT_TOKEN et DISCORD_GUILD_ID sont configurés.
@@ -127,7 +128,7 @@ function SelectDropdown({ name, options, value, onChange, placeholder = "Sélect
                 <p className="px-3 py-2 text-xs text-muted-foreground/60 italic">Aucun résultat pour « {query} »</p>
               ) : (
                 filtered.map((o) => (
-                  <button key={o.id} type="button" onClick={() => { onChange(o.id); startClose(); }}
+                  <button key={o.id} type="button" onClick={() => { onChange(o.id); doClose(); }}
                     className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 transition-colors">
                     {o.icon}
                     {o.color && <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: o.color }} />}
@@ -152,32 +153,31 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
   roles: DiscordRole[];
   settings: Record<string, string>;
 }) {
-  const [open, setOpen] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
-  // overflow-hidden seulement pendant l'animation — sinon les dropdowns internes seraient clippés
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [panelVisible, setPanelVisible] = useState(false);
+  const [panelAnimClass, setPanelAnimClass] = useState("");
   const [vals, setVals] = useState<Record<string, string>>(settings);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
-  function toggle() {
-    if (open) {
-      setIsClosing(true);
-      setIsAnimating(true);
-      setTimeout(() => {
-        setOpen(false);
-        setIsClosing(false);
-        setIsAnimating(false);
-      }, ACCORDION_CLOSE_MS);
+  const panelOpen = panelVisible && panelAnimClass !== "animate-accordion-up";
+
+  function togglePanel() {
+    if (panelVisible) {
+      setPanelAnimClass("animate-accordion-up");
     } else {
-      setOpen(true);
-      setIsAnimating(true);
-      setTimeout(() => setIsAnimating(false), ACCORDION_OPEN_MS);
+      setPanelVisible(true);
+      setPanelAnimClass("animate-accordion-down");
     }
   }
 
-  // 0=text 2=voice 5=announcement 13=stage 15=forum — exclude 4=category, 1/3=DM
+  function handlePanelAnimEnd() {
+    if (panelAnimClass === "animate-accordion-up") {
+      setPanelVisible(false);
+    }
+    setPanelAnimClass("");
+  }
+
   const textChannels: Option[] = channels
     .filter((c) => c.type !== 4)
     .sort((a, b) => a.position - b.position)
@@ -207,23 +207,23 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
 
   return (
     <div className="rounded-xl border border-border bg-card">
-      {/* Toggle header */}
       <button
         type="button"
-        onClick={toggle}
+        onClick={togglePanel}
         className="flex w-full items-center justify-between px-5 py-3.5 hover:bg-muted/30 transition-colors"
       >
         <div className="flex items-center gap-2">
           <Settings className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Configuration</span>
         </div>
-        <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${open && !isClosing ? "rotate-180" : ""}`} />
+        <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${panelOpen ? "rotate-180" : ""}`} />
       </button>
 
-      {(open || isClosing) && (
+      {panelVisible && (
         <form
           onSubmit={handleSubmit}
-          className={`border-t border-border ${isAnimating ? (isClosing ? "overflow-hidden animate-accordion-up" : "overflow-hidden animate-accordion-down") : ""}`}
+          onAnimationEnd={handlePanelAnimEnd}
+          className={`border-t border-border ${panelAnimClass}`}
         >
           <div className="p-5 space-y-4">
             {fields.map((f) => (

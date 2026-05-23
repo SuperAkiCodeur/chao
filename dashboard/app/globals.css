@@ -125,24 +125,24 @@ body::after {
   to   { opacity: 1; }
 }
 
-/* Dropdown — ouverture / fermeture (pur max-height, pas de fade) */
+/* Dropdown — clip-path reveal de haut en bas, -30px pour laisser passer la shadow */
 @keyframes expand-down {
-  from { max-height: 0; }
-  to   { max-height: 320px; }
+  from { clip-path: inset(0 0 100% 0); }
+  to   { clip-path: inset(0 0 -30px 0); }
 }
 @keyframes expand-up {
-  from { max-height: 320px; }
-  to   { max-height: 0; }
+  from { clip-path: inset(0 0 -30px 0); }
+  to   { clip-path: inset(0 0 100% 0); }
 }
 
-/* Accordéon — ouverture / fermeture */
+/* Accordéon — même principe, pas de shadow donc pas besoin de négatif */
 @keyframes accordion-down {
-  from { max-height: 0; }
-  to   { max-height: 480px; }
+  from { clip-path: inset(0 0 100% 0); }
+  to   { clip-path: inset(0 0 0% 0); }
 }
 @keyframes accordion-up {
-  from { max-height: 480px; }
-  to   { max-height: 0; }
+  from { clip-path: inset(0 0 0% 0); }
+  to   { clip-path: inset(0 0 100% 0); }
 }
 
 @keyframes shimmer {
@@ -150,8 +150,8 @@ body::after {
   to   { background-position: 200% center; }
 }
 
-/* Utilitaires explicites (garantit la génération même en Tailwind v4) */
+/* onAnimationEnd retire la classe → clip-path disparaît → shadow et dropdowns libres */
 @utility animate-expand-down    { animation: expand-down    0.22s ease-out both; }
 @utility animate-expand-up      { animation: expand-up      0.18s ease-in  both; }
-@utility animate-accordion-down { animation: accordion-down 0.30s ease-out both; }
-@utility animate-accordion-up   { animation: accordion-up   0.24s ease-in  both; }
+@utility animate-accordion-down { animation: accordion-down 0.28s ease-out both; }
+@utility animate-accordion-up   { animation: accordion-up   0.22s ease-in  both; }
