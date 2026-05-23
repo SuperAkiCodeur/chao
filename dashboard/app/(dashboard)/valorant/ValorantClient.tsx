@@ -257,7 +257,7 @@ export function ValorantClient({ accounts, defaultGuildId }: { accounts: Account
                   {new Date(account.linkedAt).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })}
                 </span>
                 {/* Action buttons — visible on hover */}
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex items-center gap-1">
                   <button
                     onClick={() => setDialog({ type: "edit", account })}
                     className="rounded-md p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"

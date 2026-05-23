@@ -1,27 +1,38 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Shield, Clock } from "lucide-react";
-import { MembresClient, type DiscordMember } from "./MembresClient";
+import { MembresClient, type DiscordMember, type DiscordRole } from "./MembresClient";
 
 export const dynamic = "force-dynamic";
 
 async function getMembers(): Promise<DiscordMember[]> {
   const guildId = process.env.DISCORD_GUILD_ID;
   const botToken = process.env.DISCORD_BOT_TOKEN;
-
   if (!guildId || !botToken) return [];
-
   const res = await fetch(
     `https://discord.com/api/v10/guilds/${guildId}/members?limit=100`,
     { headers: { Authorization: `Bot ${botToken}` }, cache: "no-store" },
   );
-
   if (!res.ok) return [];
   return res.json() as Promise<DiscordMember[]>;
 }
 
+async function getRoles(): Promise<DiscordRole[]> {
+  const guildId = process.env.DISCORD_GUILD_ID;
+  const botToken = process.env.DISCORD_BOT_TOKEN;
+  if (!guildId || !botToken) return [];
+  const res = await fetch(
+    `https://discord.com/api/v10/guilds/${guildId}/roles`,
+    { headers: { Authorization: `Bot ${botToken}` }, cache: "no-store" },
+  );
+  if (!res.ok) return [];
+  const roles = await res.json() as DiscordRole[];
+  // Sort by position desc so highest roles come first
+  return roles.sort((a, b) => b.position - a.position);
+}
+
 export default async function MembresPage() {
-  const members = await getMembers();
+  const [members, roles] = await Promise.all([getMembers(), getRoles()]);
 
   const timedOut = members.filter(
     (m) => m.communication_disabled_until && new Date(m.communication_disabled_until) > new Date(),
@@ -88,7 +99,7 @@ export default async function MembresPage() {
               Impossible de récupérer les membres. Vérifie que <code className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">DISCORD_GUILD_ID</code> et <code className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">DISCORD_BOT_TOKEN</code> sont configurés.
             </p>
           ) : (
-            <MembresClient members={members} />
+            <MembresClient members={members} roles={roles} />
           )}
         </CardContent>
       </Card>
