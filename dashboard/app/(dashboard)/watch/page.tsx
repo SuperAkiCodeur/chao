@@ -10,6 +10,9 @@ import { getAllSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
+const TMDB_KEY = process.env.TMDB_API_KEY;
+const POSTER_BASE = "https://image.tmdb.org/t/p/w300";
+
 async function getData() {
   const parties = await db
     .select()
@@ -33,6 +36,7 @@ async function getData() {
         messageId: party.messageId,
         title: party.title,
         mediaType: party.mediaType,
+        mediaId: party.mediaId,
         viewingAt: party.viewingAt,
         status: party.status,
         participants: Number(participants),
@@ -40,6 +44,34 @@ async function getData() {
       };
     }),
   );
+}
+
+type TmdbMeta = { posterUrl: string | null; overview: string | null; genres: string[] };
+
+async function fetchTmdbMeta(mediaId: string, mediaType: string): Promise<TmdbMeta> {
+  if (!TMDB_KEY || !mediaId || mediaId.startsWith("dashboard-")) {
+    return { posterUrl: null, overview: null, genres: [] };
+  }
+  try {
+    const type = mediaType === "movie" ? "movie" : "tv";
+    const res = await fetch(
+      `https://api.themoviedb.org/3/${type}/${mediaId}?api_key=${TMDB_KEY}&language=fr-FR`,
+      { next: { revalidate: 3600 } },
+    );
+    if (!res.ok) return { posterUrl: null, overview: null, genres: [] };
+    const d = await res.json() as {
+      poster_path?: string | null;
+      overview?: string;
+      genres?: { name: string }[];
+    };
+    return {
+      posterUrl: d.poster_path ? `${POSTER_BASE}${d.poster_path}` : null,
+      overview: d.overview?.trim() || null,
+      genres: d.genres?.map(g => g.name) ?? [],
+    };
+  } catch {
+    return { posterUrl: null, overview: null, genres: [] };
+  }
 }
 
 const GUILD_ID = process.env.DISCORD_GUILD_ID!;
@@ -60,6 +92,9 @@ async function getDiscord() {
 export default async function WatchPage() {
   const [parties, { channels, roles }, settings] = await Promise.all([getData(), getDiscord(), getAllSettings()]);
   const upcoming = parties.filter((p) => p.status === "active");
+  const upcomingMeta = await Promise.all(
+    upcoming.map(p => fetchTmdbMeta(p.mediaId, p.mediaType))
+  );
 
   return (
     <div className="space-y-6">
@@ -80,20 +115,45 @@ export default async function WatchPage() {
           {upcoming.length === 0 ? (
             <p className="text-sm text-muted-foreground">Aucun film programmé.</p>
           ) : (
-            <div className="space-y-2">
-              {upcoming.map((p) => {
+            <div className="space-y-3">
+              {upcoming.map((p, i) => {
+                const meta = upcomingMeta[i];
                 const date = new Date(p.viewingAt);
                 return (
-                  <div key={p.messageId} className="flex items-center justify-between gap-4 rounded-lg bg-muted/40 px-3 py-2.5">
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{p.title}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{p.mediaType === "movie" ? "Film" : "Série"}</p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-xs font-medium text-foreground">
-                        {date.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
+                  <div key={p.messageId} className="flex gap-3 rounded-lg bg-muted/40 p-3">
+                    {/* Poster */}
+                    {meta.posterUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={meta.posterUrl}
+                        alt={p.title}
+                        className="w-16 rounded shrink-0 object-cover"
+                        style={{ aspectRatio: "2/3" }}
+                      />
+                    ) : (
+                      <div
+                        className="w-16 rounded bg-muted shrink-0 flex items-center justify-center"
+                        style={{ aspectRatio: "2/3" }}
+                      >
+                        <Clapperboard className="h-5 w-5 text-muted-foreground/30" />
+                      </div>
+                    )}
+                    {/* Info */}
+                    <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{p.title}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {meta.genres.length > 0
+                            ? meta.genres.join(", ")
+                            : (p.mediaType === "movie" ? "Film" : "Série")}
+                        </p>
+                        {meta.overview && (
+                          <p className="text-xs text-muted-foreground/70 mt-1.5 line-clamp-2">{meta.overview}</p>
+                        )}
+                      </div>
+                      <p className="text-xs font-medium text-foreground mt-2">
+                        {date.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
+                        {" à "}
                         {date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
                       </p>
                     </div>

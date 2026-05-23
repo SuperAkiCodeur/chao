@@ -13,8 +13,8 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { launchWatchParty, endWatchParty, cancelWatchParty } from "./actions";
-import type { ActionResult } from "./actions";
+import { launchWatchParty, searchTmdbAction, endWatchParty, cancelWatchParty } from "./actions";
+import type { ActionResult, TmdbResult } from "./actions";
 
 type Party = {
   messageId: string;
@@ -32,43 +32,127 @@ type DialogState =
   | { type: "end"; party: Party }
   | { type: "cancel"; party: Party };
 
-// ── Launch dialog ─────────────────────────────────────────────────────────────
+// ── Launch dialog (2 étapes : recherche TMDB → confirmation) ─────────────────
+
+type FormValues = { title: string; mediaType: string; date: string; time: string };
+type LaunchStep = { step: "form" } | { step: "confirm"; tmdb: TmdbResult; fv: FormValues };
 
 function LaunchDialog({ onClose }: { onClose: () => void }) {
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+  const [state, setState] = useState<LaunchStep>({ step: "form" });
+  const [fv, setFv] = useState<FormValues>({ title: "", mediaType: "movie", date: tomorrow, time: "21:00" });
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
-  // Default to tomorrow at 21:00
-  const tomorrow = new Date(Date.now() + 86400000);
-  const defaultDate = tomorrow.toISOString().slice(0, 10);
-
-  function handle(formData: FormData) {
+  function handleSearch() {
+    if (!fv.title.trim()) { setError("Entre un titre."); return; }
     setError(null);
     start(async () => {
-      const res: ActionResult = await launchWatchParty(formData);
+      const tmdb = await searchTmdbAction(fv.title, fv.mediaType);
+      if (!tmdb) { setError("Aucun résultat TMDB. Vérifie le titre et réessaie."); return; }
+      setState({ step: "confirm", tmdb, fv });
+    });
+  }
+
+  function handleLaunch() {
+    if (state.step !== "confirm") return;
+    setError(null);
+    start(async () => {
+      const res: ActionResult = await launchWatchParty({
+        mediaType: state.fv.mediaType,
+        date: state.fv.date,
+        time: state.fv.time,
+        tmdb: state.tmdb,
+      });
       if (res.success) onClose(); else setError(res.error);
     });
+  }
+
+  if (state.step === "confirm") {
+    const { tmdb } = state;
+    const date = new Date(`${state.fv.date}T${state.fv.time}:00`);
+    return (
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Confirmer la séance</DialogTitle>
+          <DialogDescription>Vérifiez les informations avant de publier l&apos;annonce.</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3 mt-1">
+          {/* Film preview */}
+          <div className="flex gap-3 rounded-lg bg-muted/40 p-3">
+            {tmdb.posterUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={tmdb.posterUrl} alt="" className="w-16 rounded shrink-0 object-cover" style={{ aspectRatio: "2/3" }} />
+            ) : (
+              <div className="w-16 rounded bg-muted shrink-0 flex items-center justify-center" style={{ aspectRatio: "2/3" }}>
+                <Plus className="h-5 w-5 text-muted-foreground/30" />
+              </div>
+            )}
+            <div className="min-w-0 flex flex-col justify-between py-0.5">
+              <div>
+                <p className="text-sm font-semibold text-foreground">{tmdb.resolvedTitle}</p>
+                {tmdb.genres.length > 0 && (
+                  <p className="text-xs text-muted-foreground mt-0.5">{tmdb.genres.join(", ")}</p>
+                )}
+                {tmdb.overview && (
+                  <p className="text-xs text-muted-foreground/70 mt-1.5 line-clamp-3">{tmdb.overview}</p>
+                )}
+              </div>
+              {(tmdb.director || tmdb.runtime) && (
+                <p className="text-xs text-muted-foreground mt-1.5">
+                  {tmdb.director && `${state.fv.mediaType === "movie" ? "Réalisateur" : "Créateur"} : ${tmdb.director}`}
+                  {tmdb.director && tmdb.runtime && " · "}
+                  {tmdb.runtime}
+                </p>
+              )}
+            </div>
+          </div>
+          {/* Date */}
+          <div className="rounded-lg bg-muted/40 px-3 py-2.5 flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">Diffusion</span>
+            <span className="text-xs font-medium text-foreground">
+              {date.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} à {state.fv.time}
+            </span>
+          </div>
+          {error && <p className="text-xs text-destructive">{error}</p>}
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" size="sm" onClick={() => { setError(null); setState({ step: "form" }); }}>
+            ← Modifier
+          </Button>
+          <Button size="sm" disabled={pending} onClick={handleLaunch}>
+            {pending ? "Publication…" : "Lancer"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    );
   }
 
   return (
     <DialogContent>
       <DialogHeader>
         <DialogTitle>Lancer une séance</DialogTitle>
-        <DialogDescription>
-          Une annonce sera postée sur Discord et la séance sera enregistrée.
-        </DialogDescription>
+        <DialogDescription>Recherchez le titre sur TMDB pour récupérer les infos automatiquement.</DialogDescription>
       </DialogHeader>
-      <form action={handle} className="space-y-3 mt-2">
+      <div className="space-y-3 mt-2">
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Titre</label>
-          <Input name="title" placeholder="Interstellar" required />
+          <Input
+            placeholder="Interstellar"
+            value={fv.title}
+            onChange={e => setFv(v => ({ ...v, title: e.target.value }))}
+            onKeyDown={e => e.key === "Enter" && handleSearch()}
+          />
         </div>
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Type</label>
           <div className="flex gap-2">
             {[{ value: "movie", label: "🎬 Film" }, { value: "tv", label: "📺 Série" }].map((o) => (
               <label key={o.value} className="flex items-center gap-2 cursor-pointer flex-1">
-                <input type="radio" name="mediaType" value={o.value} defaultChecked={o.value === "movie"} className="accent-primary" />
+                <input type="radio" name="mediaType" value={o.value}
+                  checked={fv.mediaType === o.value}
+                  onChange={() => setFv(v => ({ ...v, mediaType: o.value }))}
+                  className="accent-primary" />
                 <span className="text-sm text-foreground">{o.label}</span>
               </label>
             ))}
@@ -77,21 +161,21 @@ function LaunchDialog({ onClose }: { onClose: () => void }) {
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">Date</label>
-            <Input name="date" type="date" defaultValue={defaultDate} required />
+            <Input type="date" value={fv.date} onChange={e => setFv(v => ({ ...v, date: e.target.value }))} />
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">Heure</label>
-            <Input name="time" type="time" defaultValue="21:00" required />
+            <Input type="time" value={fv.time} onChange={e => setFv(v => ({ ...v, time: e.target.value }))} />
           </div>
         </div>
         {error && <p className="text-xs text-destructive">{error}</p>}
-        <DialogFooter>
-          <Button type="button" variant="ghost" size="sm" onClick={onClose}>Annuler</Button>
-          <Button type="submit" size="sm" disabled={pending}>
-            {pending ? "Publication…" : "Lancer"}
-          </Button>
-        </DialogFooter>
-      </form>
+      </div>
+      <DialogFooter>
+        <Button type="button" variant="ghost" size="sm" onClick={onClose}>Annuler</Button>
+        <Button type="button" size="sm" disabled={pending} onClick={handleSearch}>
+          {pending ? "Recherche…" : "Suivant →"}
+        </Button>
+      </DialogFooter>
     </DialogContent>
   );
 }

@@ -11,22 +11,102 @@ export type ActionResult = { success: true } | { success: false; error: string }
 
 const GUILD_ID = process.env.DISCORD_GUILD_ID!;
 const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN!;
+const TMDB_KEY = process.env.TMDB_API_KEY;
+const TMDB_BASE = "https://api.themoviedb.org/3";
+const POSTER_BASE = "https://image.tmdb.org/t/p/w500";
 
 function discordHeaders() {
   return { Authorization: `Bot ${BOT_TOKEN}`, "Content-Type": "application/json" };
 }
 
+// ── TMDB ─────────────────────────────────────────────────────────────────────
+
+export type TmdbResult = {
+  mediaId: string;
+  resolvedTitle: string;
+  posterUrl: string | null;
+  overview: string | null;
+  genres: string[];
+  releaseDate: string | null;
+  runtime: string | null;
+  director: string | null;
+};
+
+function formatRuntime(minutes?: number | null): string | null {
+  if (!minutes) return null;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return h > 0 ? `${h}h ${String(m).padStart(2, "0")}min` : `${m} min`;
+}
+
+function formatDate(iso?: string | null): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? null : d.toLocaleDateString("fr-FR");
+}
+
+export async function searchTmdbAction(title: string, type: string): Promise<TmdbResult | null> {
+  if (!TMDB_KEY) return null;
+  const mediaType = type === "tv" ? "tv" : "movie";
+  try {
+    const searchRes = await fetch(
+      `${TMDB_BASE}/search/${mediaType}?api_key=${TMDB_KEY}&query=${encodeURIComponent(title)}&language=fr-FR&include_adult=false`,
+    );
+    if (!searchRes.ok) return null;
+    const searchData = await searchRes.json() as { results?: Array<{ id: number; title?: string; name?: string }> };
+    if (!searchData.results?.length) return null;
+
+    const best = searchData.results[0];
+    const mediaId = String(best.id);
+
+    const [detailsRes, creditsRes] = await Promise.all([
+      fetch(`${TMDB_BASE}/${mediaType}/${mediaId}?api_key=${TMDB_KEY}&language=fr-FR`),
+      fetch(`${TMDB_BASE}/${mediaType}/${mediaId}/credits?api_key=${TMDB_KEY}&language=fr-FR`),
+    ]);
+
+    const details = await detailsRes.json() as {
+      title?: string; name?: string; overview?: string; poster_path?: string | null;
+      release_date?: string; first_air_date?: string; runtime?: number | null;
+      episode_run_time?: number[]; genres?: { name: string }[];
+      created_by?: { name: string }[];
+    };
+    const credits = await creditsRes.json() as { crew?: { name: string; job?: string }[] };
+
+    const resolvedTitle = mediaType === "movie"
+      ? (details.title ?? best.title ?? title)
+      : (details.name  ?? best.name  ?? title);
+
+    const director = mediaType === "movie"
+      ? (credits.crew?.find(p => p.job === "Director")?.name ?? null)
+      : (details.created_by?.map(p => p.name).join(", ") || null);
+
+    const runtimeMin = mediaType === "movie" ? details.runtime : details.episode_run_time?.[0];
+    const releaseRaw = mediaType === "movie" ? details.release_date : details.first_air_date;
+
+    return {
+      mediaId,
+      resolvedTitle,
+      posterUrl: details.poster_path ? `${POSTER_BASE}${details.poster_path}` : null,
+      overview: details.overview?.trim() || null,
+      genres: details.genres?.map(g => g.name) ?? [],
+      releaseDate: formatDate(releaseRaw),
+      runtime: formatRuntime(runtimeMin),
+      director,
+    };
+  } catch {
+    return null;
+  }
+}
+
 // ── Lancer ────────────────────────────────────────────────────────────────────
 
-export async function launchWatchParty(formData: FormData): Promise<ActionResult> {
-  const title = formData.get("title")?.toString().trim();
-  const mediaType = formData.get("mediaType")?.toString() ?? "movie";
-  const date = formData.get("date")?.toString().trim();
-  const time = formData.get("time")?.toString().trim();
-
-  if (!title || !date || !time) {
-    return { success: false, error: "Titre, date et heure sont requis." };
-  }
+export async function launchWatchParty(params: {
+  mediaType: string;
+  date: string;
+  time: string;
+  tmdb: TmdbResult;
+}): Promise<ActionResult> {
+  const { mediaType, date, time, tmdb } = params;
 
   const [TICKET_CHANNEL_ID, SPECTATOR_ROLE_ID] = await Promise.all([
     getSetting(SETTING_KEYS.WATCH_CHANNEL_ID),
@@ -42,37 +122,52 @@ export async function launchWatchParty(formData: FormData): Promise<ActionResult
     return { success: false, error: "Date ou heure invalide." };
   }
 
-  const typeLabel = mediaType === "movie" ? "🎬 Film" : "📺 Série";
   const viewingFormatted = viewingAt.toLocaleString("fr-FR", {
-    weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris",
+    weekday: "long", day: "numeric", month: "long",
+    hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris",
   });
 
-  // Post announcement to Discord
+  // Embed identique au bot (couleur 0xe91e63, mêmes champs)
+  const embed: Record<string, unknown> = {
+    title: `🎬 ${tmdb.resolvedTitle}`,
+    description: tmdb.overview ?? "Synopsis indisponible.",
+    color: 0xe91e63,
+    fields: [
+      { name: "Type",        value: mediaType === "movie" ? "Film" : "Série",           inline: true },
+      { name: mediaType === "movie" ? "Réalisateur" : "Créateur",
+        value: tmdb.director ?? "Inconnu",                                               inline: true },
+      { name: mediaType === "movie" ? "Sortie" : "Première diffusion",
+        value: tmdb.releaseDate ?? "Inconnue",                                           inline: true },
+      { name: mediaType === "movie" ? "Durée" : "Durée épisode",
+        value: tmdb.runtime ?? "Inconnue",                                               inline: true },
+      { name: "Genres",      value: tmdb.genres.join(", ") || "Inconnus",               inline: false },
+      { name: "Visionnage",  value: viewingFormatted,                                   inline: false },
+    ],
+  };
+  if (tmdb.posterUrl) embed.image = { url: tmdb.posterUrl };
+
   const msgRes = await fetch(`https://discord.com/api/v10/channels/${TICKET_CHANNEL_ID}/messages`, {
     method: "POST",
     headers: discordHeaders(),
-    body: JSON.stringify({
-      content: `**${typeLabel} — ${title}**\n📅 ${viewingFormatted}\n\nUne diffusion a été programmée depuis le dashboard.`,
-    }),
+    body: JSON.stringify({ embeds: [embed] }),
   });
 
   if (!msgRes.ok) {
     const err = await msgRes.json().catch(() => ({})) as { message?: string };
-    return { success: false, error: `Impossible de poster l'annonce Discord : ${err.message ?? msgRes.status}` };
+    return { success: false, error: `Impossible de poster l'annonce : ${err.message ?? msgRes.status}` };
   }
 
   const msg = await msgRes.json() as { id: string };
 
-  // Insert into DB
   try {
     await db.insert(watchParties).values({
       messageId: msg.id,
       guildId: GUILD_ID,
       channelId: TICKET_CHANNEL_ID,
       roleId: SPECTATOR_ROLE_ID,
-      title,
+      title: tmdb.resolvedTitle,
       mediaType,
-      mediaId: `dashboard-${msg.id}`,
+      mediaId: tmdb.mediaId,
       viewingAt: viewingAt.toISOString(),
       status: "active",
     });
@@ -83,8 +178,8 @@ export async function launchWatchParty(formData: FormData): Promise<ActionResult
   void addLog({
     type: "watch",
     action: "party_created",
-    description: `📺 ${mediaType === "movie" ? "Film" : "Série"} programmé depuis le dashboard : « ${title} » le ${viewingFormatted}`,
-    metadata: { title, mediaType, viewingAt: viewingAt.toISOString() },
+    description: `📺 ${mediaType === "movie" ? "Film" : "Série"} programmé depuis le dashboard : « ${tmdb.resolvedTitle} » le ${viewingFormatted}`,
+    metadata: { title: tmdb.resolvedTitle, mediaType, viewingAt: viewingAt.toISOString(), mediaId: tmdb.mediaId },
   });
 
   revalidatePath("/watch");
@@ -119,7 +214,6 @@ export async function endWatchParty(messageId: string, title: string): Promise<A
 export async function cancelWatchParty(messageId: string, title: string): Promise<ActionResult> {
   const TICKET_CHANNEL_ID = await getSetting(SETTING_KEYS.WATCH_CHANNEL_ID);
   try {
-    // Delete the Discord message (best-effort)
     if (TICKET_CHANNEL_ID) {
       await fetch(`https://discord.com/api/v10/channels/${TICKET_CHANNEL_ID}/messages/${messageId}`, {
         method: "DELETE",
@@ -127,7 +221,6 @@ export async function cancelWatchParty(messageId: string, title: string): Promis
       }).catch(() => null);
     }
 
-    // Delete from DB (cascade handles users + ratings)
     await db
       .delete(watchParties)
       .where(and(eq(watchParties.messageId, messageId), eq(watchParties.guildId, GUILD_ID)));
