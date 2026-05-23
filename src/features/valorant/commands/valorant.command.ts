@@ -7,6 +7,7 @@ import {
 } from "discord.js";
 import { env } from "../../../core/config/env.js";
 import { logger } from "../../../core/app/logger.js";
+import { VALORANT_CONSTANTS } from "../domain/valorant.constants.js";
 import type { ValorantStatsType } from "../domain/valorant.types.js";
 import {
   buildLeaderboardEmbed,
@@ -21,7 +22,7 @@ import {
 
 function buildHelpEmbed(): EmbedBuilder {
   return new EmbedBuilder()
-    .setColor(0xff4655) // rouge Valorant
+    .setColor(VALORANT_CONSTANTS.EMBED_COLOR)
     .setTitle("🎮 Commandes Valorant")
     .setDescription("Toutes les commandes disponibles et comment les utiliser.")
     .addFields(
