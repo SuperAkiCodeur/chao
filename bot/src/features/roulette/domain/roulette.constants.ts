@@ -1,0 +1,8 @@
+export const ROULETTE_CONSTANTS = {
+  EMBED_COLOR_SPINNING: 0xf39c12,
+  EMBED_COLOR_WINNER:   0x57f287,
+  SPIN_DURATION_MS:     2500,
+  MAX_PARTICIPANTS:     20,
+  MIN_PARTICIPANTS:     2,
+  SPIN_VISIBLE_ROWS:    7,   // nombre de lignes affichées dans l'embed "spinning"
+} as const;

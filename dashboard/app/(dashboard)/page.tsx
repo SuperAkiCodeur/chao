@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { watchParties, valorantLinks } from "@/lib/schema";
 import { eq, count } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CommandsReference } from "@/components/CommandsReference";
 import { Clapperboard, Crosshair, TrendingUp } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -77,6 +78,26 @@ export default async function HomePage() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* Utilitaires */}
+      <div className="animate-fade-up" style={{ animationDelay: "100ms" }}>
+        <CommandsReference commands={[
+          {
+            name: "/roulette",
+            description:
+              "Tire au sort un participant parmi une liste de noms saisis manuellement. Le bot affiche d'abord une animation de sélection pendant ~2,5 secondes, puis révèle le gagnant dans un embed vert visible par tous dans le salon. Les doublons sont automatiquement ignorés.",
+            params: [
+              {
+                name: "participants",
+                description:
+                  "Noms séparés par des virgules ou des points-virgules — ex : Alice, Bob, Charlie. Maximum 20 participants, 50 caractères par nom.",
+                required: true,
+              },
+            ],
+            note: "La réponse est publique : tout le monde voit l'animation et le résultat dans le salon.",
+          },
+        ]} />
       </div>
 
       {/* Historique récent */}
