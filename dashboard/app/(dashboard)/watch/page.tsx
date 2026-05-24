@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clapperboard } from "lucide-react";
 import { WatchClient } from "./WatchClient";
 import { FeatureSettings, type DiscordChannel, type DiscordRole } from "@/components/FeatureSettings";
+import { CommandsReference } from "@/components/CommandsReference";
 import { ApiAttribution } from "@/components/ApiAttribution";
 import { getAllSettings } from "@/lib/settings";
 
@@ -184,6 +185,63 @@ export default async function WatchPage() {
           { key: "watch_spectator_role_id", label: "Rôle spectateur", description: "Rôle attribué aux participants", kind: "role" },
         ]}
       />
+
+      <CommandsReference commands={[
+        {
+          name: "/watch start",
+          description:
+            "Programme une diffusion. Le bot recherche automatiquement les métadonnées sur TMDB (affiche, synopsis, genres) puis publie l'annonce dans le salon configuré. Les membres peuvent s'inscrire via les boutons réaction. Un rappel est automatiquement posté 30 min avant la séance.",
+          adminOnly: true,
+          params: [
+            {
+              name: "type",
+              description: "Type de contenu à diffuser.",
+              required: true,
+              choices: ["Film", "Série"],
+            },
+            {
+              name: "title",
+              description: "Titre exact du contenu, recherché sur TMDB (deux étapes : recherche textuelle puis fiche détaillée).",
+              required: true,
+            },
+            {
+              name: "date",
+              description: "Date de la séance au format JJ/MM/AA — ex : 19/05/26.",
+              required: true,
+            },
+            {
+              name: "time",
+              description: "Heure de la séance au format HH:MM — ex : 21:00.",
+              required: true,
+            },
+          ],
+        },
+        {
+          name: "/watch end",
+          description:
+            "Termine une diffusion active et ouvre le vote de notation (⭐ à ⭐⭐⭐⭐⭐). Les membres inscrits reçoivent une notification. La note moyenne est ensuite calculée et affichée dans un récapitulatif.",
+          adminOnly: true,
+          params: [
+            {
+              name: "type",
+              description: "Type de contenu de la diffusion à terminer.",
+              required: true,
+              choices: ["Film", "Série"],
+            },
+            {
+              name: "title",
+              description: "Titre exact de la diffusion à clôturer (doit correspondre à une watch party active).",
+              required: true,
+            },
+          ],
+        },
+        {
+          name: "/watch help",
+          description:
+            "Affiche un récapitulatif de toutes les commandes Watch disponibles, directement dans Discord. La réponse est éphémère (visible uniquement par toi).",
+          adminOnly: true,
+        },
+      ]} />
 
       <ApiAttribution
         name="The Movie Database (TMDB)"
