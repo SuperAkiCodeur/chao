@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 const TYPE_CONFIG: Record<string, { label: string; variant: "default" | "secondary" | "success" | "warning" | "muted" | "destructive" }> = {
-  cemantix:   { label: "Cémantix",   variant: "default" },
   watch:      { label: "Watch",      variant: "secondary" },
   valorant:   { label: "Valorant",   variant: "destructive" },
   member:     { label: "Membre",     variant: "success" },
@@ -15,7 +14,6 @@ const TYPE_CONFIG: Record<string, { label: string; variant: "default" | "seconda
 const FILTERS = [
   { id: "all",      label: "Tout",     types: null                      },
   { id: "discord",  label: "Discord",  types: ["member", "moderation"]  },
-  { id: "cemantix", label: "Cémantix", types: ["cemantix"]              },
   { id: "watch",    label: "Cinéma",   types: ["watch"]                 },
   { id: "valorant", label: "Valorant", types: ["valorant"]              },
 ] as const;

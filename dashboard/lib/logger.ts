@@ -2,7 +2,7 @@ import { db } from "./db";
 import { dashboardLogs } from "./schema";
 
 export async function addLog(params: {
-  type: "cemantix" | "watch" | "valorant" | "member" | "moderation";
+  type: "watch" | "valorant" | "member" | "moderation";
   action: string;
   description: string;
   userId?: string | null;

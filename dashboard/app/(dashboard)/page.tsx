@@ -1,22 +1,12 @@
 import { db } from "@/lib/db";
-import { cemantixGames, watchParties, valorantLinks } from "@/lib/schema";
-import { eq, count, sql } from "drizzle-orm";
+import { watchParties, valorantLinks } from "@/lib/schema";
+import { eq, count } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Gamepad2, Clapperboard, Crosshair, Trophy, TrendingUp } from "lucide-react";
+import { Clapperboard, Crosshair, TrendingUp } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 async function getStats() {
-  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Paris" });
-
-  const [todayGame] = await db.select().from(cemantixGames).where(eq(cemantixGames.date, today));
-
-  const [{ total: totalGames }] = await db
-    .select({ total: count() })
-    .from(cemantixGames)
-    .where(eq(cemantixGames.isSolved, true));
-
   const [{ total: activeWatches }] = await db
     .select({ total: count() })
     .from(watchParties)
@@ -26,44 +16,19 @@ async function getStats() {
     .select({ total: count() })
     .from(valorantLinks);
 
-  const [topWinner] = await db
-    .select({ winnerName: cemantixGames.winnerName, wins: sql<number>`count(*)::integer` })
-    .from(cemantixGames)
-    .where(eq(cemantixGames.isSolved, true))
-    .groupBy(cemantixGames.winnerId, cemantixGames.winnerName)
-    .orderBy(sql`count(*) desc`)
-    .limit(1);
-
-  const recentGames = await db
+  const recentWatches = await db
     .select()
-    .from(cemantixGames)
-    .orderBy(sql`date desc`)
+    .from(watchParties)
+    .orderBy(watchParties.viewingAt)
     .limit(6);
 
-  return { todayGame, totalGames, activeWatches, totalValorant, topWinner, recentGames };
+  return { activeWatches, totalValorant, recentWatches };
 }
 
 export default async function HomePage() {
-  const { todayGame, totalGames, activeWatches, totalValorant, topWinner, recentGames } =
-    await getStats();
+  const { activeWatches, totalValorant, recentWatches } = await getStats();
 
   const stats = [
-    {
-      label: "Parties gagnées",
-      value: String(totalGames),
-      sub: topWinner?.winnerName ? `Meilleur : ${topWinner.winnerName} (${topWinner.wins})` : "Aucune encore",
-      icon: Trophy,
-      color: "text-amber-600",
-      bg: "bg-amber-600/10",
-    },
-    {
-      label: "Cémantix aujourd'hui",
-      value: todayGame ? (todayGame.isSolved ? "Résolu" : "En cours") : "—",
-      sub: todayGame?.winnerName ?? todayGame?.secretWord ?? "Démarre à 10h00",
-      icon: Gamepad2,
-      color: "text-primary",
-      bg: "bg-primary/10",
-    },
     {
       label: "Watch parties actives",
       value: String(activeWatches),
@@ -114,75 +79,36 @@ export default async function HomePage() {
         ))}
       </div>
 
-      {/* Bottom grid */}
-      <div className="grid gap-4 lg:grid-cols-2 animate-fade-up" style={{ animationDelay: "120ms" }}>
-        {/* Partie du jour */}
+      {/* Historique récent */}
+      <div className="animate-fade-up" style={{ animationDelay: "120ms" }}>
         <Card>
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-semibold text-foreground">Cémantix — aujourd'hui</CardTitle>
-              {todayGame && (
-                <Badge variant={todayGame.isSolved ? "success" : "warning"}>
-                  {todayGame.isSolved ? "Résolu" : "En cours"}
-                </Badge>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {todayGame ? (
-              <>
-                <Row label="Mot secret" value={<span className="font-mono font-semibold">{todayGame.secretWord}</span>} />
-                <Row label="Date" value={todayGame.date} />
-                {todayGame.winnerName && <Row label="Gagnant" value={`🏆 ${todayGame.winnerName}`} />}
-                {todayGame.solvedAt && (
-                  <Row
-                    label="Résolu à"
-                    value={new Date(todayGame.solvedAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
-                  />
-                )}
-              </>
-            ) : (
-              <p className="text-sm text-muted-foreground py-2">La partie démarre à 10h00 (heure de Paris).</p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Historique récent */}
-        <Card>
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-semibold text-foreground">Historique récent</CardTitle>
+              <CardTitle className="text-sm font-semibold text-foreground">Watch parties récentes</CardTitle>
               <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
             </div>
           </CardHeader>
           <CardContent className="space-y-1">
-            {recentGames.map((game) => (
-              <div
-                key={game.date}
-                className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-muted/40 transition-colors"
-              >
-                <div className="flex items-center gap-2.5">
-                  <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${game.isSolved ? "bg-success" : "bg-border"}`} />
-                  <span className="text-xs text-muted-foreground">{game.date}</span>
-                  <span className="font-mono text-xs font-medium text-foreground">{game.secretWord}</span>
+            {recentWatches.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-2">Aucune watch party pour l'instant.</p>
+            ) : (
+              recentWatches.map((wp) => (
+                <div
+                  key={wp.messageId}
+                  className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-muted/40 transition-colors"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${wp.status === "active" ? "bg-success" : "bg-border"}`} />
+                    <span className="text-xs text-muted-foreground">{wp.viewingAt}</span>
+                    <span className="text-xs font-medium text-foreground truncate max-w-[160px]">{wp.title}</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground truncate max-w-[80px]">{wp.status}</span>
                 </div>
-                <span className="text-xs text-muted-foreground truncate max-w-[80px]">
-                  {game.winnerName ?? "—"}
-                </span>
-              </div>
-            ))}
+              ))
+            )}
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
-}
-
-function Row({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="flex items-center justify-between rounded-lg bg-muted/40 px-3 py-2.5">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-xs font-medium text-foreground">{value}</span>
     </div>
   );
 }

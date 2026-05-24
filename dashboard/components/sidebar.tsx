@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Gamepad2, Clapperboard, Users, ScrollText, LogOut } from "lucide-react";
+import { LayoutDashboard, Clapperboard, Users, ScrollText, LogOut } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { LogoSVG } from "./LogoSVG";
 
@@ -26,7 +26,6 @@ const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/membres", label: "Membres", icon: Users },
   { href: "/watch", label: "Cinéma", icon: Clapperboard },
-  { href: "/cemantix", label: "Cémantix", icon: Gamepad2 },
   { href: "/valorant", label: "Valorant", icon: ValorantIcon },
   { href: "/logs", label: "Logs", icon: ScrollText },
 ];

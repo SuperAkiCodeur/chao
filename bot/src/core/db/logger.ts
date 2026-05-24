@@ -6,7 +6,7 @@ import { dashboardLogs } from "./schema.js";
  * Ne lève jamais d'exception — une erreur de log ne doit pas crasher le bot.
  */
 export async function insertLog(params: {
-  type: "cemantix" | "watch" | "valorant" | "member" | "moderation";
+  type: "watch" | "valorant" | "member" | "moderation";
   action: string;
   description: string;
   userId?: string | null;

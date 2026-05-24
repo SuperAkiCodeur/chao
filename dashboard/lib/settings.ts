@@ -8,8 +8,6 @@ export const SETTING_KEYS = {
   WATCH_SPECTATOR_ROLE_ID: "watch_spectator_role_id",
   // Membres
   MEMBER_ROLE_ID: "member_role_id",
-  // Cémantix
-  CEMANTIX_CHANNEL_ID: "cemantix_channel_id",
   // Valorant
   VALORANT_CHANNEL_ID: "valorant_channel_id",
 } as const;

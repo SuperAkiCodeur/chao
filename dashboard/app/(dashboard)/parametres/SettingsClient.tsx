@@ -271,24 +271,6 @@ export function SettingsClient({
         </Field>
       </Section>
 
-      {/* Cémantix */}
-      <Section
-        title="🎮 Cémantix"
-        description="Salon dédié au jeu de devinette quotidien."
-        keys={["cemantix_channel_id"]}
-        currentValues={vals}
-      >
-        <Field label="Salon de jeu" description="Salon où le bot démarre la partie">
-          <SelectDropdown
-            name="cemantix_channel_id"
-            options={textChannels}
-            value={vals["cemantix_channel_id"] ?? ""}
-            onChange={set("cemantix_channel_id")}
-            placeholder="Choisir un salon…"
-          />
-        </Field>
-      </Section>
-
       {/* Valorant */}
       <Section
         title="🎯 Valorant"

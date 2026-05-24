@@ -7,8 +7,6 @@ import {
   scheduleWatchRatingClosure,
   scheduleWatchStartAnnouncement,
 } from "../../../features/watch/services/watchScheduler.service.js";
-import { restoreCemantixState } from "../../../features/cemantix/services/cemantix.service.js";
-import { scheduleDailyCemantix } from "../../../features/cemantix/services/cemantixScheduler.service.js";
 
 export const readyEvent: AppEvent<Events.ClientReady> = {
   name: Events.ClientReady,
@@ -43,8 +41,5 @@ export const readyEvent: AppEvent<Events.ClientReady> = {
       restoredWatchRatingClosuresCount: watchPartiesWithOpenRatings.length,
     });
 
-    // ── Cémantix ────────────────────────────────────────────────────────────
-    await restoreCemantixState(client);
-    scheduleDailyCemantix(client);
   },
 };
