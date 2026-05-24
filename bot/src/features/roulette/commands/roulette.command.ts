@@ -15,73 +15,68 @@ import {
 
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
-// ---------------------------------------------------------------------------
-// Slash command builder
-// ---------------------------------------------------------------------------
-
-const builder = new SlashCommandBuilder()
-  .setName("roulette")
-  .setDescription("Tire au sort un membre parmi une liste de mentions Discord");
-
-// user1 est obligatoire, user2…user10 sont optionnels
-builder.addUserOption((opt) =>
-  opt.setName("user1").setDescription("Participant 1").setRequired(true),
-);
-for (let i = 2; i <= ROULETTE_CONSTANTS.MAX_PARTICIPANTS; i++) {
-  builder.addUserOption((opt) =>
-    opt.setName(`user${i}`).setDescription(`Participant ${i}`).setRequired(false),
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Command
-// ---------------------------------------------------------------------------
+// Extrait tous les <@id> ou <@!id> d'une chaîne Discord
+const MENTION_RE = /<@!?(\d+)>/g;
 
 export const rouletteCommand = {
-  data: builder,
+  data: new SlashCommandBuilder()
+    .setName("roulette")
+    .setDescription("Tire au sort un membre parmi une liste de mentions Discord")
+    .addStringOption((opt) =>
+      opt
+        .setName("participants")
+        .setDescription(
+          `Mentionnez les membres avec @ — ex : @Alice @Bob @Charlie (max ${ROULETTE_CONSTANTS.MAX_PARTICIPANTS})`,
+        )
+        .setRequired(true),
+    ),
 
   async execute(interaction: ChatInputCommandInteraction): Promise<void> {
-    // ── Collecte des participants ───────────────────────────────────────────
+    const input = interaction.options.getString("participants", true);
+
+    // ── Extraction des mentions ────────────────────────────────────────────
 
     const seen = new Set<string>();
     const participants: Participant[] = [];
+    let match: RegExpExecArray | null;
 
-    for (let i = 1; i <= ROULETTE_CONSTANTS.MAX_PARTICIPANTS; i++) {
-      const user = interaction.options.getUser(`user${i}`, false);
-      if (!user) continue;                   // option non renseignée
-      if (user.bot) continue;                // bots exclus silencieusement
-      if (seen.has(user.id)) continue;       // doublon ignoré
-      seen.add(user.id);
+    MENTION_RE.lastIndex = 0; // reset au cas où la regex est réutilisée
+    while ((match = MENTION_RE.exec(input)) !== null) {
+      const userId = match[1];
+      if (seen.has(userId)) continue; // doublon
+      seen.add(userId);
 
-      // Préférer le pseudo serveur (nickname) si disponible
-      const member = interaction.options.getMember(`user${i}`) as GuildMember | null;
+      // Discord injecte les données résolues dans l'interaction pour chaque mention
+      const user = interaction.options.resolved?.users?.get(userId);
+      if (!user || user.bot) continue;
+
+      const member = interaction.options.resolved?.members?.get(userId) as GuildMember | null;
       const name = member?.displayName ?? user.displayName ?? user.username;
 
-      participants.push({ id: user.id, name });
+      participants.push({ id: userId, name });
+
+      if (participants.length >= ROULETTE_CONSTANTS.MAX_PARTICIPANTS) break;
     }
 
-    // ── Validation ─────────────────────────────────────────────────────────
+    // ── Validation ────────────────────────────────────────────────────────
 
     if (participants.length < ROULETTE_CONSTANTS.MIN_PARTICIPANTS) {
       await interaction.reply({
-        content: `❌ Il faut mentionner au moins ${ROULETTE_CONSTANTS.MIN_PARTICIPANTS} membres distincts.`,
+        content: `❌ Il faut mentionner au moins ${ROULETTE_CONSTANTS.MIN_PARTICIPANTS} membres distincts avec @.`,
         flags: MessageFlags.Ephemeral,
       });
       return;
     }
 
-    // ── Tirage ─────────────────────────────────────────────────────────────
+    // ── Tirage ────────────────────────────────────────────────────────────
 
-    // Réponse publique : tout le monde voit l'animation + le résultat
     await interaction.deferReply();
 
     try {
-      // Phase 1 — animation spinning
       await interaction.editReply({ embeds: [buildSpinningEmbed(participants)] });
 
       await sleep(ROULETTE_CONSTANTS.SPIN_DURATION_MS);
 
-      // Phase 2 — révélation du gagnant (avec ping)
       const winner = pickWinner(participants);
       await interaction.editReply({ embeds: [buildWinnerEmbed(winner, participants)] });
 

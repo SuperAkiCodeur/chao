@@ -89,14 +89,9 @@ export default async function HomePage() {
               "Tire au sort un membre parmi une liste de mentions Discord. Le bot affiche une animation de sélection pendant ~2,5 secondes puis révèle le gagnant dans un embed vert avec un ping. Les bots et les doublons sont ignorés automatiquement.",
             params: [
               {
-                name: "user1",
-                description: "Premier participant (obligatoire) — sélectionné via le picker Discord.",
+                name: "participants",
+                description: "Mentionne les membres avec @ — ex : @Alice @Bob @Charlie. Discord affiche le sélecteur de membres à chaque @. Maximum 10 participants.",
                 required: true,
-              },
-              {
-                name: "user2 … user10",
-                description: "Participants supplémentaires (optionnels) — jusqu'à 10 membres au total.",
-                required: false,
               },
             ],
             note: "La réponse est publique : tout le monde voit l'animation et le résultat dans le salon. Le gagnant reçoit un ping.",
