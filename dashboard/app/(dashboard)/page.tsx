@@ -86,16 +86,20 @@ export default async function HomePage() {
           {
             name: "/roulette",
             description:
-              "Tire au sort un participant parmi une liste de noms saisis manuellement. Le bot affiche d'abord une animation de sélection pendant ~2,5 secondes, puis révèle le gagnant dans un embed vert visible par tous dans le salon. Les doublons sont automatiquement ignorés.",
+              "Tire au sort un membre parmi une liste de mentions Discord. Le bot affiche une animation de sélection pendant ~2,5 secondes puis révèle le gagnant dans un embed vert avec un ping. Les bots et les doublons sont ignorés automatiquement.",
             params: [
               {
-                name: "participants",
-                description:
-                  "Noms séparés par des virgules ou des points-virgules — ex : Alice, Bob, Charlie. Maximum 20 participants, 50 caractères par nom.",
+                name: "user1",
+                description: "Premier participant (obligatoire) — sélectionné via le picker Discord.",
                 required: true,
               },
+              {
+                name: "user2 … user10",
+                description: "Participants supplémentaires (optionnels) — jusqu'à 10 membres au total.",
+                required: false,
+              },
             ],
-            note: "La réponse est publique : tout le monde voit l'animation et le résultat dans le salon.",
+            note: "La réponse est publique : tout le monde voit l'animation et le résultat dans le salon. Le gagnant reçoit un ping.",
           },
         ]} />
       </div>
