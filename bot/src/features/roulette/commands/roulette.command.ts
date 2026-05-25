@@ -8,7 +8,7 @@ import {
 import { ROULETTE_CONSTANTS, ROULETTE_SELECT_ID } from "../domain/roulette.constants.js";
 
 // Les IDs sont désormais centralisés dans roulette.constants.ts
-export { ROULETTE_SELECT_ID, ROULETTE_LAUNCH_PREFIX } from "../domain/roulette.constants.js";
+export { ROULETTE_SELECT_ID, ROULETTE_LAUNCH_PREFIX, ROULETTE_RETRY_ID } from "../domain/roulette.constants.js";
 
 export const rouletteCommand = {
   data: new SlashCommandBuilder()

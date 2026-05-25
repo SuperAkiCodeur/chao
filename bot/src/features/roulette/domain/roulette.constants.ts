@@ -5,5 +5,6 @@ export const ROULETTE_CONSTANTS = {
   SESSION_TTL_MS:     15 * 60 * 1000, // 15 min avant expiration de la session
 } as const;
 
-export const ROULETTE_SELECT_ID  = "roulette:select";
+export const ROULETTE_SELECT_ID     = "roulette:select";
 export const ROULETTE_LAUNCH_PREFIX = "roulette:launch:";
+export const ROULETTE_RETRY_ID      = "roulette:retry";

@@ -4,6 +4,7 @@ import {
   ButtonStyle,
   EmbedBuilder,
   MessageFlags,
+  UserSelectMenuBuilder,
   type ButtonInteraction,
   type GuildMember,
   type UserSelectMenuInteraction,
@@ -12,6 +13,8 @@ import { logger } from "../../../core/app/logger.js";
 import {
   ROULETTE_CONSTANTS,
   ROULETTE_LAUNCH_PREFIX,
+  ROULETTE_RETRY_ID,
+  ROULETTE_SELECT_ID,
 } from "../domain/roulette.constants.js";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -160,12 +163,16 @@ export async function handleRouletteSelect(
   const launchRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
       .setCustomId(`${ROULETTE_LAUNCH_PREFIX}${messageId}`)
-      .setLabel("Lancer la roulette 🎰")
+      .setLabel("Lancer 🎰")
       .setStyle(ButtonStyle.Primary),
+    new ButtonBuilder()
+      .setCustomId(ROULETTE_RETRY_ID)
+      .setLabel("Recommencer")
+      .setStyle(ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId("roulette:cancel")
       .setLabel("Annuler")
-      .setStyle(ButtonStyle.Secondary),
+      .setStyle(ButtonStyle.Danger),
   );
 
   await interaction.update({
@@ -193,6 +200,27 @@ export async function handleRouletteLaunch(
   }
 
   await runRoulette(session.participants, interaction);
+}
+
+// ── Handler bouton Recommencer ────────────────────────────────────────────────
+
+export async function handleRouletteRetry(
+  interaction: ButtonInteraction,
+): Promise<void> {
+  const selectRow = new ActionRowBuilder<UserSelectMenuBuilder>().addComponents(
+    new UserSelectMenuBuilder()
+      .setCustomId(ROULETTE_SELECT_ID)
+      .setPlaceholder(
+        `Sélectionne ${ROULETTE_CONSTANTS.MIN_PARTICIPANTS}–${ROULETTE_CONSTANTS.MAX_PARTICIPANTS} participants`,
+      )
+      .setMinValues(ROULETTE_CONSTANTS.MIN_PARTICIPANTS)
+      .setMaxValues(ROULETTE_CONSTANTS.MAX_PARTICIPANTS),
+  );
+
+  await interaction.update({
+    content: "🎰 **Roulette** — Qui participe au tirage ?",
+    components: [selectRow],
+  });
 }
 
 // ── Handler bouton Annuler ────────────────────────────────────────────────────

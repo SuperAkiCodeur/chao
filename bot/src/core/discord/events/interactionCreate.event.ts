@@ -8,11 +8,13 @@ import { WATCH_CONSTANTS } from "../../../features/watch/domain/watch.constants.
 import {
   handleRouletteSelect,
   handleRouletteLaunch,
+  handleRouletteRetry,
   handleRouletteCancel,
 } from "../../../features/roulette/services/roulette.service.js";
 import {
   ROULETTE_SELECT_ID,
   ROULETTE_LAUNCH_PREFIX,
+  ROULETTE_RETRY_ID,
 } from "../../../features/roulette/commands/roulette.command.js";
 
 export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
@@ -36,6 +38,8 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
         await handleSelfRoleButton(interaction);
       } else if (interaction.customId.startsWith(ROULETTE_LAUNCH_PREFIX)) {
         await handleRouletteLaunch(interaction);
+      } else if (interaction.customId === ROULETTE_RETRY_ID) {
+        await handleRouletteRetry(interaction);
       } else if (interaction.customId === "roulette:cancel") {
         await handleRouletteCancel(interaction);
       }
