@@ -5,8 +5,15 @@ import { getCommand } from "../commandRegistry.js";
 import { handleSelfRoleButton, isSelfRoleButton } from "../../../features/selfrole/services/selfrole.service.js";
 import { handleWatchRatingButton, handleWatchTicketButton } from "../../../features/watch/services/watch.service.js";
 import { WATCH_CONSTANTS } from "../../../features/watch/domain/watch.constants.js";
-import { handleRouletteSelect } from "../../../features/roulette/services/roulette.service.js";
-import { ROULETTE_SELECT_ID } from "../../../features/roulette/commands/roulette.command.js";
+import {
+  handleRouletteSelect,
+  handleRouletteLaunch,
+  handleRouletteCancel,
+} from "../../../features/roulette/services/roulette.service.js";
+import {
+  ROULETTE_SELECT_ID,
+  ROULETTE_LAUNCH_PREFIX,
+} from "../../../features/roulette/commands/roulette.command.js";
 
 export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
   name: Events.InteractionCreate,
@@ -27,6 +34,10 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
         await handleWatchRatingButton(interaction);
       } else if (isSelfRoleButton(interaction.customId)) {
         await handleSelfRoleButton(interaction);
+      } else if (interaction.customId.startsWith(ROULETTE_LAUNCH_PREFIX)) {
+        await handleRouletteLaunch(interaction);
+      } else if (interaction.customId === "roulette:cancel") {
+        await handleRouletteCancel(interaction);
       }
       return;
     }
