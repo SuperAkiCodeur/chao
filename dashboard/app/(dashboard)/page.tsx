@@ -86,12 +86,12 @@ export default async function HomePage() {
           {
             name: "/roulette",
             description:
-              "Tire au sort un membre parmi une liste de mentions Discord. Le bot affiche une animation de sélection pendant ~2,5 secondes puis révèle le gagnant dans un embed vert avec un ping. Les bots et les doublons sont ignorés automatiquement.",
+              "Tire au sort un membre parmi une sélection. La commande ouvre un sélecteur multi-membres natif Discord (visible uniquement par toi). Sélectionne 2 à 10 participants, valide — le bot anime la roulette en public puis révèle le gagnant avec un ping.",
             params: [
               {
-                name: "participants",
-                description: "Mentionne les membres avec @ — ex : @Alice @Bob @Charlie. Discord affiche le sélecteur de membres à chaque @. Maximum 10 participants.",
-                required: true,
+                name: "(aucun paramètre)",
+                description: "Un sélecteur de membres Discord s'ouvre directement après la commande. Choisis 2 à 10 participants via le picker natif, puis confirme.",
+                required: false,
               },
             ],
             note: "La réponse est publique : tout le monde voit l'animation et le résultat dans le salon. Le gagnant reçoit un ping.",

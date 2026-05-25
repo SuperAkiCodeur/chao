@@ -5,11 +5,21 @@ import { getCommand } from "../commandRegistry.js";
 import { handleSelfRoleButton, isSelfRoleButton } from "../../../features/selfrole/services/selfrole.service.js";
 import { handleWatchRatingButton, handleWatchTicketButton } from "../../../features/watch/services/watch.service.js";
 import { WATCH_CONSTANTS } from "../../../features/watch/domain/watch.constants.js";
+import { handleRouletteSelect } from "../../../features/roulette/services/roulette.service.js";
+import { ROULETTE_SELECT_ID } from "../../../features/roulette/commands/roulette.command.js";
 
 export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
   name: Events.InteractionCreate,
 
   async execute(interaction: Interaction): Promise<void> {
+    // ── User select menus ──────────────────────────────────────────────────
+    if (interaction.isUserSelectMenu()) {
+      if (interaction.customId === ROULETTE_SELECT_ID) {
+        await handleRouletteSelect(interaction);
+      }
+      return;
+    }
+
     if (interaction.isButton()) {
       if (interaction.customId === WATCH_CONSTANTS.TICKET_BUTTON_ID) {
         await handleWatchTicketButton(interaction);
