@@ -3,7 +3,6 @@ import {
   ButtonBuilder,
   ButtonStyle,
   EmbedBuilder,
-  Message,
   MessageFlags,
   type ButtonInteraction,
   type GuildMember,
@@ -44,41 +43,7 @@ export function pickWinner(participants: Participant[]): Participant {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
-
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
 // ── Embeds ────────────────────────────────────────────────────────────────────
-
-export function buildSpinningEmbed(participants: Participant[]): EmbedBuilder {
-  const visible = shuffle(participants).slice(0, ROULETTE_CONSTANTS.SPIN_VISIBLE_ROWS);
-  const mid = Math.floor(visible.length / 2);
-
-  // Pas de caractères box-drawing — juste une flèche simple pour le centre
-  const lines = visible.map(({ name }, i) =>
-    i === mid ? `▶  **${name}**` : `     ${name}`,
-  );
-
-  const extra =
-    participants.length > ROULETTE_CONSTANTS.SPIN_VISIBLE_ROWS
-      ? `\n*… et ${participants.length - ROULETTE_CONSTANTS.SPIN_VISIBLE_ROWS} autre(s)*`
-      : "";
-
-  return new EmbedBuilder()
-    .setColor(ROULETTE_CONSTANTS.EMBED_COLOR_SPINNING)
-    .setTitle("🎰  La roulette tourne…")
-    .setDescription(lines.join("\n") + extra)
-    .setFooter({
-      text: `${participants.length} participant${participants.length > 1 ? "s" : ""} en lice`,
-    });
-}
 
 export function buildWinnerEmbed(
   winner: Participant,
@@ -125,21 +90,12 @@ async function runRoulette(
     return;
   }
 
-  let spinMsg: Message;
-  try {
-    spinMsg = await channel.send({ embeds: [buildSpinningEmbed(participants)] });
-  } catch (error) {
-    logger.error("[roulette] impossible d'envoyer le spinning embed", { error });
-    return;
-  }
-
-  await sleep(ROULETTE_CONSTANTS.SPIN_DURATION_MS);
-
   const winner = pickWinner(participants);
   try {
-    await spinMsg.edit({ embeds: [buildWinnerEmbed(winner, participants)] });
+    await channel.send({ embeds: [buildWinnerEmbed(winner, participants)] });
   } catch (error) {
-    logger.error("[roulette] impossible d'éditer le winner embed", { error });
+    logger.error("[roulette] impossible d'envoyer le winner embed", { error });
+    return;
   }
 
   logger.info("[roulette] tirage effectué", {
