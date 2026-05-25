@@ -66,7 +66,7 @@ export function buildWinnerEmbed(
       name: `${count} participant${count > 1 ? "s" : ""}`,
       value: fieldValue,
     })
-    .setFooter({ text: "Tiré au sort aléatoirement" });
+;
 }
 
 // ── Logique commune de lancement ──────────────────────────────────────────────
