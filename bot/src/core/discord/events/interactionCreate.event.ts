@@ -17,24 +17,35 @@ import {
   ROULETTE_RETRY_ID,
 } from "../../../features/roulette/commands/roulette.command.js";
 import {
+  handleSteamMenu,
+  handleSteamBack,
+  handleSteamAddModal,
   handleSteamAddSelect,
-  handleSteamAutocomplete,
+  handleSteamPriceSelect,
+  handleSteamRemoveSelect,
 } from "../../../features/steam/services/steam.service.js";
-import { STEAM_ADD_SELECT_ID } from "../../../features/steam/domain/steam.constants.js";
+import {
+  STEAM_MENU_ID,
+  STEAM_ADD_SELECT_ID,
+  STEAM_PRICE_SELECT_ID,
+  STEAM_REMOVE_SELECT_ID,
+  STEAM_MODAL_ADD_ID,
+  STEAM_BACK_BTN_ID,
+} from "../../../features/steam/domain/steam.constants.js";
 
 export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
   name: Events.InteractionCreate,
 
   async execute(interaction: Interaction): Promise<void> {
-    // ── Autocomplétion ─────────────────────────────────────────────────────
-    if (interaction.isAutocomplete()) {
-      if (interaction.commandName === "steam") {
-        await handleSteamAutocomplete(interaction);
+    // ── Modal submit ───────────────────────────────────────────────────────────
+    if (interaction.isModalSubmit()) {
+      if (interaction.customId === STEAM_MODAL_ADD_ID) {
+        await handleSteamAddModal(interaction);
       }
       return;
     }
 
-    // ── User select menus ──────────────────────────────────────────────────
+    // ── User select menus ──────────────────────────────────────────────────────
     if (interaction.isUserSelectMenu()) {
       if (interaction.customId === ROULETTE_SELECT_ID) {
         await handleRouletteSelect(interaction);
@@ -42,14 +53,21 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
       return;
     }
 
-    // ── String select menus ────────────────────────────────────────────────
+    // ── String select menus ────────────────────────────────────────────────────
     if (interaction.isStringSelectMenu()) {
-      if (interaction.customId === STEAM_ADD_SELECT_ID) {
+      if (interaction.customId === STEAM_MENU_ID) {
+        await handleSteamMenu(interaction);
+      } else if (interaction.customId === STEAM_ADD_SELECT_ID) {
         await handleSteamAddSelect(interaction);
+      } else if (interaction.customId === STEAM_PRICE_SELECT_ID) {
+        await handleSteamPriceSelect(interaction);
+      } else if (interaction.customId === STEAM_REMOVE_SELECT_ID) {
+        await handleSteamRemoveSelect(interaction);
       }
       return;
     }
 
+    // ── Buttons ────────────────────────────────────────────────────────────────
     if (interaction.isButton()) {
       if (interaction.customId === WATCH_CONSTANTS.TICKET_BUTTON_ID) {
         await handleWatchTicketButton(interaction);
@@ -63,6 +81,8 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
         await handleRouletteRetry(interaction);
       } else if (interaction.customId === "roulette:cancel") {
         await handleRouletteCancel(interaction);
+      } else if (interaction.customId === STEAM_BACK_BTN_ID) {
+        await handleSteamBack(interaction);
       }
       return;
     }
@@ -74,17 +94,11 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
     const command = getCommand(interaction.commandName);
 
     if (!command) {
-      logger.warn("Command not found", {
-        commandName: interaction.commandName,
-      });
+      logger.warn("Command not found", { commandName: interaction.commandName });
 
       if (!interaction.replied && !interaction.deferred) {
-        await interaction.reply({
-          content: "❌ Commande inconnue.",
-          flags: MessageFlags.Ephemeral,
-        });
+        await interaction.reply({ content: "❌ Commande inconnue.", flags: MessageFlags.Ephemeral });
       }
-
       return;
     }
 
