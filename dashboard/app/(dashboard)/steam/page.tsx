@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { steamGames, steamConfig, steamChannelPermissions } from "@/lib/schema";
+import { steamGames, steamConfig } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Gamepad2, TrendingDown } from "lucide-react";
@@ -13,15 +13,13 @@ const GUILD_ID  = process.env.DISCORD_GUILD_ID!;
 const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN!;
 
 async function getData() {
-  const [games, configs, permissions] = await Promise.all([
+  const [games, configs] = await Promise.all([
     db.select().from(steamGames).where(eq(steamGames.guildId, GUILD_ID)),
     db.select().from(steamConfig).where(eq(steamConfig.guildId, GUILD_ID)),
-    db.select().from(steamChannelPermissions).where(eq(steamChannelPermissions.guildId, GUILD_ID)),
   ]);
   return {
     games,
     config: configs[0] ?? { notifChannelId: null, notifRoleId: null },
-    permissions,
   };
 }
 
@@ -42,7 +40,7 @@ async function getDiscord() {
 }
 
 export default async function SteamPage() {
-  const [{ games, config, permissions }, { channels, roles }] = await Promise.all([
+  const [{ games, config }, { channels, roles }] = await Promise.all([
     getData(),
     getDiscord(),
   ]);
@@ -93,7 +91,6 @@ export default async function SteamPage() {
         <CardContent>
           <SteamClient
             games={games}
-            permissions={permissions}
             config={config}
             channels={channels}
             roles={roles}

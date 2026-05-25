@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import { steamConfig, steamGames, steamChannelPermissions } from "@/lib/schema";
+import { steamConfig, steamGames } from "@/lib/schema";
 import { eq, and } from "drizzle-orm";
 
 const GUILD_ID = process.env.DISCORD_GUILD_ID!;
@@ -46,32 +46,3 @@ export async function removeSteamGame(id: number): Promise<ActionResult> {
   }
 }
 
-// ── Permissions salon ─────────────────────────────────────────────────────────
-
-export async function addSteamPermission(formData: FormData): Promise<ActionResult> {
-  try {
-    const channelId = (formData.get("channelId") as string | null)?.trim();
-    const roleId    = (formData.get("roleId")    as string | null)?.trim();
-
-    if (!channelId || !roleId) {
-      return { success: false, error: "Salon et rôle requis." };
-    }
-
-    await db.insert(steamChannelPermissions).values({ guildId: GUILD_ID, channelId, roleId });
-    revalidatePath("/steam");
-    return { success: true };
-  } catch {
-    return { success: false, error: "Erreur lors de l'ajout." };
-  }
-}
-
-export async function deleteSteamPermission(id: number): Promise<ActionResult> {
-  try {
-    await db.delete(steamChannelPermissions)
-      .where(and(eq(steamChannelPermissions.id, id), eq(steamChannelPermissions.guildId, GUILD_ID)));
-    revalidatePath("/steam");
-    return { success: true };
-  } catch {
-    return { success: false, error: "Erreur lors de la suppression." };
-  }
-}

@@ -16,9 +16,9 @@ import { formatEur, getSteamAppDetails, getSteamUrl, searchSteamGames } from "./
 import { getITADDeals, lookupITADGame } from "./itad.api.js";
 import {
   deleteGame,
-  getChannelPermissions,
   getGameByAppId,
   getGamesForGuild,
+  getSteamConfig,
   insertGame,
 } from "./steam.repository.js";
 
@@ -28,16 +28,22 @@ async function checkPermission(interaction: ChatInputCommandInteraction): Promis
   const guildId = interaction.guildId;
   if (!guildId) return true;
 
-  const rules = await getChannelPermissions(guildId);
-  if (rules.length === 0) return true; // Pas de règles → tout le monde peut utiliser
+  const config = await getSteamConfig(guildId);
+  if (!config) return true; // Pas de config → pas de restriction
 
-  const channelRules = rules.filter((r) => r.channelId === interaction.channelId);
-  if (channelRules.length === 0) return false;
+  // Vérification du salon (si configuré)
+  if (config.notifChannelId && config.notifChannelId !== interaction.channelId) {
+    return false;
+  }
 
-  const member = interaction.member as GuildMember | null;
-  if (!member) return false;
+  // Vérification du rôle (si configuré)
+  if (config.notifRoleId) {
+    const member = interaction.member as GuildMember | null;
+    if (!member) return false;
+    if (!member.roles.cache.has(config.notifRoleId)) return false;
+  }
 
-  return channelRules.some((r) => member.roles.cache.has(r.roleId));
+  return true;
 }
 
 // ── /steam add ────────────────────────────────────────────────────────────────

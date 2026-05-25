@@ -22,7 +22,7 @@ function roleColor(color: number) {
 
 // ── Select dropdown ───────────────────────────────────────────────────────────
 
-type Option = { id: string; label: string; color?: string; icon?: React.ReactNode };
+type Option = { id: string; label: string; sub?: string; color?: string; icon?: React.ReactNode };
 
 function SelectDropdown({ name, options, value, onChange, placeholder = "Sélectionner…", searchPlaceholder = "Rechercher…" }: {
   name: string; options: Option[]; value: string; onChange: (v: string) => void; placeholder?: string; searchPlaceholder?: string;
@@ -84,6 +84,7 @@ function SelectDropdown({ name, options, value, onChange, placeholder = "Sélect
               {selected.icon}
               {selected.color && <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: selected.color }} />}
               <span className="truncate text-foreground" style={selected.color ? { color: selected.color } : {}}>{selected.label}</span>
+              {selected.sub && <span className="text-muted-foreground/60 text-xs shrink-0">· {selected.sub}</span>}
             </span>
           ) : (
             <span className="text-muted-foreground flex-1 text-left">{placeholder}</span>
@@ -133,6 +134,7 @@ function SelectDropdown({ name, options, value, onChange, placeholder = "Sélect
                     {o.icon}
                     {o.color && <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: o.color }} />}
                     <span className="flex-1 text-left truncate text-foreground" style={o.color ? { color: o.color } : {}}>{o.label}</span>
+                    {o.sub && <span className="text-muted-foreground/50 text-xs shrink-0">{o.sub}</span>}
                     {value === o.id && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
                   </button>
                 ))
@@ -178,12 +180,17 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
     setPanelAnimClass("");
   }
 
+  const categoryMap = new Map(
+    channels.filter((c) => c.type === 4).map((c) => [c.id, c.name]),
+  );
+
   const textChannels: Option[] = channels
     .filter((c) => c.type !== 4)
     .sort((a, b) => a.position - b.position)
     .map((c) => ({
       id: c.id,
       label: c.name,
+      sub: c.parent_id ? (categoryMap.get(c.parent_id) ?? undefined) : undefined,
       icon: c.type === 2 || c.type === 13
         ? <Volume2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
         : <Hash className="h-3.5 w-3.5 text-muted-foreground shrink-0" />,
