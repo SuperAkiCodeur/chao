@@ -2,6 +2,7 @@ import { Client, GatewayIntentBits } from "discord.js";
 import { env } from "./core/config/env.js";
 import { logger } from "./core/app/logger.js";
 import { loadEvents } from "./core/discord/eventLoader.js";
+import { startSteamTracker } from "./features/steam/services/steam.tracker.js";
 
 export function createBot() {
   const client = new Client({
@@ -28,6 +29,7 @@ export function createBot() {
     client,
     async start() {
       await client.login(env.DISCORD_TOKEN);
+      startSteamTracker(client);
     },
   };
 }

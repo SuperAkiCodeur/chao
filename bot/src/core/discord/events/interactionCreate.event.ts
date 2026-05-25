@@ -16,15 +16,36 @@ import {
   ROULETTE_LAUNCH_PREFIX,
   ROULETTE_RETRY_ID,
 } from "../../../features/roulette/commands/roulette.command.js";
+import {
+  handleSteamAddSelect,
+  handleSteamAutocomplete,
+} from "../../../features/steam/services/steam.service.js";
+import { STEAM_ADD_SELECT_ID } from "../../../features/steam/domain/steam.constants.js";
 
 export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
   name: Events.InteractionCreate,
 
   async execute(interaction: Interaction): Promise<void> {
+    // ── Autocomplétion ─────────────────────────────────────────────────────
+    if (interaction.isAutocomplete()) {
+      if (interaction.commandName === "steam") {
+        await handleSteamAutocomplete(interaction);
+      }
+      return;
+    }
+
     // ── User select menus ──────────────────────────────────────────────────
     if (interaction.isUserSelectMenu()) {
       if (interaction.customId === ROULETTE_SELECT_ID) {
         await handleRouletteSelect(interaction);
+      }
+      return;
+    }
+
+    // ── String select menus ────────────────────────────────────────────────
+    if (interaction.isStringSelectMenu()) {
+      if (interaction.customId === STEAM_ADD_SELECT_ID) {
+        await handleSteamAddSelect(interaction);
       }
       return;
     }
@@ -79,14 +100,14 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
 
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp({
-          content: "❌ Une erreur est survenue pendant l’exécution de la commande.",
+          content: "❌ Une erreur est survenue pendant l'exécution de la commande.",
           flags: MessageFlags.Ephemeral,
         }).catch(() => null);
         return;
       }
 
       await interaction.reply({
-        content: "❌ Une erreur est survenue pendant l’exécution de la commande.",
+        content: "❌ Une erreur est survenue pendant l'exécution de la commande.",
         flags: MessageFlags.Ephemeral,
       }).catch(() => null);
     }

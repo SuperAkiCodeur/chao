@@ -72,3 +72,35 @@ export const valorantLinks = pgTable(
   },
   (t) => [primaryKey({ columns: [t.discordUserId, t.guildId] })],
 );
+
+// ---------------------------------------------------------------------------
+// Steam
+// ---------------------------------------------------------------------------
+
+export const steamGames = pgTable("steam_games", {
+  id: serial("id").primaryKey(),
+  guildId: text("guild_id").notNull(),
+  steamAppId: integer("steam_app_id").notNull(),
+  title: text("title").notNull(),
+  headerImage: text("header_image"),
+  addedBy: text("added_by").notNull(),
+  addedByName: text("added_by_name"),
+  addedAt: text("added_at").notNull(),
+  lastKnownPriceEur: integer("last_known_price_eur"),
+  lastKnownDiscount: integer("last_known_discount").default(0),
+  lastCheckedAt: text("last_checked_at"),
+  isOnSale: integer("is_on_sale").default(0).notNull(),
+});
+
+export const steamConfig = pgTable("steam_config", {
+  guildId: text("guild_id").primaryKey(),
+  notifChannelId: text("notif_channel_id"),
+  notifRoleId: text("notif_role_id"),
+});
+
+export const steamChannelPermissions = pgTable("steam_channel_permissions", {
+  id: serial("id").primaryKey(),
+  guildId: text("guild_id").notNull(),
+  channelId: text("channel_id").notNull(),
+  roleId: text("role_id").notNull(),
+});

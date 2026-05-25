@@ -8,6 +8,7 @@ import { watchCommand } from "../../features/watch/commands/watch.command.js";
 import { valorantCommand } from "../../features/valorant/commands/valorant.command.js";
 import { selfRoleCommand } from "../../features/selfrole/commands/selfrole.command.js";
 import { rouletteCommand } from "../../features/roulette/commands/roulette.command.js";
+import { steamCommand } from "../../features/steam/commands/steam.command.js";
 
 export type AppCommand = {
   data:
@@ -22,6 +23,7 @@ export const commandRegistry = new Map<string, AppCommand>([
   [valorantCommand.data.name, valorantCommand],
   [selfRoleCommand.data.name, selfRoleCommand],
   [rouletteCommand.data.name, rouletteCommand],
+  [steamCommand.data.name, steamCommand],
 ]);
 
 export function getCommand(name: string): AppCommand | undefined {

@@ -21,4 +21,5 @@ export const env = {
   DISCORD_GUILD_ID: process.env.DISCORD_GUILD_ID,
   HENRIKDEV_API_KEY: process.env.HENRIKDEV_API_KEY,
   COHERE_API_KEY: process.env.COHERE_API_KEY,
+  ITAD_API_KEY: process.env.ITAD_API_KEY, // IsThereAnyDeal — optionnel
 } as const;
