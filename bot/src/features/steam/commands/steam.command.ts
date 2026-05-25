@@ -11,7 +11,7 @@ export const steamCommand = {
         .setDescription("Ajoute un jeu Steam à la liste du serveur")
         .addStringOption((opt) =>
           opt
-            .setName("titre")
+            .setName("name")
             .setDescription("Nom du jeu à rechercher sur Steam")
             .setRequired(true),
         ),
@@ -21,11 +21,11 @@ export const steamCommand = {
     )
     .addSubcommand((sub) =>
       sub
-        .setName("prix")
+        .setName("price")
         .setDescription("Compare les prix d'un jeu sur Steam et les revendeurs")
         .addStringOption((opt) =>
           opt
-            .setName("titre")
+            .setName("name")
             .setDescription("Jeu à comparer (choisis dans la liste)")
             .setRequired(true)
             .setAutocomplete(true),
@@ -37,14 +37,14 @@ export const steamCommand = {
         .setDescription("Retire un jeu de la liste")
         .addStringOption((opt) =>
           opt
-            .setName("titre")
+            .setName("name")
             .setDescription("Jeu à retirer (choisis dans la liste)")
             .setRequired(true)
             .setAutocomplete(true),
         ),
     )
     .addSubcommand((sub) =>
-      sub.setName("promos").setDescription("Affiche les jeux de la liste actuellement en promo"),
+      sub.setName("deals").setDescription("Affiche les jeux de la liste actuellement en promo"),
     ),
 
   async execute(interaction: ChatInputCommandInteraction): Promise<void> {

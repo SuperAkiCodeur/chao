@@ -49,7 +49,7 @@ async function checkPermission(interaction: ChatInputCommandInteraction): Promis
 // ── /steam add ────────────────────────────────────────────────────────────────
 
 async function handleAdd(interaction: ChatInputCommandInteraction): Promise<void> {
-  const query = interaction.options.getString("titre", true);
+  const query = interaction.options.getString("name", true);
 
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
@@ -128,7 +128,7 @@ async function handleList(interaction: ChatInputCommandInteraction): Promise<voi
 // ── /steam prix ───────────────────────────────────────────────────────────────
 
 async function handlePrix(interaction: ChatInputCommandInteraction): Promise<void> {
-  const rawValue = interaction.options.getString("titre", true);
+  const rawValue = interaction.options.getString("name", true);
   const steamAppId = parseInt(rawValue, 10);
 
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
@@ -199,7 +199,7 @@ async function handlePrix(interaction: ChatInputCommandInteraction): Promise<voi
 // ── /steam remove ─────────────────────────────────────────────────────────────
 
 async function handleRemove(interaction: ChatInputCommandInteraction): Promise<void> {
-  const rawValue = interaction.options.getString("titre", true);
+  const rawValue = interaction.options.getString("name", true);
   const steamAppId = parseInt(rawValue, 10);
 
   if (isNaN(steamAppId)) {
@@ -285,9 +285,9 @@ export async function handleSteamCommand(interaction: ChatInputCommandInteractio
   try {
     if (sub === "add")    { await handleAdd(interaction);    return; }
     if (sub === "list")   { await handleList(interaction);   return; }
-    if (sub === "prix")   { await handlePrix(interaction);   return; }
+    if (sub === "price")  { await handlePrix(interaction);   return; }
     if (sub === "remove") { await handleRemove(interaction); return; }
-    if (sub === "promos") { await handlePromos(interaction); return; }
+    if (sub === "deals")  { await handlePromos(interaction); return; }
   } catch (error) {
     logger.error("[steam] erreur commande", { sub, userId: interaction.user.id, error });
     const msg = "❌ Une erreur est survenue.";

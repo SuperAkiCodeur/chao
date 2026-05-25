@@ -105,7 +105,7 @@ export default async function SteamPage() {
             name: "/steam add",
             description:
               "Recherche un jeu sur Steam et l'ajoute à la liste du serveur. Le bot affiche les résultats dans un menu déroulant natif Discord — sélectionne le bon jeu pour l'enregistrer.",
-            params: [{ name: "titre", description: "Nom du jeu à rechercher.", required: true }],
+            params: [{ name: "name", description: "Nom du jeu à rechercher.", required: true }],
           },
           {
             name: "/steam list",
@@ -113,20 +113,20 @@ export default async function SteamPage() {
               "Affiche tous les jeux trackés avec leur prix Steam actuel. Les jeux en promo apparaissent avec leur réduction.",
           },
           {
-            name: "/steam prix",
+            name: "/steam price",
             description:
               "Compare le prix d'un jeu sur Steam et sur les boutiques de revendeurs légitimes (via IsThereAnyDeal : Fanatical, Humble, Green Man Gaming…). Utilise l'autocomplétion pour choisir un jeu de la liste.",
-            params: [{ name: "titre", description: "Jeu à comparer — autocomplétion depuis la liste du serveur.", required: true }],
+            params: [{ name: "name", description: "Jeu à comparer — autocomplétion depuis la liste du serveur.", required: true }],
             note: "Nécessite une clé ITAD_API_KEY pour la comparaison multi-boutiques. Sans clé, seul le prix Steam est affiché.",
           },
           {
             name: "/steam remove",
             description:
               "Retire un jeu de la liste du serveur. Utilise l'autocomplétion pour sélectionner le jeu.",
-            params: [{ name: "titre", description: "Jeu à retirer — autocomplétion depuis la liste.", required: true }],
+            params: [{ name: "name", description: "Jeu à retirer — autocomplétion depuis la liste.", required: true }],
           },
           {
-            name: "/steam promos",
+            name: "/steam deals",
             description:
               "Affiche les jeux de la liste qui sont actuellement en promo sur Steam. Les données sont mises à jour toutes les 6h par le tracker.",
           },
