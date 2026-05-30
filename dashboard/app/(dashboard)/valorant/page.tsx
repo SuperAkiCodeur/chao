@@ -77,59 +77,41 @@ export default async function ValorantPage() {
 
       <CommandsReference commands={[
         {
-          name: "/valorant link",
+          name: "/valorant",
           description:
-            "Lie ton compte Riot à ton profil Discord sur ce serveur. Obligatoire avant d'utiliser les autres commandes. Le lien est propre au serveur et peut être mis à jour à tout moment en relançant la commande.",
+            "Ouvre un menu éphémère (visible uniquement par toi) avec cinq actions disponibles :",
           params: [
             {
-              name: "riot_id",
-              description: "Ton identifiant Riot au format Pseudo#Tag — ex : Player#EUW.",
-              required: true,
+              name: "🔗 Lier mon compte",
+              description:
+                "Associe ton Riot ID (format Pseudo#Tag — ex : Player#EUW) à ton profil Discord. Obligatoire avant d'utiliser les autres actions. Peut être mis à jour à tout moment.",
+              required: false,
             },
-          ],
-          note: "La réponse est éphémère (visible uniquement par toi).",
-        },
-        {
-          name: "/valorant results",
-          description:
-            "Affiche les derniers matchs d'un joueur : mode de jeu, résultat (victoire / défaite), K/D/A, rang actuel et évolution. Posté publiquement dans le salon Valorant.",
-          params: [
             {
-              name: "player",
-              description: "Membre Discord à consulter. Si omis, affiche tes propres résultats.",
+              name: "📊 Mes résultats",
+              description:
+                "Affiche tes derniers matchs : mode de jeu, résultat (victoire / défaite), K/D/A et évolution de rang.",
+              required: false,
+            },
+            {
+              name: "📈 Mes stats",
+              description:
+                "Statistiques détaillées sur tes parties. Quatre types : Global (K/D, winrate…), Par agent, Par map, Temps de jeu.",
+              required: false,
+            },
+            {
+              name: "🏆 Classement",
+              description:
+                "Classement de tous les membres du serveur ayant lié leur compte, triés par rang Valorant.",
+              required: false,
+            },
+            {
+              name: "❓ Aide",
+              description: "Affiche la liste de toutes les actions disponibles directement dans le menu.",
               required: false,
             },
           ],
-        },
-        {
-          name: "/valorant stats",
-          description:
-            "Statistiques détaillées d'un joueur selon le type sélectionné. Posté publiquement dans le salon Valorant.",
-          params: [
-            {
-              name: "type",
-              description: "Catégorie de statistiques à afficher.",
-              required: true,
-              choices: ["Global", "Par agent", "Par map", "Temps de jeu"],
-            },
-            {
-              name: "player",
-              description: "Membre Discord à consulter. Si omis, affiche tes propres stats.",
-              required: false,
-            },
-          ],
-          note:
-            "Global → K/D, winrate, headshot%…  •  Par agent → stats par personnage joué  •  Par map → winrate par carte  •  Temps de jeu → heures passées en jeu.",
-        },
-        {
-          name: "/valorant leaderboard",
-          description:
-            "Classement de tous les membres du serveur ayant lié leur compte, triés par rang Valorant. Posté publiquement dans le salon Valorant.",
-        },
-        {
-          name: "/valorant help",
-          description:
-            "Affiche un récapitulatif de toutes les commandes Valorant disponibles. La réponse est éphémère (visible uniquement par toi). Utilisable dans n'importe quel salon.",
+          note: "La réponse est éphémère. Le salon peut être restreint via la configuration ci-dessus.",
         },
       ]} />
 

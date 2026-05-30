@@ -1,23 +1,23 @@
-export type WatchValidationResult =
+export type CinemaValidationResult =
   | { success: true }
   | { success: false; message: string };
 
-const WATCH_DATE_REGEX = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/(\d{2}|\d{4})$/;
-const WATCH_TIME_REGEX = /^([01][0-9]|2[0-3]):([0-5][0-9])$/;
+const CINEMA_DATE_REGEX = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/(\d{2}|\d{4})$/;
+const CINEMA_TIME_REGEX = /^([01][0-9]|2[0-3]):([0-5][0-9])$/;
 
-export function isValidWatchDateFormat(value: string): boolean {
-  return WATCH_DATE_REGEX.test(value.trim());
+export function isValidCinemaDateFormat(value: string): boolean {
+  return CINEMA_DATE_REGEX.test(value.trim());
 }
 
-export function isValidWatchTimeFormat(value: string): boolean {
-  return WATCH_TIME_REGEX.test(value.trim());
+export function isValidCinemaTimeFormat(value: string): boolean {
+  return CINEMA_TIME_REGEX.test(value.trim());
 }
 
-export function parseWatchViewingDate(date: string, time: string): Date | null {
+export function parseCinemaViewingDate(date: string, time: string): Date | null {
   const normalizedDate = date.trim();
   const normalizedTime = time.trim();
 
-  if (!isValidWatchDateFormat(normalizedDate) || !isValidWatchTimeFormat(normalizedTime)) {
+  if (!isValidCinemaDateFormat(normalizedDate) || !isValidCinemaTimeFormat(normalizedTime)) {
     return null;
   }
 
@@ -48,25 +48,25 @@ export function parseWatchViewingDate(date: string, time: string): Date | null {
   return parsedDate;
 }
 
-export function validateWatchScheduleInput(
+export function validateCinemaScheduleInput(
   date: string,
   time: string,
-): WatchValidationResult {
-  if (!isValidWatchDateFormat(date)) {
+): CinemaValidationResult {
+  if (!isValidCinemaDateFormat(date)) {
     return {
       success: false,
       message: "❌ Format de date invalide. Utilise par exemple 19/05/26.",
     };
   }
 
-  if (!isValidWatchTimeFormat(time)) {
+  if (!isValidCinemaTimeFormat(time)) {
     return {
       success: false,
       message: "❌ Format d’heure invalide. Utilise par exemple 21:00.",
     };
   }
 
-  const viewingDate = parseWatchViewingDate(date, time);
+  const viewingDate = parseCinemaViewingDate(date, time);
 
   if (!viewingDate) {
     return {
@@ -85,7 +85,7 @@ export function validateWatchScheduleInput(
   return { success: true };
 }
 
-export function validateWatchTitleInput(title: string): WatchValidationResult {
+export function validateCinemaTitleInput(title: string): CinemaValidationResult {
   const normalizedTitle = title.trim();
 
   if (!normalizedTitle.length) {

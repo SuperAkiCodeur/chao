@@ -1,12 +1,12 @@
 import { Events } from "discord.js";
 import type { AppEvent } from "../types/appEvent.js";
 import { logger } from "../../app/logger.js";
-import { findAllWatchParties } from "../../../features/watch/repositories/watch.repository.js";
-import { WATCH_CONSTANTS } from "../../../features/watch/domain/watch.constants.js";
+import { findAllCinemaParties } from "../../../features/cinema/repositories/cinema.repository.js";
+import { CINEMA_CONSTANTS } from "../../../features/cinema/domain/cinema.constants.js";
 import {
-  scheduleWatchRatingClosure,
-  scheduleWatchStartAnnouncement,
-} from "../../../features/watch/services/watchScheduler.service.js";
+  scheduleCinemaRatingClosure,
+  scheduleCinemaStartAnnouncement,
+} from "../../../features/cinema/services/cinemaScheduler.service.js";
 
 export const readyEvent: AppEvent<Events.ClientReady> = {
   name: Events.ClientReady,
@@ -18,27 +18,27 @@ export const readyEvent: AppEvent<Events.ClientReady> = {
       userId: client.user.id,
     });
 
-    const watchParties = await findAllWatchParties();
+    const cinemaParties = await findAllCinemaParties();
 
-    const activeWatchParties = watchParties.filter(
-      (wp) => wp.status === WATCH_CONSTANTS.ACTIVE_STATUS,
+    const activeCinemaParties = cinemaParties.filter(
+      (wp) => wp.status === CINEMA_CONSTANTS.ACTIVE_STATUS,
     );
 
-    const watchPartiesWithOpenRatings = watchParties.filter((wp) =>
+    const cinemaPartiesWithOpenRatings = cinemaParties.filter((wp) =>
       Boolean(wp.ratingMessageId && wp.ratingChannelId && wp.ratingClosesAt),
     );
 
-    for (const watchParty of activeWatchParties) {
-      scheduleWatchStartAnnouncement(client, watchParty);
+    for (const cinemaParty of activeCinemaParties) {
+      scheduleCinemaStartAnnouncement(client, cinemaParty);
     }
 
-    for (const watchParty of watchPartiesWithOpenRatings) {
-      scheduleWatchRatingClosure(client, watchParty);
+    for (const cinemaParty of cinemaPartiesWithOpenRatings) {
+      scheduleCinemaRatingClosure(client, cinemaParty);
     }
 
-    logger.info("Watch schedulers restored", {
-      restoredWatchAnnouncementsCount: activeWatchParties.length,
-      restoredWatchRatingClosuresCount: watchPartiesWithOpenRatings.length,
+    logger.info("Cinema schedulers restored", {
+      restoredCinemaAnnouncementsCount: activeCinemaParties.length,
+      restoredCinemaRatingClosuresCount: cinemaPartiesWithOpenRatings.length,
     });
 
   },

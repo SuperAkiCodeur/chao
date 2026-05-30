@@ -1,9 +1,9 @@
 import { db } from "@/lib/db";
-import { watchParties, watchPartyUsers, watchPartyRatings } from "@/lib/schema";
+import { cinemaParties, cinemaPartyUsers, cinemaPartyRatings } from "@/lib/schema";
 import { eq, desc, count, avg } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clapperboard } from "lucide-react";
-import { WatchClient } from "./WatchClient";
+import { CinemaClient } from "./CinemaClient";
 import { FeatureSettings, type DiscordChannel, type DiscordRole } from "@/components/FeatureSettings";
 import { CommandsReference } from "@/components/CommandsReference";
 import { ApiAttribution } from "@/components/ApiAttribution";
@@ -17,21 +17,21 @@ const POSTER_BASE = "https://image.tmdb.org/t/p/w300";
 async function getData() {
   const parties = await db
     .select()
-    .from(watchParties)
-    .orderBy(desc(watchParties.viewingAt))
+    .from(cinemaParties)
+    .orderBy(desc(cinemaParties.viewingAt))
     .limit(30);
 
   return Promise.all(
     parties.map(async (party) => {
       const [{ participants }] = await db
         .select({ participants: count() })
-        .from(watchPartyUsers)
-        .where(eq(watchPartyUsers.messageId, party.messageId));
+        .from(cinemaPartyUsers)
+        .where(eq(cinemaPartyUsers.messageId, party.messageId));
 
       const [{ avgRating }] = await db
-        .select({ avgRating: avg(watchPartyRatings.rating) })
-        .from(watchPartyRatings)
-        .where(eq(watchPartyRatings.messageId, party.messageId));
+        .select({ avgRating: avg(cinemaPartyRatings.rating) })
+        .from(cinemaPartyRatings)
+        .where(eq(cinemaPartyRatings.messageId, party.messageId));
 
       return {
         messageId: party.messageId,
@@ -83,14 +83,14 @@ async function getDiscord() {
     fetch(`https://discord.com/api/v10/guilds/${GUILD_ID}/channels`, { headers: { Authorization: `Bot ${BOT_TOKEN}` }, cache: "no-store" }),
     fetch(`https://discord.com/api/v10/guilds/${GUILD_ID}/roles`, { headers: { Authorization: `Bot ${BOT_TOKEN}` }, cache: "no-store" }),
   ]);
-  if (!chRes.ok) console.error("[watch] channels fetch failed", chRes.status, await chRes.text().catch(() => ""));
-  if (!roRes.ok) console.error("[watch] roles fetch failed", roRes.status, await roRes.text().catch(() => ""));
+  if (!chRes.ok) console.error("[cinema] channels fetch failed", chRes.status, await chRes.text().catch(() => ""));
+  if (!roRes.ok) console.error("[cinema] roles fetch failed", roRes.status, await roRes.text().catch(() => ""));
   const channels: DiscordChannel[] = chRes.ok ? await chRes.json() : [];
   const roles: DiscordRole[] = roRes.ok ? await roRes.json() : [];
   return { channels, roles };
 }
 
-export default async function WatchPage() {
+export default async function CinemaPage() {
   const [parties, { channels, roles }, settings] = await Promise.all([getData(), getDiscord(), getAllSettings()]);
   const upcoming = parties.filter((p) => p.status === "active");
   const upcomingMeta = await Promise.all(
@@ -172,7 +172,7 @@ export default async function WatchPage() {
           <CardTitle className="text-sm font-semibold text-foreground">Séances</CardTitle>
         </CardHeader>
         <CardContent>
-          <WatchClient parties={parties} />
+          <CinemaClient parties={parties} />
         </CardContent>
       </Card>
 
@@ -181,65 +181,37 @@ export default async function WatchPage() {
         roles={roles}
         settings={settings}
         fields={[
-          { key: "watch_channel_id", label: "Salon d'annonces", description: "Salon où les séances sont publiées", kind: "channel" },
-          { key: "watch_spectator_role_id", label: "Rôle spectateur", description: "Rôle attribué aux participants", kind: "role" },
+          { key: "cinema_channel_id", label: "Salon d'annonces", description: "Salon où les séances sont publiées", kind: "channel" },
+          { key: "cinema_spectator_role_id", label: "Rôle spectateur", description: "Rôle attribué aux participants", kind: "role" },
         ]}
       />
 
       <CommandsReference commands={[
         {
-          name: "/watch start",
+          name: "/cinema",
           description:
-            "Programme une diffusion. Le bot recherche automatiquement les métadonnées sur TMDB (affiche, synopsis, genres) puis publie l'annonce dans le salon configuré. Les membres peuvent s'inscrire via les boutons réaction. Un rappel est automatiquement posté 30 min avant la séance.",
+            "Ouvre un menu éphémère (visible uniquement par toi) avec trois actions disponibles :",
           adminOnly: true,
           params: [
             {
-              name: "type",
-              description: "Type de contenu à diffuser.",
-              required: true,
-              choices: ["Film", "Série"],
+              name: "🎬 Programmer une diffusion",
+              description:
+                "Ouvre un formulaire : type (film / serie), titre, date (JJ/MM/AA) et heure (HH:MM). Le bot recherche les métadonnées sur TMDB puis publie l'annonce dans le salon configuré. Un rappel est posté automatiquement à l'heure du visionnage.",
+              required: false,
             },
             {
-              name: "title",
-              description: "Titre exact du contenu, recherché sur TMDB (deux étapes : recherche textuelle puis fiche détaillée).",
-              required: true,
+              name: "⏹ Terminer une diffusion",
+              description:
+                "Clôt une diffusion active et ouvre un vote de notation (⭐ à ⭐⭐⭐⭐⭐) pendant 1 heure. Le récapitulatif des notes est publié automatiquement à la fermeture.",
+              required: false,
             },
             {
-              name: "date",
-              description: "Date de la séance au format JJ/MM/AA — ex : 19/05/26.",
-              required: true,
-            },
-            {
-              name: "time",
-              description: "Heure de la séance au format HH:MM — ex : 21:00.",
-              required: true,
+              name: "❓ Aide",
+              description: "Affiche la liste de toutes les actions disponibles directement dans le menu.",
+              required: false,
             },
           ],
-        },
-        {
-          name: "/watch end",
-          description:
-            "Termine une diffusion active et ouvre le vote de notation (⭐ à ⭐⭐⭐⭐⭐). Les membres inscrits reçoivent une notification. La note moyenne est ensuite calculée et affichée dans un récapitulatif.",
-          adminOnly: true,
-          params: [
-            {
-              name: "type",
-              description: "Type de contenu de la diffusion à terminer.",
-              required: true,
-              choices: ["Film", "Série"],
-            },
-            {
-              name: "title",
-              description: "Titre exact de la diffusion à clôturer (doit correspondre à une watch party active).",
-              required: true,
-            },
-          ],
-        },
-        {
-          name: "/watch help",
-          description:
-            "Affiche un récapitulatif de toutes les commandes Watch disponibles, directement dans Discord. La réponse est éphémère (visible uniquement par toi).",
-          adminOnly: true,
+          note: "Réservée aux administrateurs (permission Gérer le serveur).",
         },
       ]} />
 

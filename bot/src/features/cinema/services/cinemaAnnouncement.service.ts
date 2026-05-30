@@ -1,9 +1,9 @@
 import { EmbedBuilder } from "discord.js";
-import { WATCH_CONSTANTS } from "../domain/watch.constants.js";
+import { CINEMA_CONSTANTS } from "../domain/cinema.constants.js";
 import type {
-  BuildWatchAnnouncementParams,
-  BuildWatchAnnouncementResult,
-} from "../domain/watch.types.js";
+  BuildCinemaAnnouncementParams,
+  BuildCinemaAnnouncementResult,
+} from "../domain/cinema.types.js";
 import {
   buildTmdbPosterUrl,
   resolveTmdbAuthor,
@@ -41,9 +41,9 @@ function formatReleaseDate(date: string | null): string {
   return parsedDate.toLocaleDateString("fr-FR");
 }
 
-export function buildWatchAnnouncement(
-  params: BuildWatchAnnouncementParams,
-): BuildWatchAnnouncementResult {
+export function buildCinemaAnnouncement(
+  params: BuildCinemaAnnouncementParams,
+): BuildCinemaAnnouncementResult {
   const resolvedTitle = resolveTmdbTitle(
     params.type,
     params.title,
@@ -79,7 +79,7 @@ export function buildWatchAnnouncement(
       {
         name: "Type",
         value:
-          params.type === WATCH_CONSTANTS.MEDIA_TYPES.MOVIE ? "Film" : "Série",
+          params.type === CINEMA_CONSTANTS.MEDIA_TYPES.MOVIE ? "Film" : "Série",
         inline: true,
       },
       {
@@ -89,7 +89,7 @@ export function buildWatchAnnouncement(
       },
       {
         name:
-          params.type === WATCH_CONSTANTS.MEDIA_TYPES.MOVIE
+          params.type === CINEMA_CONSTANTS.MEDIA_TYPES.MOVIE
             ? "Sortie"
             : "Première diffusion",
         value: releaseDate,
@@ -97,7 +97,7 @@ export function buildWatchAnnouncement(
       },
       {
         name:
-          params.type === WATCH_CONSTANTS.MEDIA_TYPES.MOVIE
+          params.type === CINEMA_CONSTANTS.MEDIA_TYPES.MOVIE
             ? "Durée"
             : "Durée épisode",
         value: runtime,
@@ -119,7 +119,7 @@ export function buildWatchAnnouncement(
         inline: false,
       },
     )
-    .setColor(WATCH_CONSTANTS.DEFAULT_EMBED_COLOR);
+    .setColor(CINEMA_CONSTANTS.DEFAULT_EMBED_COLOR);
 
   if (posterUrl) {
     embed.setImage(posterUrl);

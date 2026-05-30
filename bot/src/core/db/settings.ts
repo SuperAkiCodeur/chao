@@ -4,8 +4,8 @@ import { dashboardSettings } from "./schema.js";
 
 export const SETTING_KEYS = {
   // Cinéma
-  WATCH_CHANNEL_ID: "watch_channel_id",
-  WATCH_SPECTATOR_ROLE_ID: "watch_spectator_role_id",
+  CINEMA_CHANNEL_ID: "cinema_channel_id",
+  CINEMA_SPECTATOR_ROLE_ID: "cinema_spectator_role_id",
   // Membres
   MEMBER_ROLE_ID: "member_role_id",
   // Valorant

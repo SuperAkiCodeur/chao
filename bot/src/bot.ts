@@ -3,6 +3,7 @@ import { env } from "./core/config/env.js";
 import { logger } from "./core/app/logger.js";
 import { loadEvents } from "./core/discord/eventLoader.js";
 import { startSteamTracker } from "./features/steam/services/steam.tracker.js";
+import { startPalestineTracker } from "./features/palestine/services/palestine.tracker.js";
 
 export function createBot() {
   const client = new Client({
@@ -30,6 +31,7 @@ export function createBot() {
     async start() {
       await client.login(env.DISCORD_TOKEN);
       startSteamTracker(client);
+      startPalestineTracker(client);
     },
   };
 }

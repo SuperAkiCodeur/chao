@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { watchParties } from "@/lib/schema";
+import { cinemaParties } from "@/lib/schema";
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { addLog } from "@/lib/logger";
@@ -115,7 +115,7 @@ export async function searchTmdbAction(title: string, type: string): Promise<Tmd
 
 // ── Lancer ────────────────────────────────────────────────────────────────────
 
-export async function launchWatchParty(params: {
+export async function launchCinemaParty(params: {
   mediaType: string;
   date: string;
   time: string;
@@ -124,8 +124,8 @@ export async function launchWatchParty(params: {
   const { mediaType, date, time, tmdb } = params;
 
   const [TICKET_CHANNEL_ID, SPECTATOR_ROLE_ID] = await Promise.all([
-    getSetting(SETTING_KEYS.WATCH_CHANNEL_ID),
-    getSetting(SETTING_KEYS.WATCH_SPECTATOR_ROLE_ID),
+    getSetting(SETTING_KEYS.CINEMA_CHANNEL_ID),
+    getSetting(SETTING_KEYS.CINEMA_SPECTATOR_ROLE_ID),
   ]);
 
   if (!TICKET_CHANNEL_ID || !SPECTATOR_ROLE_ID) {
@@ -175,7 +175,7 @@ export async function launchWatchParty(params: {
   const msg = await msgRes.json() as { id: string };
 
   try {
-    await db.insert(watchParties).values({
+    await db.insert(cinemaParties).values({
       messageId: msg.id,
       guildId: GUILD_ID,
       channelId: TICKET_CHANNEL_ID,
@@ -191,33 +191,33 @@ export async function launchWatchParty(params: {
   }
 
   void addLog({
-    type: "watch",
+    type: "cinema",
     action: "party_created",
     description: `📺 ${mediaType === "movie" ? "Film" : "Série"} programmé depuis le dashboard : « ${tmdb.resolvedTitle} » le ${viewingFormatted}`,
     metadata: { title: tmdb.resolvedTitle, mediaType, viewingAt: viewingAt.toISOString(), mediaId: tmdb.mediaId },
   });
 
-  revalidatePath("/watch");
+  revalidatePath("/cinema");
   return { success: true };
 }
 
 // ── Terminer ──────────────────────────────────────────────────────────────────
 
-export async function endWatchParty(messageId: string, title: string): Promise<ActionResult> {
+export async function endCinemaParty(messageId: string, title: string): Promise<ActionResult> {
   try {
     await db
-      .update(watchParties)
+      .update(cinemaParties)
       .set({ status: "ended" })
-      .where(and(eq(watchParties.messageId, messageId), eq(watchParties.guildId, GUILD_ID)));
+      .where(and(eq(cinemaParties.messageId, messageId), eq(cinemaParties.guildId, GUILD_ID)));
 
     void addLog({
-      type: "watch",
+      type: "cinema",
       action: "party_ended",
       description: `✅ Diffusion terminée : « ${title} »`,
       metadata: { messageId, title },
     });
 
-    revalidatePath("/watch");
+    revalidatePath("/cinema");
     return { success: true };
   } catch {
     return { success: false, error: "Erreur lors de la mise à jour." };
@@ -226,8 +226,8 @@ export async function endWatchParty(messageId: string, title: string): Promise<A
 
 // ── Annuler ───────────────────────────────────────────────────────────────────
 
-export async function cancelWatchParty(messageId: string, title: string): Promise<ActionResult> {
-  const TICKET_CHANNEL_ID = await getSetting(SETTING_KEYS.WATCH_CHANNEL_ID);
+export async function cancelCinemaParty(messageId: string, title: string): Promise<ActionResult> {
+  const TICKET_CHANNEL_ID = await getSetting(SETTING_KEYS.CINEMA_CHANNEL_ID);
   try {
     if (TICKET_CHANNEL_ID) {
       await fetch(`https://discord.com/api/v10/channels/${TICKET_CHANNEL_ID}/messages/${messageId}`, {
@@ -237,17 +237,17 @@ export async function cancelWatchParty(messageId: string, title: string): Promis
     }
 
     await db
-      .delete(watchParties)
-      .where(and(eq(watchParties.messageId, messageId), eq(watchParties.guildId, GUILD_ID)));
+      .delete(cinemaParties)
+      .where(and(eq(cinemaParties.messageId, messageId), eq(cinemaParties.guildId, GUILD_ID)));
 
     void addLog({
-      type: "watch",
+      type: "cinema",
       action: "party_cancelled",
       description: `❌ Diffusion annulée : « ${title} »`,
       metadata: { messageId, title },
     });
 
-    revalidatePath("/watch");
+    revalidatePath("/cinema");
     return { success: true };
   } catch {
     return { success: false, error: "Erreur lors de la suppression." };

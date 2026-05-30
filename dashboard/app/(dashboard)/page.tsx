@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { watchParties, valorantLinks } from "@/lib/schema";
+import { cinemaParties, valorantLinks } from "@/lib/schema";
 import { eq, count } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CommandsReference } from "@/components/CommandsReference";
@@ -8,31 +8,31 @@ import { Clapperboard, Crosshair, TrendingUp } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 async function getStats() {
-  const [{ total: activeWatches }] = await db
+  const [{ total: activeCinema }] = await db
     .select({ total: count() })
-    .from(watchParties)
-    .where(eq(watchParties.status, "active"));
+    .from(cinemaParties)
+    .where(eq(cinemaParties.status, "active"));
 
   const [{ total: totalValorant }] = await db
     .select({ total: count() })
     .from(valorantLinks);
 
-  const recentWatches = await db
+  const recentCinema = await db
     .select()
-    .from(watchParties)
-    .orderBy(watchParties.viewingAt)
+    .from(cinemaParties)
+    .orderBy(cinemaParties.viewingAt)
     .limit(6);
 
-  return { activeWatches, totalValorant, recentWatches };
+  return { activeCinema, totalValorant, recentCinema };
 }
 
 export default async function HomePage() {
-  const { activeWatches, totalValorant, recentWatches } = await getStats();
+  const { activeCinema, totalValorant, recentCinema } = await getStats();
 
   const stats = [
     {
-      label: "Watch parties actives",
-      value: String(activeWatches),
+      label: "Séances cinéma actives",
+      value: String(activeCinema),
       sub: "diffusions en cours",
       icon: Clapperboard,
       color: "text-rose-600",
@@ -104,15 +104,15 @@ export default async function HomePage() {
         <Card>
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-semibold text-foreground">Watch parties récentes</CardTitle>
+              <CardTitle className="text-sm font-semibold text-foreground">Séances cinéma récentes</CardTitle>
               <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
             </div>
           </CardHeader>
           <CardContent className="space-y-1">
-            {recentWatches.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-2">Aucune watch party pour l'instant.</p>
+            {recentCinema.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-2">Aucune séance cinéma pour l'instant.</p>
             ) : (
-              recentWatches.map((wp) => (
+              recentCinema.map((wp) => (
                 <div
                   key={wp.messageId}
                   className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-muted/40 transition-colors"

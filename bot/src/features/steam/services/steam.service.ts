@@ -32,8 +32,8 @@ import { getITADDeals, lookupITADGame } from "./itad.api.js";
 import {
   deleteGame,
   getGameByAppId,
-  getGamesForGuild,
-  getSteamConfig,
+  getGamesForChannel,
+  getSteamChannelConfig,
   insertGame,
 } from "./steam.repository.js";
 
@@ -68,6 +68,17 @@ function buildMainMenu() {
   };
 }
 
+async function postToChannel(
+  interaction: StringSelectMenuInteraction,
+  payload: { content?: string; embeds?: EmbedBuilder[] },
+): Promise<void> {
+  if (interaction.channel?.isSendable()) {
+    await interaction.channel.send(payload);
+  } else {
+    await interaction.followUp(payload);
+  }
+}
+
 function buildBackRow() {
   return new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
@@ -98,18 +109,13 @@ async function checkPermission(interaction: ChatInputCommandInteraction): Promis
   const guildId = interaction.guildId;
   if (!guildId) return true;
 
-  const config = await getSteamConfig(guildId);
-  if (!config) return true;
+  // Chaque salon a sa propre config — on vérifie uniquement la restriction de rôle
+  const config = await getSteamChannelConfig(guildId, interaction.channelId);
+  if (!config?.notifRoleId) return true;
 
-  if (config.notifChannelId && config.notifChannelId !== interaction.channelId) return false;
-
-  if (config.notifRoleId) {
-    const member = interaction.member as GuildMember | null;
-    if (!member) return false;
-    if (!member.roles.cache.has(config.notifRoleId)) return false;
-  }
-
-  return true;
+  const member = interaction.member as GuildMember | null;
+  if (!member) return false;
+  return member.roles.cache.has(config.notifRoleId);
 }
 
 // ── Commande /steam ───────────────────────────────────────────────────────────
@@ -120,16 +126,18 @@ export async function handleSteamCommand(interaction: ChatInputCommandInteractio
     return;
   }
 
+  // Defer first to avoid the 3-second Discord timeout while the DB query runs.
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
   const allowed = await checkPermission(interaction);
   if (!allowed) {
-    await interaction.reply({
+    await interaction.editReply({
       content: "❌ Tu n'as pas la permission d'utiliser cette commande dans ce salon.",
-      flags: MessageFlags.Ephemeral,
     });
     return;
   }
 
-  await interaction.reply({ ...buildMainMenu(), flags: MessageFlags.Ephemeral });
+  await interaction.editReply(buildMainMenu());
 }
 
 // ── Menu principal (StringSelectMenu) ────────────────────────────────────────
@@ -164,14 +172,12 @@ export async function handleSteamMenu(interaction: StringSelectMenuInteraction):
 
   // ── Liste ────────────────────────────────────────────────────────────────────
   if (value === "list") {
-    const games = await getGamesForGuild(guildId);
+    await interaction.update({ content: "⏳ Chargement de la liste…", embeds: [], components: [] });
+
+    const games = await getGamesForChannel(guildId, interaction.channelId);
 
     if (games.length === 0) {
-      await interaction.update({
-        content: "📋 Aucun jeu tracké pour l'instant.",
-        embeds: [],
-        components: [buildBackRow()],
-      });
+      await interaction.editReply({ content: "📋 Aucun jeu tracké pour l'instant.", embeds: [], components: [buildBackRow()] });
       return;
     }
 
@@ -193,13 +199,14 @@ export async function handleSteamMenu(interaction: StringSelectMenuInteraction):
       .setTitle(`🎮 Jeux trackés (${games.length})`)
       .setDescription(description);
 
-    await interaction.update({ content: "", embeds: [embed], components: [buildBackRow()] });
+    await postToChannel(interaction, { content: "", embeds: [embed] });
+    await interaction.editReply({ content: "✅ Liste postée dans le salon.", embeds: [], components: [buildBackRow()] });
     return;
   }
 
   // ── Comparer les prix : sélecteur de jeu ────────────────────────────────────
   if (value === "price") {
-    const games = await getGamesForGuild(guildId);
+    const games = await getGamesForChannel(guildId, interaction.channelId);
 
     if (games.length === 0) {
       await interaction.update({ content: "ℹ️ Aucun jeu dans la liste.", embeds: [], components: [buildBackRow()] });
@@ -216,7 +223,7 @@ export async function handleSteamMenu(interaction: StringSelectMenuInteraction):
 
   // ── Retirer : sélecteur de jeu ───────────────────────────────────────────────
   if (value === "remove") {
-    const games = await getGamesForGuild(guildId);
+    const games = await getGamesForChannel(guildId, interaction.channelId);
 
     if (games.length === 0) {
       await interaction.update({ content: "ℹ️ Aucun jeu dans la liste.", embeds: [], components: [buildBackRow()] });
@@ -233,7 +240,9 @@ export async function handleSteamMenu(interaction: StringSelectMenuInteraction):
 
   // ── Promos ───────────────────────────────────────────────────────────────────
   if (value === "deals") {
-    const games = await getGamesForGuild(guildId);
+    await interaction.update({ content: "⏳ Vérification des promos…", embeds: [], components: [] });
+
+    const games = await getGamesForChannel(guildId, interaction.channelId);
     const onSale = games.filter((g) => g.isOnSale === 1);
 
     if (onSale.length === 0) {
@@ -241,7 +250,7 @@ export async function handleSteamMenu(interaction: StringSelectMenuInteraction):
         ? "Aucun jeu de la liste n'est en promo en ce moment."
         : "Aucune promo détectée. Le tracker n'a pas encore tourné — reviens dans quelques minutes.";
 
-      await interaction.update({ content: `ℹ️ ${note}`, embeds: [], components: [buildBackRow()] });
+      await interaction.editReply({ content: `ℹ️ ${note}`, embeds: [], components: [buildBackRow()] });
       return;
     }
 
@@ -255,7 +264,8 @@ export async function handleSteamMenu(interaction: StringSelectMenuInteraction):
       .setDescription(lines.join("\n"))
       .setFooter({ text: "Mis à jour toutes les 6h" });
 
-    await interaction.update({ content: "", embeds: [embed], components: [buildBackRow()] });
+    await postToChannel(interaction, { content: "", embeds: [embed] });
+    await interaction.editReply({ content: "✅ Promos postées dans le salon.", embeds: [], components: [buildBackRow()] });
     return;
   }
 }
@@ -273,34 +283,40 @@ export async function handleSteamAddModal(interaction: ModalSubmitInteraction): 
 
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-  const results = await searchSteamGames(query);
+  try {
+    const results = await searchSteamGames(query);
 
-  if (results.length === 0) {
-    await interaction.editReply("❌ Aucun jeu trouvé sur Steam pour cette recherche.");
-    return;
+    if (results.length === 0) {
+      await interaction.editReply("❌ Aucun jeu trouvé sur Steam pour cette recherche.");
+      return;
+    }
+
+    const options = results.map((r) => {
+      // final_formatted peut être vide pour certains jeux Steam — Discord.js exige 1-100 chars
+      const priceLabel = r.price
+        ? r.price.discount_percent > 0
+          ? `En promo — ${r.price.final_formatted || formatEur(r.price.final)} (-${r.price.discount_percent}%)`
+          : r.price.final_formatted || formatEur(r.price.final) || "Prix non disponible"
+        : "Gratuit";
+
+      return new StringSelectMenuOptionBuilder()
+        .setLabel(r.name.slice(0, 100))
+        .setValue(String(r.id))
+        .setDescription((priceLabel || "Prix non disponible").slice(0, 100));
+    });
+
+    const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+      new StringSelectMenuBuilder()
+        .setCustomId(STEAM_ADD_SELECT_ID)
+        .setPlaceholder("Sélectionne le jeu à ajouter…")
+        .addOptions(options),
+    );
+
+    await interaction.editReply({ content: `🔍 Résultats pour **${query}** :`, components: [row] });
+  } catch (err) {
+    logger.error("[steam] handleSteamAddModal error", { err });
+    await interaction.editReply("❌ Une erreur est survenue lors de la recherche. Réessaie.").catch(() => null);
   }
-
-  const options = results.map((r) =>
-    new StringSelectMenuOptionBuilder()
-      .setLabel(r.name.slice(0, 100))
-      .setValue(String(r.id))
-      .setDescription(
-        r.price
-          ? r.price.discount_percent > 0
-            ? `En promo — ${r.price.final_formatted} (-${r.price.discount_percent}%)`
-            : r.price.final_formatted
-          : "Gratuit",
-      ),
-  );
-
-  const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-    new StringSelectMenuBuilder()
-      .setCustomId(STEAM_ADD_SELECT_ID)
-      .setPlaceholder("Sélectionne le jeu à ajouter…")
-      .addOptions(options),
-  );
-
-  await interaction.editReply({ content: `🔍 Résultats pour **${query}** :`, components: [row] });
 }
 
 // ── StringSelectMenu — confirme l'ajout ──────────────────────────────────────
@@ -314,17 +330,28 @@ export async function handleSteamAddSelect(interaction: StringSelectMenuInteract
 
   await interaction.update({ content: "⏳ Récupération des infos Steam…", components: [] });
 
-  const existing = await getGameByAppId(guildId, steamAppId);
+  const existing = await getGameByAppId(guildId, interaction.channelId, steamAppId);
   if (existing) { await interaction.editReply({ content: `ℹ️ **${existing.title}** est déjà dans la liste.` }); return; }
 
   const details = await getSteamAppDetails(steamAppId);
   const title = details?.name ?? `App ${steamAppId}`;
   const headerImage = details?.header_image ?? null;
 
+  const price = details?.price_overview;
+  const lastKnownPriceEur = details?.is_free ? 0 : (price?.final ?? null);
+  const lastKnownDiscount = price?.discount_percent ?? 0;
+  const isOnSale = lastKnownDiscount > 0 ? 1 : 0;
+
   await insertGame({
-    guildId, steamAppId, title, headerImage,
+    guildId,
+    channelId: interaction.channelId,
+    steamAppId, title, headerImage,
     addedBy: interaction.user.id,
     addedByName: interaction.user.displayName ?? interaction.user.username,
+    lastKnownPriceEur,
+    lastKnownDiscount,
+    isOnSale,
+    lastCheckedAt: new Date().toISOString(),
   });
 
   const priceStr = details?.is_free
@@ -347,7 +374,7 @@ export async function handleSteamPriceSelect(interaction: StringSelectMenuIntera
 
   await interaction.update({ content: "⏳ Récupération des prix…", components: [buildBackRow()], embeds: [] });
 
-  const game = await getGameByAppId(guildId, steamAppId);
+  const game = await getGameByAppId(guildId, interaction.channelId, steamAppId);
   if (!game) { await interaction.editReply({ content: "❌ Jeu introuvable.", components: [buildBackRow()] }); return; }
 
   const details = await getSteamAppDetails(steamAppId);
@@ -392,7 +419,8 @@ export async function handleSteamPriceSelect(interaction: StringSelectMenuIntera
     .setThumbnail(game.headerImage ?? null)
     .setDescription(lines.join("\n") + itadFooter);
 
-  await interaction.editReply({ content: "", embeds: [embed], components: [buildBackRow()] });
+  await postToChannel(interaction, { content: "", embeds: [embed] });
+  await interaction.editReply({ content: "✅ Comparaison des prix postée dans le salon.", embeds: [], components: [buildBackRow()] });
 }
 
 // ── StringSelectMenu — suppression ───────────────────────────────────────────
@@ -404,7 +432,7 @@ export async function handleSteamRemoveSelect(interaction: StringSelectMenuInter
   const steamAppId = parseInt(interaction.values[0] ?? "", 10);
   if (isNaN(steamAppId)) return;
 
-  const game = await getGameByAppId(guildId, steamAppId);
+  const game = await getGameByAppId(guildId, interaction.channelId, steamAppId);
   if (!game) { await interaction.update({ content: "❌ Jeu introuvable.", components: [buildBackRow()], embeds: [] }); return; }
 
   await deleteGame(game.id);

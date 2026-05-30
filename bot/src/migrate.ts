@@ -50,6 +50,55 @@ async function main(): Promise<void> {
   `;
   console.log("✓ steam_channel_permissions");
 
+  // Renommer les tables watch_* → cinema_*
+  await sql`ALTER TABLE IF EXISTS watch_parties        RENAME TO cinema_parties`;
+  console.log("✓ watch_parties → cinema_parties");
+
+  await sql`ALTER TABLE IF EXISTS watch_party_users    RENAME TO cinema_party_users`;
+  console.log("✓ watch_party_users → cinema_party_users");
+
+  await sql`ALTER TABLE IF EXISTS watch_party_ratings  RENAME TO cinema_party_ratings`;
+  console.log("✓ watch_party_ratings → cinema_party_ratings");
+
+  // Renommer les clés de settings watch_* → cinema_*
+  await sql`
+    UPDATE dashboard_settings
+    SET key = 'cinema_channel_id'
+    WHERE key = 'watch_channel_id'
+  `;
+  console.log("✓ setting watch_channel_id → cinema_channel_id");
+
+  await sql`
+    UPDATE dashboard_settings
+    SET key = 'cinema_spectator_role_id'
+    WHERE key = 'watch_spectator_role_id'
+  `;
+  console.log("✓ setting watch_spectator_role_id → cinema_spectator_role_id");
+
+  // Convertir les anciens logs type="watch" → "cinema"
+  await sql`
+    UPDATE dashboard_logs
+    SET type = 'cinema'
+    WHERE type = 'watch'
+  `;
+  console.log("✓ logs type watch → cinema");
+
+  // Listes Steam par salon : ajout de channel_id
+  await sql`ALTER TABLE steam_games ADD COLUMN IF NOT EXISTS channel_id TEXT NOT NULL DEFAULT ''`;
+  console.log("✓ steam_games.channel_id");
+
+  await sql`ALTER TABLE steam_config ADD COLUMN IF NOT EXISTS channel_id TEXT NOT NULL DEFAULT ''`;
+  console.log("✓ steam_config.channel_id");
+
+  // Changer la PK de steam_config : guild_id seul → (guild_id, channel_id)
+  await sql`ALTER TABLE steam_config DROP CONSTRAINT IF EXISTS steam_config_pkey`;
+  await sql`ALTER TABLE steam_config ADD PRIMARY KEY (guild_id, channel_id)`;
+  console.log("✓ steam_config PK → (guild_id, channel_id)");
+
+  // Créateur de la diffusion cinéma
+  await sql`ALTER TABLE cinema_parties ADD COLUMN IF NOT EXISTS created_by TEXT`;
+  console.log("✓ cinema_parties.created_by");
+
   await sql.end();
   console.log("Migration terminée.");
 }

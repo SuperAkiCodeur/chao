@@ -5,17 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 const TYPE_CONFIG: Record<string, { label: string; variant: "default" | "secondary" | "success" | "warning" | "muted" | "destructive" }> = {
-  watch:      { label: "Watch",      variant: "secondary" },
+  cinema:     { label: "Cinéma",     variant: "secondary" },
   valorant:   { label: "Valorant",   variant: "destructive" },
   member:     { label: "Membre",     variant: "success" },
   moderation: { label: "Modération", variant: "warning" },
 };
 
 const FILTERS = [
-  { id: "all",      label: "Tout",     types: null                      },
-  { id: "discord",  label: "Discord",  types: ["member", "moderation"]  },
-  { id: "watch",    label: "Cinéma",   types: ["watch"]                 },
-  { id: "valorant", label: "Valorant", types: ["valorant"]              },
+  { id: "all",      label: "Tout",     types: null                          },
+  { id: "discord",  label: "Discord",  types: ["member", "moderation"]      },
+  { id: "cinema",   label: "Cinéma",   types: ["cinema"]                    },
+  { id: "valorant", label: "Valorant", types: ["valorant"]                  },
 ] as const;
 
 type FilterId = typeof FILTERS[number]["id"];

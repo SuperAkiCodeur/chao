@@ -1,6 +1,29 @@
-import { EmbedBuilder } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+  MessageFlags,
+  ModalBuilder,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+  type ButtonInteraction,
+  type ChatInputCommandInteraction,
+  type ModalSubmitInteraction,
+  type StringSelectMenuInteraction,
+} from "discord.js";
 import { logger } from "../../../core/app/logger.js";
-import { VALORANT_CONSTANTS } from "../domain/valorant.constants.js";
+import { getSetting, SETTING_KEYS } from "../../../core/db/settings.js";
+import {
+  VALORANT_CONSTANTS,
+  VALORANT_MENU_ID,
+  VALORANT_STATS_SELECT_ID,
+  VALORANT_MODAL_LINK_ID,
+  VALORANT_INPUT_RIOT_ID,
+  VALORANT_BACK_BTN_ID,
+} from "../domain/valorant.constants.js";
 import type {
   HenrikMatch,
   HenrikMatchPlayer,
@@ -435,3 +458,249 @@ export async function buildStatsEmbed(params: {
   return { embed };
 }
 
+// ── Menu-driven handlers ──────────────────────────────────────────────────────
+
+function buildValorantHelpEmbed(): EmbedBuilder {
+  return new EmbedBuilder()
+    .setColor(VALORANT_CONSTANTS.EMBED_COLOR)
+    .setTitle("🎮 Commandes Valorant")
+    .setDescription("Toutes les actions disponibles.")
+    .addFields(
+      {
+        name: "🔗 Lier mon compte",
+        value:
+          "Associe ton Riot ID à ton profil Discord.\n" +
+          "→ Nécessaire avant d'utiliser les autres actions.\n" +
+          "Exemple : `Player#EUW`",
+      },
+      {
+        name: "📊 Mes résultats",
+        value: "Affiche tes derniers matchs avec K/D, résultats et rang.",
+      },
+      {
+        name: "📈 Mes stats",
+        value:
+          "Statistiques détaillées de tes parties :\n" +
+          "• **Global** — K/D, winrate, headshot%…\n" +
+          "• **Par agent** — stats par personnage joué\n" +
+          "• **Par map** — winrate par carte\n" +
+          "• **Temps de jeu** — heures passées en jeu",
+      },
+      {
+        name: "🏆 Classement",
+        value:
+          "Classement des membres du serveur par rang.\n" +
+          "→ Seuls les joueurs ayant lié leur compte apparaissent.",
+      },
+    )
+    .setFooter({ text: "Données provenant de tracker.gg via Henrik API" });
+}
+
+function buildValorantMainMenu() {
+  const select = new StringSelectMenuBuilder()
+    .setCustomId(VALORANT_MENU_ID)
+    .setPlaceholder("Choisir une action…")
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Lier mon compte").setValue("link").setEmoji("🔗")
+        .setDescription("Associer ton Riot ID à ton profil Discord"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Mes résultats").setValue("results").setEmoji("📊")
+        .setDescription("Voir tes derniers résultats Valorant"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Mes stats").setValue("stats").setEmoji("📈")
+        .setDescription("Statistiques détaillées de tes parties"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Classement").setValue("leaderboard").setEmoji("🏆")
+        .setDescription("Classement Valorant du serveur"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Aide").setValue("help").setEmoji("❓")
+        .setDescription("Voir toutes les actions disponibles"),
+    );
+
+  return {
+    content: "🎯 **Valorant** — Que veux-tu faire ?",
+    embeds: [] as EmbedBuilder[],
+    components: [new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select)],
+  };
+}
+
+async function postToChannel(
+  interaction: StringSelectMenuInteraction,
+  payload: { content?: string; embeds?: EmbedBuilder[] },
+): Promise<void> {
+  if (interaction.channel?.isSendable()) {
+    await interaction.channel.send(payload);
+  } else {
+    await interaction.followUp(payload);
+  }
+}
+
+function buildValorantBackRow() {
+  return new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId(VALORANT_BACK_BTN_ID)
+      .setLabel("↩ Revenir au menu")
+      .setStyle(ButtonStyle.Secondary),
+  );
+}
+
+export async function handleValorantCommand(interaction: ChatInputCommandInteraction): Promise<void> {
+  if (!interaction.inCachedGuild()) {
+    await interaction.reply({
+      content: "❌ Cette commande doit être utilisée dans un serveur.",
+      flags: MessageFlags.Ephemeral,
+    });
+    return;
+  }
+
+  const valorantChannelId = await getSetting(SETTING_KEYS.VALORANT_CHANNEL_ID);
+  if (valorantChannelId && interaction.channelId !== valorantChannelId) {
+    await interaction.reply({
+      content: `❌ Cette commande est réservée au salon <#${valorantChannelId}>.`,
+      flags: MessageFlags.Ephemeral,
+    });
+    return;
+  }
+
+  await interaction.reply({ ...buildValorantMainMenu(), flags: MessageFlags.Ephemeral });
+}
+
+export async function handleValorantMenu(interaction: StringSelectMenuInteraction): Promise<void> {
+  const guildId = interaction.guildId;
+  if (!guildId) return;
+
+  const value = interaction.values[0];
+
+  if (value === "link") {
+    const modal = new ModalBuilder()
+      .setCustomId(VALORANT_MODAL_LINK_ID)
+      .setTitle("Lier mon compte Valorant");
+
+    modal.addComponents(
+      new ActionRowBuilder<TextInputBuilder>().addComponents(
+        new TextInputBuilder()
+          .setCustomId(VALORANT_INPUT_RIOT_ID)
+          .setLabel("Riot ID")
+          .setStyle(TextInputStyle.Short)
+          .setPlaceholder("Ex: Player#EUW")
+          .setRequired(true)
+          .setMaxLength(40),
+      ),
+    );
+
+    await interaction.showModal(modal);
+    return;
+  }
+
+  if (value === "results") {
+    await interaction.update({ content: "⏳ Récupération des résultats…", embeds: [], components: [] });
+
+    const result = await buildResultsEmbed({
+      targetDiscordUserId: interaction.user.id,
+      guildId,
+    });
+
+    if ("error" in result) {
+      await interaction.editReply({ content: result.error, embeds: [], components: [buildValorantBackRow()] });
+      return;
+    }
+
+    await postToChannel(interaction, { embeds: [result.embed] });
+    await interaction.editReply({ content: "✅ Résultats postés dans le salon.", embeds: [], components: [buildValorantBackRow()] });
+    return;
+  }
+
+  if (value === "stats") {
+    const statsSelect = new StringSelectMenuBuilder()
+      .setCustomId(VALORANT_STATS_SELECT_ID)
+      .setPlaceholder("Choisir le type de statistiques…")
+      .addOptions(
+        new StringSelectMenuOptionBuilder().setLabel("Global").setValue("global").setEmoji("📊")
+          .setDescription("K/D, winrate, headshot%…"),
+        new StringSelectMenuOptionBuilder().setLabel("Par agent").setValue("agent").setEmoji("🕵️")
+          .setDescription("Stats par personnage joué"),
+        new StringSelectMenuOptionBuilder().setLabel("Par map").setValue("map").setEmoji("🗺️")
+          .setDescription("Winrate par carte"),
+        new StringSelectMenuOptionBuilder().setLabel("Temps de jeu").setValue("playtime").setEmoji("⏱️")
+          .setDescription("Heures passées en jeu"),
+      );
+
+    await interaction.update({
+      content: "📈 **Mes stats** — Choisis le type :",
+      embeds: [],
+      components: [
+        new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(statsSelect),
+        buildValorantBackRow(),
+      ],
+    });
+    return;
+  }
+
+  if (value === "leaderboard") {
+    await interaction.update({ content: "⏳ Récupération du classement…", embeds: [], components: [] });
+
+    const result = await buildLeaderboardEmbed(guildId);
+
+    if ("error" in result) {
+      await interaction.editReply({ content: result.error, embeds: [], components: [buildValorantBackRow()] });
+      return;
+    }
+
+    await postToChannel(interaction, { embeds: [result.embed] });
+    await interaction.editReply({ content: "✅ Classement posté dans le salon.", embeds: [], components: [buildValorantBackRow()] });
+    return;
+  }
+
+  if (value === "help") {
+    await interaction.update({
+      content: "",
+      embeds: [buildValorantHelpEmbed()],
+      components: [buildValorantBackRow()],
+    });
+    return;
+  }
+}
+
+export async function handleValorantBack(interaction: ButtonInteraction): Promise<void> {
+  await interaction.update(buildValorantMainMenu());
+}
+
+export async function handleValorantLinkModal(interaction: ModalSubmitInteraction): Promise<void> {
+  const riotId  = interaction.fields.getTextInputValue(VALORANT_INPUT_RIOT_ID);
+  const guildId = interaction.guildId;
+  if (!guildId) return;
+
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+  const result = await linkValorantAccount({
+    discordUserId: interaction.user.id,
+    guildId,
+    riotId,
+  });
+
+  await interaction.editReply({ content: result.message });
+}
+
+export async function handleValorantStatsSelect(interaction: StringSelectMenuInteraction): Promise<void> {
+  const guildId = interaction.guildId;
+  if (!guildId) return;
+
+  const type = interaction.values[0] as ValorantStatsType;
+
+  await interaction.update({ content: "⏳ Récupération des stats…", embeds: [], components: [] });
+
+  const result = await buildStatsEmbed({
+    targetDiscordUserId: interaction.user.id,
+    guildId,
+    type,
+  });
+
+  if ("error" in result) {
+    await interaction.editReply({ content: result.error, embeds: [], components: [buildValorantBackRow()] });
+    return;
+  }
+
+  await postToChannel(interaction, { embeds: [result.embed] });
+  await interaction.editReply({ content: "✅ Stats postées dans le salon.", embeds: [], components: [buildValorantBackRow()] });
+}

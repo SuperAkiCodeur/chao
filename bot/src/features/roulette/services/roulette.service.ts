@@ -4,18 +4,123 @@ import {
   ButtonStyle,
   EmbedBuilder,
   MessageFlags,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
   UserSelectMenuBuilder,
   type ButtonInteraction,
   type GuildMember,
+  type StringSelectMenuInteraction,
   type UserSelectMenuInteraction,
 } from "discord.js";
 import { logger } from "../../../core/app/logger.js";
 import {
+  ROULETTE_BACK_BTN_ID,
   ROULETTE_CONSTANTS,
   ROULETTE_LAUNCH_PREFIX,
+  ROULETTE_MENU_ID,
   ROULETTE_RETRY_ID,
   ROULETTE_SELECT_ID,
 } from "../domain/roulette.constants.js";
+
+// ── UI helpers ────────────────────────────────────────────────────────────────
+
+function buildRouletteMainMenu() {
+  const select = new StringSelectMenuBuilder()
+    .setCustomId(ROULETTE_MENU_ID)
+    .setPlaceholder("Choisir une action…")
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Lancer un tirage").setValue("launch").setEmoji("🎰")
+        .setDescription(`Sélectionner ${ROULETTE_CONSTANTS.MIN_PARTICIPANTS}–${ROULETTE_CONSTANTS.MAX_PARTICIPANTS} membres et tirer au sort`),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Aide").setValue("help").setEmoji("❓")
+        .setDescription("Comment fonctionne la roulette"),
+    );
+
+  return {
+    content: "🎰 **Roulette** — Que veux-tu faire ?",
+    embeds: [] as EmbedBuilder[],
+    components: [new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select)],
+  };
+}
+
+function buildRouletteBackRow() {
+  return new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId(ROULETTE_BACK_BTN_ID)
+      .setLabel("↩ Revenir au menu")
+      .setStyle(ButtonStyle.Secondary),
+  );
+}
+
+function buildRouletteSelectMessage() {
+  const selectRow = new ActionRowBuilder<UserSelectMenuBuilder>().addComponents(
+    new UserSelectMenuBuilder()
+      .setCustomId(ROULETTE_SELECT_ID)
+      .setPlaceholder(`Sélectionne ${ROULETTE_CONSTANTS.MIN_PARTICIPANTS}–${ROULETTE_CONSTANTS.MAX_PARTICIPANTS} participants`)
+      .setMinValues(ROULETTE_CONSTANTS.MIN_PARTICIPANTS)
+      .setMaxValues(ROULETTE_CONSTANTS.MAX_PARTICIPANTS),
+  );
+
+  return {
+    content: "🎰 **Roulette** — Qui participe au tirage ?",
+    embeds: [] as EmbedBuilder[],
+    components: [selectRow, buildRouletteBackRow()],
+  };
+}
+
+function buildRouletteHelpEmbed(): EmbedBuilder {
+  return new EmbedBuilder()
+    .setColor(ROULETTE_CONSTANTS.EMBED_COLOR_WINNER)
+    .setTitle("🎰 Roulette — Aide")
+    .setDescription("Tire au sort un gagnant parmi les membres sélectionnés.")
+    .addFields(
+      {
+        name: "Comment jouer",
+        value:
+          "1. Clique sur **Lancer un tirage**\n" +
+          `2. Sélectionne ${ROULETTE_CONSTANTS.MIN_PARTICIPANTS}–${ROULETTE_CONSTANTS.MAX_PARTICIPANTS} membres\n` +
+          "3. Confirme avec **Lancer 🎰**\n" +
+          "→ Le résultat s'affiche publiquement dans le salon.",
+      },
+      {
+        name: "Notes",
+        value: "• Les bots sont automatiquement exclus\n• Tu peux recommencer ou annuler avant le tirage",
+      },
+    );
+}
+
+export async function handleRouletteCommand(
+  interaction: import("discord.js").ChatInputCommandInteraction,
+): Promise<void> {
+  await interaction.reply({ ...buildRouletteMainMenu(), flags: MessageFlags.Ephemeral });
+}
+
+export async function handleRouletteMenu(
+  interaction: StringSelectMenuInteraction,
+): Promise<void> {
+  const value = interaction.values[0];
+
+  if (value === "launch") {
+    await interaction.update(buildRouletteSelectMessage());
+    return;
+  }
+
+  if (value === "help") {
+    await interaction.update({
+      content: "",
+      embeds: [buildRouletteHelpEmbed()],
+      components: [buildRouletteBackRow()],
+    });
+    return;
+  }
+}
+
+export async function handleRouletteBack(
+  interaction: ButtonInteraction,
+): Promise<void> {
+  await interaction.update(buildRouletteMainMenu());
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -207,20 +312,7 @@ export async function handleRouletteLaunch(
 export async function handleRouletteRetry(
   interaction: ButtonInteraction,
 ): Promise<void> {
-  const selectRow = new ActionRowBuilder<UserSelectMenuBuilder>().addComponents(
-    new UserSelectMenuBuilder()
-      .setCustomId(ROULETTE_SELECT_ID)
-      .setPlaceholder(
-        `Sélectionne ${ROULETTE_CONSTANTS.MIN_PARTICIPANTS}–${ROULETTE_CONSTANTS.MAX_PARTICIPANTS} participants`,
-      )
-      .setMinValues(ROULETTE_CONSTANTS.MIN_PARTICIPANTS)
-      .setMaxValues(ROULETTE_CONSTANTS.MAX_PARTICIPANTS),
-  );
-
-  await interaction.update({
-    content: "🎰 **Roulette** — Qui participe au tirage ?",
-    components: [selectRow],
-  });
+  await interaction.update(buildRouletteSelectMessage());
 }
 
 // ── Handler bouton Annuler ────────────────────────────────────────────────────
@@ -228,5 +320,5 @@ export async function handleRouletteRetry(
 export async function handleRouletteCancel(
   interaction: ButtonInteraction,
 ): Promise<void> {
-  await interaction.update({ content: "Roulette annulée.", components: [] });
+  await interaction.update(buildRouletteMainMenu());
 }

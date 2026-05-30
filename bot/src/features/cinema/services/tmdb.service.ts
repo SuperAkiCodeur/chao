@@ -1,26 +1,26 @@
 import { env } from "../../../core/config/env.js";
-import { WATCH_CONSTANTS } from "../domain/watch.constants.js";
+import { CINEMA_CONSTANTS } from "../domain/cinema.constants.js";
 import type {
   TmdbCredits,
   TmdbDetails,
   TmdbMedia,
   TmdbSearchResult,
-  WatchContentType,
-} from "../domain/watch.types.js";
+  CinemaContentType,
+} from "../domain/cinema.types.js";
 
 const TMDB_API_BASE_URL = "https://api.themoviedb.org/3";
 
-function buildSearchUrl(type: WatchContentType, title: string): string {
+function buildSearchUrl(type: CinemaContentType, title: string): string {
   return `${TMDB_API_BASE_URL}/search/${type}?api_key=${env.TMDB_API_KEY}&query=${encodeURIComponent(
     title,
   )}&language=fr-FR&include_adult=false`;
 }
 
-function buildDetailsUrl(type: WatchContentType, mediaId: string): string {
+function buildDetailsUrl(type: CinemaContentType, mediaId: string): string {
   return `${TMDB_API_BASE_URL}/${type}/${mediaId}?api_key=${env.TMDB_API_KEY}&language=fr-FR`;
 }
 
-function buildCreditsUrl(type: WatchContentType, mediaId: string): string {
+function buildCreditsUrl(type: CinemaContentType, mediaId: string): string {
   return `${TMDB_API_BASE_URL}/${type}/${mediaId}/credits?api_key=${env.TMDB_API_KEY}&language=fr-FR`;
 }
 
@@ -39,7 +39,7 @@ type TmdbSearchResponse = {
 };
 
 export async function fetchTmdbMedia(
-  type: WatchContentType,
+  type: CinemaContentType,
   title: string,
 ): Promise<TmdbMedia | null> {
   const searchUrl = buildSearchUrl(type, title);
@@ -66,12 +66,12 @@ export async function fetchTmdbMedia(
 }
 
 export function resolveTmdbTitle(
-  type: WatchContentType,
+  type: CinemaContentType,
   fallbackTitle: string,
   details: TmdbDetails,
   bestMatch?: TmdbSearchResult,
 ): string {
-  if (type === WATCH_CONSTANTS.MEDIA_TYPES.MOVIE) {
+  if (type === CINEMA_CONSTANTS.MEDIA_TYPES.MOVIE) {
     return details.title ?? bestMatch?.title ?? fallbackTitle;
   }
 
@@ -79,10 +79,10 @@ export function resolveTmdbTitle(
 }
 
 export function resolveTmdbReleaseDate(
-  type: WatchContentType,
+  type: CinemaContentType,
   details: TmdbDetails,
 ): string | null {
-  if (type === WATCH_CONSTANTS.MEDIA_TYPES.MOVIE) {
+  if (type === CINEMA_CONSTANTS.MEDIA_TYPES.MOVIE) {
     return details.release_date ?? null;
   }
 
@@ -90,10 +90,10 @@ export function resolveTmdbReleaseDate(
 }
 
 export function resolveTmdbRuntime(
-  type: WatchContentType,
+  type: CinemaContentType,
   details: TmdbDetails,
 ): number | null {
-  if (type === WATCH_CONSTANTS.MEDIA_TYPES.MOVIE) {
+  if (type === CINEMA_CONSTANTS.MEDIA_TYPES.MOVIE) {
     return details.runtime ?? null;
   }
 
@@ -101,11 +101,11 @@ export function resolveTmdbRuntime(
 }
 
 export function resolveTmdbAuthor(
-  type: WatchContentType,
+  type: CinemaContentType,
   details: TmdbDetails,
   credits: TmdbCredits,
 ): { label: string; value: string } {
-  if (type === WATCH_CONSTANTS.MEDIA_TYPES.MOVIE) {
+  if (type === CINEMA_CONSTANTS.MEDIA_TYPES.MOVIE) {
     const director = credits.crew?.find((person) => person.job === "Director");
 
     return {
@@ -127,5 +127,5 @@ export function buildTmdbPosterUrl(posterPath?: string | null): string | null {
     return null;
   }
 
-  return `${WATCH_CONSTANTS.TMDB_POSTER_BASE_URL}${posterPath}`;
+  return `${CINEMA_CONSTANTS.TMDB_POSTER_BASE_URL}${posterPath}`;
 }

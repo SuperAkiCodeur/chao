@@ -18,7 +18,8 @@
   "dependencies": {
     "discord.js": "^14.26.4",
     "drizzle-orm": "^0.45.2",
-    "postgres": "^3.4.9"
+    "postgres": "^3.4.9",
+    "rss-parser": "^3.13.0"
   },
   "devDependencies": {
     "@types/node": "^25.9.1",

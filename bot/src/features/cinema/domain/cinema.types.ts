@@ -1,58 +1,56 @@
 import type { ChatInputCommandInteraction } from "discord.js";
 import { EmbedBuilder } from "discord.js";
-import { WATCH_CONSTANTS } from "./watch.constants.js";
+import { CINEMA_CONSTANTS } from "./cinema.constants.js";
 
-export type WatchContentType =
-  (typeof WATCH_CONSTANTS.MEDIA_TYPES)[keyof typeof WATCH_CONSTANTS.MEDIA_TYPES];
+export type CinemaContentType =
+  (typeof CINEMA_CONSTANTS.MEDIA_TYPES)[keyof typeof CINEMA_CONSTANTS.MEDIA_TYPES];
 
-export type WatchStatus =
-  | typeof WATCH_CONSTANTS.ACTIVE_STATUS
-  | typeof WATCH_CONSTANTS.ENDED_STATUS;
+export type CinemaStatus =
+  | typeof CINEMA_CONSTANTS.ACTIVE_STATUS
+  | typeof CINEMA_CONSTANTS.ENDED_STATUS;
 
-export type WatchRatingValue = 1 | 2 | 3 | 4 | 5;
+export type CinemaRatingValue = 1 | 2 | 3 | 4 | 5;
 
-export type WatchRatings = Record<string, WatchRatingValue>;
+export type CinemaRatings = Record<string, CinemaRatingValue>;
 
-export type StartWatchPartyParams = {
+export type StartCinemaPartyParams = {
   interaction: ChatInputCommandInteraction;
-  type: WatchContentType;
+  type: CinemaContentType;
   title: string;
   date: string;
   time: string;
 };
 
-export type EndWatchPartyParams = {
+export type EndCinemaPartyParams = {
   interaction: ChatInputCommandInteraction;
-  type: WatchContentType;
+  type: CinemaContentType;
   title: string;
 };
 
-export type WatchCommandResult = {
+export type CinemaCommandResult = {
   message: string;
 };
 
-export type WatchParty = {
+export type CinemaParty = {
   guildId: string;
   channelId: string;
   messageId: string;
   roleId: string;
   title: string;
-  mediaType: WatchContentType;
+  mediaType: CinemaContentType;
   mediaId: string;
   viewingAt: string;
-  status: WatchStatus;
+  status: CinemaStatus;
+  createdBy?: string;
   users: string[];
   startAnnouncementMessageId?: string;
   ratingChannelId?: string;
   ratingMessageId?: string;
   ratingSummaryMessageId?: string;
   ratingClosesAt?: string;
-  ratings?: WatchRatings;
+  ratings?: CinemaRatings;
 };
 
-export type WatchPartiesData = {
-  watchParties: Record<string, WatchParty>;
-};
 
 export type TmdbSearchResult = {
   id: number;
@@ -101,8 +99,8 @@ export type TmdbMedia = {
   credits: TmdbCredits;
 };
 
-export type BuildWatchAnnouncementParams = {
-  type: WatchContentType;
+export type BuildCinemaAnnouncementParams = {
+  type: CinemaContentType;
   title: string;
   date: string;
   time: string;
@@ -111,7 +109,7 @@ export type BuildWatchAnnouncementParams = {
   credits: TmdbCredits;
 };
 
-export type BuildWatchAnnouncementResult = {
+export type BuildCinemaAnnouncementResult = {
   embed: EmbedBuilder;
   resolvedTitle: string;
 };

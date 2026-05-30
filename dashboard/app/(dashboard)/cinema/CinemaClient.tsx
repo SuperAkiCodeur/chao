@@ -13,7 +13,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { launchWatchParty, searchTmdbAction, endWatchParty, cancelWatchParty } from "./actions";
+import { launchCinemaParty, searchTmdbAction, endCinemaParty, cancelCinemaParty } from "./actions";
 import type { ActionResult, TmdbResult, TmdbSearchResponse } from "./actions";
 
 type Party = {
@@ -58,7 +58,7 @@ function LaunchDialog({ onClose }: { onClose: () => void }) {
     if (state.step !== "confirm") return;
     setError(null);
     start(async () => {
-      const res: ActionResult = await launchWatchParty({
+      const res: ActionResult = await launchCinemaParty({
         mediaType: state.fv.mediaType,
         date: state.fv.date,
         time: state.fv.time,
@@ -189,7 +189,7 @@ function EndDialog({ party, onClose }: { party: Party; onClose: () => void }) {
   function handle() {
     setError(null);
     start(async () => {
-      const res: ActionResult = await endWatchParty(party.messageId, party.title);
+      const res: ActionResult = await endCinemaParty(party.messageId, party.title);
       if (res.success) onClose(); else setError(res.error);
     });
   }
@@ -222,7 +222,7 @@ function CancelDialog({ party, onClose }: { party: Party; onClose: () => void })
   function handle() {
     setError(null);
     start(async () => {
-      const res: ActionResult = await cancelWatchParty(party.messageId, party.title);
+      const res: ActionResult = await cancelCinemaParty(party.messageId, party.title);
       if (res.success) onClose(); else setError(res.error);
     });
   }
@@ -299,7 +299,7 @@ function PartyRow({
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
-export function WatchClient({ parties }: { parties: Party[] }) {
+export function CinemaClient({ parties }: { parties: Party[] }) {
   const [dialog, setDialog] = useState<DialogState>({ type: "none" });
   function close() { setDialog({ type: "none" }); }
 

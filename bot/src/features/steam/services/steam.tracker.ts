@@ -2,7 +2,7 @@ import { EmbedBuilder, type Client } from "discord.js";
 import { logger } from "../../../core/app/logger.js";
 import { STEAM_CONSTANTS } from "../domain/steam.constants.js";
 import { formatEur, getSteamAppDetails, getSteamUrl } from "./steam.api.js";
-import { getAllGames, getSteamConfig, updateGameTrackerData } from "./steam.repository.js";
+import { getAllGames, getSteamChannelConfig, updateGameTrackerData } from "./steam.repository.js";
 
 async function checkPromos(client: Client): Promise<void> {
   logger.info("[steam.tracker] démarrage de la vérification des promos");
@@ -10,10 +10,17 @@ async function checkPromos(client: Client): Promise<void> {
   const games = await getAllGames();
   if (games.length === 0) return;
 
-  // Mise en cache des configs par guildId pour éviter les doublons DB
-  const guildIds = [...new Set(games.map((g) => g.guildId))];
+  // Mise en cache des configs par (guildId:channelId) — une liste = un salon
+  const channelKeys = [...new Set(games.map((g) => `${g.guildId}:${g.channelId}`))];
   const configs = new Map(
-    await Promise.all(guildIds.map(async (id) => [id, await getSteamConfig(id)] as const)),
+    await Promise.all(
+      channelKeys.map(async (key) => {
+        const sep = key.indexOf(":");
+        const guildId = key.slice(0, sep);
+        const channelId = key.slice(sep + 1);
+        return [key, await getSteamChannelConfig(guildId, channelId)] as const;
+      }),
+    ),
   );
 
   for (const game of games) {
@@ -34,7 +41,7 @@ async function checkPromos(client: Client): Promise<void> {
 
       // Notification uniquement si le jeu vient de passer en promo
       if (!wasOnSale && isNowOnSale && price) {
-        const config = configs.get(game.guildId);
+        const config = configs.get(`${game.guildId}:${game.channelId}`);
         if (!config?.notifChannelId) continue;
 
         const channel = await client.channels.fetch(config.notifChannelId).catch(() => null);

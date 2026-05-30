@@ -25,7 +25,7 @@ function ValorantIcon({ className }: { className?: string }) {
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/membres", label: "Membres", icon: Users },
-  { href: "/watch", label: "Cinéma", icon: Clapperboard },
+  { href: "/cinema", label: "Cinéma", icon: Clapperboard },
   { href: "/valorant", label: "Valorant", icon: ValorantIcon },
   { href: "/steam", label: "Steam", icon: Gamepad2 },
   { href: "/logs", label: "Logs", icon: ScrollText },

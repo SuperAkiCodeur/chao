@@ -3,8 +3,10 @@ import { env } from "../config/env.js";
 import { logger } from "../app/logger.js";
 import { commandRegistry } from "./commandRegistry.js";
 
-export async function registerCommands(): Promise<void> {
-  const { DISCORD_TOKEN: token, CLIENT_ID: applicationId, DISCORD_GUILD_ID: guildId } = env;
+export async function registerCommands(guildIdOverride?: string): Promise<void> {
+  const { DISCORD_TOKEN: token, CLIENT_ID: applicationId, DISCORD_GUILD_ID: guildIdEnv } = env;
+
+  const guildId = guildIdOverride ?? guildIdEnv;
 
   const commands = Array.from(commandRegistry.values()).map((command) =>
     command.data.toJSON(),

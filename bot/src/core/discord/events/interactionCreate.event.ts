@@ -3,19 +3,48 @@ import type { AppEvent } from "../types/appEvent.js";
 import { logger } from "../../app/logger.js";
 import { getCommand } from "../commandRegistry.js";
 import { handleSelfRoleButton, isSelfRoleButton } from "../../../features/selfrole/services/selfrole.service.js";
-import { handleWatchRatingButton, handleWatchTicketButton } from "../../../features/watch/services/watch.service.js";
-import { WATCH_CONSTANTS } from "../../../features/watch/domain/watch.constants.js";
+import {
+  handleCinemaRatingButton,
+  handleCinemaTicketButton,
+  handleCinemaLaunchButton,
+  handleCinemaEndButton,
+  handleCinemaMenu,
+  handleCinemaBack,
+  handleCinemaStartModal,
+  handleCinemaStartTypeSelect,
+  handleCinemaEndPartySelect,
+  handleCinemaPanelStartButton,
+  handleCinemaPanelEndButton,
+  handleCinemaPanelHelpButton,
+} from "../../../features/cinema/services/cinema.service.js";
+import {
+  CINEMA_CONSTANTS,
+  CINEMA_MENU_ID,
+  CINEMA_MODAL_START_PREFIX,
+  CINEMA_TYPE_SELECT_START_ID,
+  CINEMA_END_SELECT_ID,
+  CINEMA_BACK_BTN_ID,
+  CINEMA_PANEL_START_BTN_ID,
+  CINEMA_PANEL_END_BTN_ID,
+  CINEMA_PANEL_HELP_BTN_ID,
+} from "../../../features/cinema/domain/cinema.constants.js";
 import {
   handleRouletteSelect,
   handleRouletteLaunch,
   handleRouletteRetry,
   handleRouletteCancel,
+  handleRouletteMenu,
+  handleRouletteBack,
 } from "../../../features/roulette/services/roulette.service.js";
 import {
   ROULETTE_SELECT_ID,
   ROULETTE_LAUNCH_PREFIX,
   ROULETTE_RETRY_ID,
 } from "../../../features/roulette/commands/roulette.command.js";
+import {
+  ROULETTE_MENU_ID,
+  ROULETTE_BACK_BTN_ID,
+} from "../../../features/roulette/domain/roulette.constants.js";
 import {
   handleSteamMenu,
   handleSteamBack,
@@ -32,6 +61,18 @@ import {
   STEAM_MODAL_ADD_ID,
   STEAM_BACK_BTN_ID,
 } from "../../../features/steam/domain/steam.constants.js";
+import {
+  handleValorantMenu,
+  handleValorantBack,
+  handleValorantLinkModal,
+  handleValorantStatsSelect,
+} from "../../../features/valorant/services/valorant.service.js";
+import {
+  VALORANT_MENU_ID,
+  VALORANT_STATS_SELECT_ID,
+  VALORANT_MODAL_LINK_ID,
+  VALORANT_BACK_BTN_ID,
+} from "../../../features/valorant/domain/valorant.constants.js";
 
 export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
   name: Events.InteractionCreate,
@@ -39,8 +80,21 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
   async execute(interaction: Interaction): Promise<void> {
     // ── Modal submit ───────────────────────────────────────────────────────────
     if (interaction.isModalSubmit()) {
-      if (interaction.customId === STEAM_MODAL_ADD_ID) {
-        await handleSteamAddModal(interaction);
+      try {
+        if (interaction.customId === STEAM_MODAL_ADD_ID) {
+          await handleSteamAddModal(interaction);
+        } else if (interaction.customId.startsWith(CINEMA_MODAL_START_PREFIX)) {
+          await handleCinemaStartModal(interaction);
+        } else if (interaction.customId === VALORANT_MODAL_LINK_ID) {
+          await handleValorantLinkModal(interaction);
+        }
+      } catch (err) {
+        logger.error("Modal submit failed", { customId: interaction.customId, err });
+        if (interaction.deferred || interaction.replied) {
+          await interaction.editReply({ content: "❌ Une erreur est survenue. Réessaie." }).catch(() => null);
+        } else {
+          await interaction.reply({ content: "❌ Une erreur est survenue. Réessaie.", flags: MessageFlags.Ephemeral }).catch(() => null);
+        }
       }
       return;
     }
@@ -63,16 +117,32 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
         await handleSteamPriceSelect(interaction);
       } else if (interaction.customId === STEAM_REMOVE_SELECT_ID) {
         await handleSteamRemoveSelect(interaction);
+      } else if (interaction.customId === ROULETTE_MENU_ID) {
+        await handleRouletteMenu(interaction);
+      } else if (interaction.customId === CINEMA_TYPE_SELECT_START_ID) {
+        await handleCinemaStartTypeSelect(interaction);
+      } else if (interaction.customId === CINEMA_END_SELECT_ID) {
+        await handleCinemaEndPartySelect(interaction);
+      } else if (interaction.customId === CINEMA_MENU_ID) {
+        await handleCinemaMenu(interaction);
+      } else if (interaction.customId === VALORANT_MENU_ID) {
+        await handleValorantMenu(interaction);
+      } else if (interaction.customId === VALORANT_STATS_SELECT_ID) {
+        await handleValorantStatsSelect(interaction);
       }
       return;
     }
 
     // ── Buttons ────────────────────────────────────────────────────────────────
     if (interaction.isButton()) {
-      if (interaction.customId === WATCH_CONSTANTS.TICKET_BUTTON_ID) {
-        await handleWatchTicketButton(interaction);
-      } else if (interaction.customId.startsWith(WATCH_CONSTANTS.RATING_BUTTON_PREFIX)) {
-        await handleWatchRatingButton(interaction);
+      if (interaction.customId === CINEMA_CONSTANTS.TICKET_BUTTON_ID) {
+        await handleCinemaTicketButton(interaction);
+      } else if (interaction.customId === CINEMA_CONSTANTS.LAUNCH_BUTTON_ID) {
+        await handleCinemaLaunchButton(interaction);
+      } else if (interaction.customId === CINEMA_CONSTANTS.END_BUTTON_ID) {
+        await handleCinemaEndButton(interaction);
+      } else if (interaction.customId.startsWith(CINEMA_CONSTANTS.RATING_BUTTON_PREFIX)) {
+        await handleCinemaRatingButton(interaction);
       } else if (isSelfRoleButton(interaction.customId)) {
         await handleSelfRoleButton(interaction);
       } else if (interaction.customId.startsWith(ROULETTE_LAUNCH_PREFIX)) {
@@ -83,6 +153,18 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
         await handleRouletteCancel(interaction);
       } else if (interaction.customId === STEAM_BACK_BTN_ID) {
         await handleSteamBack(interaction);
+      } else if (interaction.customId === ROULETTE_BACK_BTN_ID) {
+        await handleRouletteBack(interaction);
+      } else if (interaction.customId === CINEMA_BACK_BTN_ID) {
+        await handleCinemaBack(interaction);
+      } else if (interaction.customId === CINEMA_PANEL_START_BTN_ID) {
+        await handleCinemaPanelStartButton(interaction);
+      } else if (interaction.customId === CINEMA_PANEL_END_BTN_ID) {
+        await handleCinemaPanelEndButton(interaction);
+      } else if (interaction.customId === CINEMA_PANEL_HELP_BTN_ID) {
+        await handleCinemaPanelHelpButton(interaction);
+      } else if (interaction.customId === VALORANT_BACK_BTN_ID) {
+        await handleValorantBack(interaction);
       }
       return;
     }

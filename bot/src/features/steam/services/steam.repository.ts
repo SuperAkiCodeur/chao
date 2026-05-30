@@ -8,34 +8,48 @@ import {
 
 // ── Jeux ──────────────────────────────────────────────────────────────────────
 
-export async function getGamesForGuild(guildId: string) {
-  return db.select().from(steamGames).where(eq(steamGames.guildId, guildId));
+export async function getGamesForChannel(guildId: string, channelId: string) {
+  return db
+    .select()
+    .from(steamGames)
+    .where(and(eq(steamGames.guildId, guildId), eq(steamGames.channelId, channelId)));
 }
 
 export async function getAllGames() {
   return db.select().from(steamGames);
 }
 
-export async function getGameByAppId(guildId: string, steamAppId: number) {
+export async function getGameByAppId(guildId: string, channelId: string, steamAppId: number) {
   const rows = await db
     .select()
     .from(steamGames)
-    .where(and(eq(steamGames.guildId, guildId), eq(steamGames.steamAppId, steamAppId)));
+    .where(
+      and(
+        eq(steamGames.guildId, guildId),
+        eq(steamGames.channelId, channelId),
+        eq(steamGames.steamAppId, steamAppId),
+      ),
+    );
   return rows[0] ?? null;
 }
 
 export async function insertGame(data: {
   guildId: string;
+  channelId: string;
   steamAppId: number;
   title: string;
   headerImage: string | null;
   addedBy: string;
   addedByName: string;
+  lastKnownPriceEur?: number | null;
+  lastKnownDiscount?: number;
+  isOnSale?: number;
+  lastCheckedAt?: string;
 }) {
   await db.insert(steamGames).values({
     ...data,
     addedAt: new Date().toISOString(),
-    isOnSale: 0,
+    isOnSale: data.isOnSale ?? 0,
   });
 }
 
@@ -55,25 +69,29 @@ export async function updateGameTrackerData(
   await db.update(steamGames).set(data).where(eq(steamGames.id, id));
 }
 
-// ── Config ────────────────────────────────────────────────────────────────────
+// ── Config (par salon) ────────────────────────────────────────────────────────
 
-export async function getSteamConfig(guildId: string) {
+export async function getSteamChannelConfig(guildId: string, channelId: string) {
   const rows = await db
     .select()
     .from(steamConfig)
-    .where(eq(steamConfig.guildId, guildId));
+    .where(and(eq(steamConfig.guildId, guildId), eq(steamConfig.channelId, channelId)));
   return rows[0] ?? null;
 }
 
-export async function upsertSteamConfig(
+export async function upsertSteamChannelConfig(
   guildId: string,
+  channelId: string,
   data: { notifChannelId: string | null; notifRoleId: string | null },
 ) {
-  const existing = await getSteamConfig(guildId);
+  const existing = await getSteamChannelConfig(guildId, channelId);
   if (existing) {
-    await db.update(steamConfig).set(data).where(eq(steamConfig.guildId, guildId));
+    await db
+      .update(steamConfig)
+      .set(data)
+      .where(and(eq(steamConfig.guildId, guildId), eq(steamConfig.channelId, channelId)));
   } else {
-    await db.insert(steamConfig).values({ guildId, ...data });
+    await db.insert(steamConfig).values({ guildId, channelId, ...data });
   }
 }
 

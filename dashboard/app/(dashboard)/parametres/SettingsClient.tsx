@@ -229,25 +229,25 @@ export function SettingsClient({
       {/* Cinéma */}
       <Section
         title="🎬 Cinéma"
-        description="Salon d'annonces et rôle spectateur pour les watch parties."
-        keys={["watch_channel_id", "watch_spectator_role_id"]}
+        description="Salon d'annonces et rôle spectateur pour les séances cinéma."
+        keys={["cinema_channel_id", "cinema_spectator_role_id"]}
         currentValues={vals}
       >
         <Field label="Salon d'annonces" description="Salon où les séances sont publiées">
           <SelectDropdown
-            name="watch_channel_id"
+            name="cinema_channel_id"
             options={textChannels}
-            value={vals["watch_channel_id"] ?? ""}
-            onChange={set("watch_channel_id")}
+            value={vals["cinema_channel_id"] ?? ""}
+            onChange={set("cinema_channel_id")}
             placeholder="Choisir un salon…"
           />
         </Field>
         <Field label="Rôle spectateur" description="Rôle attribué aux participants">
           <SelectDropdown
-            name="watch_spectator_role_id"
+            name="cinema_spectator_role_id"
             options={sortedRoles}
-            value={vals["watch_spectator_role_id"] ?? ""}
-            onChange={set("watch_spectator_role_id")}
+            value={vals["cinema_spectator_role_id"] ?? ""}
+            onChange={set("cinema_spectator_role_id")}
             placeholder="Choisir un rôle…"
           />
         </Field>

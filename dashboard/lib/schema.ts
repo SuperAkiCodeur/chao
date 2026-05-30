@@ -2,7 +2,7 @@
 // À synchroniser manuellement si le schema du bot évolue.
 import { integer, pgTable, primaryKey, serial, text } from "drizzle-orm/pg-core";
 
-export const watchParties = pgTable("watch_parties", {
+export const cinemaParties = pgTable("cinema_parties", {
   messageId: text("message_id").primaryKey(),
   guildId: text("guild_id").notNull(),
   channelId: text("channel_id").notNull(),
@@ -12,6 +12,7 @@ export const watchParties = pgTable("watch_parties", {
   mediaId: text("media_id").notNull(),
   viewingAt: text("viewing_at").notNull(),
   status: text("status").notNull(),
+  createdBy: text("created_by"),
   startAnnouncementMessageId: text("start_announcement_message_id"),
   ratingChannelId: text("rating_channel_id"),
   ratingMessageId: text("rating_message_id"),
@@ -19,23 +20,23 @@ export const watchParties = pgTable("watch_parties", {
   ratingClosesAt: text("rating_closes_at"),
 });
 
-export const watchPartyUsers = pgTable(
-  "watch_party_users",
+export const cinemaPartyUsers = pgTable(
+  "cinema_party_users",
   {
     messageId: text("message_id")
       .notNull()
-      .references(() => watchParties.messageId, { onDelete: "cascade" }),
+      .references(() => cinemaParties.messageId, { onDelete: "cascade" }),
     userId: text("user_id").notNull(),
   },
   (t) => [primaryKey({ columns: [t.messageId, t.userId] })],
 );
 
-export const watchPartyRatings = pgTable(
-  "watch_party_ratings",
+export const cinemaPartyRatings = pgTable(
+  "cinema_party_ratings",
   {
     messageId: text("message_id")
       .notNull()
-      .references(() => watchParties.messageId, { onDelete: "cascade" }),
+      .references(() => cinemaParties.messageId, { onDelete: "cascade" }),
     userId: text("user_id").notNull(),
     rating: integer("rating").notNull(),
   },
@@ -80,6 +81,7 @@ export const valorantLinks = pgTable(
 export const steamGames = pgTable("steam_games", {
   id: serial("id").primaryKey(),
   guildId: text("guild_id").notNull(),
+  channelId: text("channel_id").notNull().default(""),
   steamAppId: integer("steam_app_id").notNull(),
   title: text("title").notNull(),
   headerImage: text("header_image"),
@@ -92,11 +94,16 @@ export const steamGames = pgTable("steam_games", {
   isOnSale: integer("is_on_sale").default(0).notNull(),
 });
 
-export const steamConfig = pgTable("steam_config", {
-  guildId: text("guild_id").primaryKey(),
-  notifChannelId: text("notif_channel_id"),
-  notifRoleId: text("notif_role_id"),
-});
+export const steamConfig = pgTable(
+  "steam_config",
+  {
+    guildId: text("guild_id").notNull(),
+    channelId: text("channel_id").notNull().default(""),
+    notifChannelId: text("notif_channel_id"),
+    notifRoleId: text("notif_role_id"),
+  },
+  (t) => [primaryKey({ columns: [t.guildId, t.channelId] })],
+);
 
 export const steamChannelPermissions = pgTable("steam_channel_permissions", {
   id: serial("id").primaryKey(),
