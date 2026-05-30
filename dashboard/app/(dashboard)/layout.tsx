@@ -5,10 +5,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <>
       <SplashScreen />
-      <div className="h-screen w-screen p-2">
-        <div className="flex h-full w-full overflow-hidden rounded-2xl shadow-2xl bg-white">
+      <div className="h-screen w-screen p-2 flex gap-2">
+        {/* Sidebar — panneau indépendant */}
+        <div className="flex-shrink-0 h-full overflow-hidden rounded-2xl shadow-xl bg-white">
           <Sidebar />
-          <main className="flex-1 overflow-y-auto">
+        </div>
+
+        {/* Contenu principal — panneau indépendant */}
+        <div className="flex-1 h-full overflow-hidden rounded-2xl shadow-xl bg-white">
+          <main className="h-full overflow-y-auto">
             {children}
           </main>
         </div>
