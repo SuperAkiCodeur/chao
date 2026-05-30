@@ -29,13 +29,11 @@ async function getStats() {
   return { activeCinema, totalValorant, recentCinema };
 }
 
-/* Shared glass style */
+/* Cards — blanc opaque, texte toujours lisible */
 const card = {
-  background: "rgba(255, 255, 255, 0.68)",
-  backdropFilter: "blur(20px)",
-  WebkitBackdropFilter: "blur(20px)",
-  border: "1px solid rgba(255, 255, 255, 0.90)",
-  boxShadow: "0 4px 24px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04)",
+  background: "#ffffff",
+  border: "1px solid rgba(0, 0, 0, 0.06)",
+  boxShadow: "0 4px 28px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06)",
   borderRadius: "20px",
 } as const;
 

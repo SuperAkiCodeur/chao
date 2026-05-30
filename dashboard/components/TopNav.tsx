@@ -28,10 +28,10 @@ export function TopNav() {
         <div
           className="h-10 w-10 rounded-full flex items-center justify-center"
           style={{
-            background: "rgba(255,255,255,0.72)",
+            background: "rgba(255,255,255,0.85)",
             backdropFilter: "blur(16px)",
             WebkitBackdropFilter: "blur(16px)",
-            border: "1px solid rgba(255,255,255,0.92)",
+            border: "1px solid rgba(255,255,255,0.96)",
             boxShadow: "0 2px 12px rgba(0,0,0,0.10)",
           }}
         >
@@ -42,11 +42,11 @@ export function TopNav() {
           onClick={() => signOut({ callbackUrl: "/login" })}
           className="flex items-center gap-1.5 text-sm font-medium text-slate-700 px-3.5 py-2 rounded-full transition-all hover:bg-white/80"
           style={{
-            background: "rgba(255,255,255,0.65)",
+            background: "rgba(255,255,255,0.82)",
             backdropFilter: "blur(16px)",
             WebkitBackdropFilter: "blur(16px)",
-            border: "1px solid rgba(255,255,255,0.88)",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.07)",
+            border: "1px solid rgba(255,255,255,0.95)",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
           }}
         >
           <Settings className="h-3.5 w-3.5" />
@@ -59,11 +59,11 @@ export function TopNav() {
         <div
           className="flex items-center gap-0.5 p-1 rounded-full overflow-x-auto scrollbar-none"
           style={{
-            background: "rgba(220, 235, 240, 0.55)",
+            background: "rgba(255,255,255,0.75)",
             backdropFilter: "blur(24px)",
             WebkitBackdropFilter: "blur(24px)",
-            border: "1px solid rgba(255,255,255,0.80)",
-            boxShadow: "0 2px 14px rgba(0,0,0,0.07)",
+            border: "1px solid rgba(255,255,255,0.92)",
+            boxShadow: "0 2px 14px rgba(0,0,0,0.10)",
           }}
         >
           {navItems.map(({ href, label }) => {
@@ -91,11 +91,11 @@ export function TopNav() {
         <button
           className="h-9 w-9 rounded-full flex items-center justify-center text-slate-600 transition-all hover:bg-white/80"
           style={{
-            background: "rgba(255,255,255,0.65)",
+            background: "rgba(255,255,255,0.82)",
             backdropFilter: "blur(16px)",
             WebkitBackdropFilter: "blur(16px)",
-            border: "1px solid rgba(255,255,255,0.88)",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.07)",
+            border: "1px solid rgba(255,255,255,0.95)",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
           }}
         >
           <Search className="h-4 w-4" />
