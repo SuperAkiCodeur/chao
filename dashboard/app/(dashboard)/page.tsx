@@ -29,72 +29,82 @@ async function getStats() {
   return { activeCinema, totalValorant, recentCinema };
 }
 
-/* Cards — blanc opaque, texte toujours lisible */
+/* ── Vrai glassmorphism : fond très transparent + blur fort ── */
 const card = {
-  background: "#ffffff",
-  border: "1px solid rgba(0, 0, 0, 0.06)",
-  boxShadow: "0 4px 28px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06)",
+  background: "rgba(255, 255, 255, 0.18)",
+  backdropFilter: "blur(36px) saturate(180%)",
+  WebkitBackdropFilter: "blur(36px) saturate(180%)",
+  border: "1px solid rgba(255, 255, 255, 0.32)",
+  boxShadow: "0 8px 32px rgba(0,0,0,0.14), inset 0 1px 0 rgba(255,255,255,0.45)",
   borderRadius: "20px",
 } as const;
 
-/* Badge circle (bottom-right count) */
-function Badge({ n, color = "bg-slate-800" }: { n: number | string; color?: string }) {
+/* Texte visible sur verre clair */
+const textPrimary   = { color: "#fff",               textShadow: "0 1px 4px rgba(0,0,0,0.30)" } as const;
+const textSecondary = { color: "rgba(255,255,255,0.82)", textShadow: "0 1px 3px rgba(0,0,0,0.20)" } as const;
+const textMuted     = { color: "rgba(255,255,255,0.60)" } as const;
+
+/* Icône glass */
+const iconWrap = {
+  background: "rgba(255,255,255,0.22)",
+  border: "1px solid rgba(255,255,255,0.30)",
+  borderRadius: "12px",
+} as const;
+
+/* Badge nombre */
+function Badge({ n }: { n: number | string }) {
   return (
-    <div className={`h-8 w-8 rounded-full ${color} flex items-center justify-center text-sm font-semibold text-white shrink-0`}>
+    <div
+      className="h-8 w-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+      style={{ background: "rgba(0,0,0,0.32)", color: "#fff", backdropFilter: "blur(8px)" }}
+    >
       {n}
     </div>
   );
 }
 
-/* ── Stat card (tall, with icon + big number) ── */
+/* ── StatCard ── */
 function StatCard({
-  title, subtitle, value, icon: Icon, iconBg, accent,
+  title, subtitle, value, icon: Icon,
 }: {
-  title: string; subtitle: string; value: number | string;
-  icon: React.ElementType; iconBg: string; accent: string;
+  title: string; subtitle: string; value: number | string; icon: React.ElementType;
 }) {
   return (
-    <div className="p-5 flex flex-col gap-3 h-44" style={card}>
+    <div className="p-5 flex flex-col h-44" style={card}>
       <div className="flex items-center justify-between">
-        <div className={`h-9 w-9 rounded-xl flex items-center justify-center ${iconBg}`}>
-          <Icon className="h-[18px] w-[18px]" style={{ color: accent }} />
+        <div className="h-9 w-9 flex items-center justify-center" style={iconWrap}>
+          <Icon className="h-[18px] w-[18px] text-white" />
         </div>
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+        <span className="text-[10px] font-semibold uppercase tracking-widest" style={textMuted}>
           Live
         </span>
       </div>
       <div className="mt-auto">
-        <p className="text-3xl font-bold text-slate-900 tracking-tight leading-none">{value}</p>
-        <p className="text-sm font-semibold text-slate-700 mt-1">{title}</p>
-        <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>
+        <p className="text-3xl font-bold tracking-tight leading-none" style={textPrimary}>{value}</p>
+        <p className="text-sm font-semibold mt-1" style={textSecondary}>{title}</p>
+        <p className="text-xs mt-0.5" style={textMuted}>{subtitle}</p>
       </div>
     </div>
   );
 }
 
-/* ── Quick link card ── */
+/* ── QuickCard ── */
 function QuickCard({
-  href, title, subtitle, icon: Icon, count,
+  href, title, subtitle, icon: Icon,
 }: {
-  href: string; title: string; subtitle: string;
-  icon: React.ElementType; count?: number;
+  href: string; title: string; subtitle: string; icon: React.ElementType;
 }) {
   return (
     <Link href={href} className="flex h-44 p-5 flex-col justify-between group" style={card}>
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-base font-semibold text-slate-800 leading-tight">{title}</p>
-          <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>
+          <p className="text-base font-semibold" style={textPrimary}>{title}</p>
+          <p className="text-xs mt-0.5" style={textMuted}>{subtitle}</p>
         </div>
-        <div className="h-8 w-8 rounded-xl bg-slate-100 flex items-center justify-center group-hover:bg-slate-200 transition-colors">
-          <Icon className="h-4 w-4 text-slate-500" />
+        <div className="h-8 w-8 flex items-center justify-center transition-colors group-hover:bg-white/30" style={iconWrap}>
+          <Icon className="h-4 w-4 text-white" />
         </div>
       </div>
-      {count !== undefined && (
-        <div className="flex justify-end">
-          <Badge n={count} />
-        </div>
-      )}
     </Link>
   );
 }
@@ -105,87 +115,52 @@ export default async function HomePage() {
   return (
     <div className="max-w-5xl mx-auto space-y-4 animate-fade-up">
 
-      {/* ── Row 1: 4 cards ── */}
+      {/* ── Row 1 : 4 stat/quick cards ── */}
       <div className="grid grid-cols-4 gap-4">
-
-        {/* Cinéma stat */}
-        <StatCard
-          title="Cinéma actif"
-          subtitle="Séances en cours"
-          value={activeCinema}
-          icon={Clapperboard}
-          iconBg="bg-sky-50"
-          accent="#0284C7"
-        />
-
-        {/* Valorant stat */}
-        <StatCard
-          title="Valorant"
-          subtitle="Comptes liés"
-          value={totalValorant}
-          icon={Crosshair}
-          iconBg="bg-rose-50"
-          accent="#E11D48"
-        />
-
-        {/* Bot status */}
-        <StatCard
-          title="Bot Discord"
-          subtitle="Disponibilité"
-          value="100%"
-          icon={Activity}
-          iconBg="bg-emerald-50"
-          accent="#10B981"
-        />
-
-        {/* Membres quick link */}
-        <QuickCard
-          href="/membres"
-          title="Membres"
-          subtitle="Gestion du serveur"
-          icon={Users}
-        />
-
+        <StatCard title="Cinéma actif"  subtitle="Séances en cours"   value={activeCinema}   icon={Clapperboard} />
+        <StatCard title="Valorant"       subtitle="Comptes liés"        value={totalValorant}  icon={Crosshair}    />
+        <StatCard title="Bot Discord"    subtitle="Disponibilité"       value="100%"           icon={Activity}     />
+        <QuickCard href="/membres"    title="Membres"   subtitle="Gestion du serveur" icon={Users}    />
       </div>
 
-      {/* ── Row 2: Séances récentes (large) + 2 quick cards ── */}
+      {/* ── Row 2 : Séances récentes + 2 quick cards ── */}
       <div className="grid grid-cols-4 gap-4">
 
-        {/* Séances récentes — 2 cols */}
+        {/* Séances — 2 cols */}
         <div className="col-span-2 p-5" style={card}>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-base font-semibold text-slate-800">Séances cinéma récentes</p>
-              <p className="text-xs text-slate-400">Activité en temps réel</p>
+              <p className="text-base font-semibold" style={textPrimary}>Séances cinéma récentes</p>
+              <p className="text-xs mt-0.5" style={textMuted}>Activité en temps réel</p>
             </div>
-            <TrendingUp className="h-4 w-4 text-slate-300" />
+            <TrendingUp className="h-4 w-4" style={{ color: "rgba(255,255,255,0.40)" }} />
           </div>
 
           <div className="space-y-1">
             {recentCinema.length === 0 ? (
-              <p className="text-sm text-slate-400 py-6 text-center">Aucune séance pour l'instant.</p>
+              <p className="text-sm py-6 text-center" style={textMuted}>Aucune séance pour l'instant.</p>
             ) : (
               recentCinema.map((party) => (
                 <div
                   key={party.messageId}
-                  className="flex items-center justify-between rounded-xl px-3 py-2 hover:bg-black/[0.03] transition-colors"
+                  className="flex items-center justify-between rounded-xl px-3 py-2 hover:bg-white/10 transition-colors"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span
                       className="h-2 w-2 rounded-full shrink-0"
                       style={{
-                        background: party.status === "active" ? "#10B981" : "#CBD5E1",
-                        boxShadow: party.status === "active" ? "0 0 6px rgba(16,185,129,0.6)" : undefined,
+                        background: party.status === "active" ? "#4ADE80" : "rgba(255,255,255,0.25)",
+                        boxShadow: party.status === "active" ? "0 0 6px rgba(74,222,128,0.7)" : undefined,
                       }}
                     />
-                    <span className="text-sm font-medium text-slate-700 truncate">{party.title}</span>
+                    <span className="text-sm font-medium truncate" style={textSecondary}>{party.title}</span>
                   </div>
                   <span
                     className="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full shrink-0 ml-2"
                     style={
                       party.status === "active"
-                        ? { color: "#059669", background: "rgba(16,185,129,0.10)" }
-                        : { color: "#94A3B8", background: "rgba(148,163,184,0.10)" }
+                        ? { color: "#4ADE80", background: "rgba(74,222,128,0.15)", border: "1px solid rgba(74,222,128,0.25)" }
+                        : { color: "rgba(255,255,255,0.45)", background: "rgba(255,255,255,0.08)" }
                     }
                   >
                     {party.status === "active" ? "En cours" : "Terminé"}
@@ -196,32 +171,14 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* Logs */}
-        <QuickCard
-          href="/logs"
-          title="Logs"
-          subtitle="Historique des actions"
-          icon={ScrollText}
-        />
-
-        {/* Steam */}
-        <QuickCard
-          href="/steam"
-          title="Steam"
-          subtitle="Catalogue de jeux"
-          icon={Gamepad2}
-        />
-
+        <QuickCard href="/logs"   title="Logs"   subtitle="Historique des actions" icon={ScrollText} />
+        <QuickCard href="/steam"  title="Steam"  subtitle="Catalogue de jeux"      icon={Gamepad2}   />
       </div>
 
-      {/* ── Row 3: Commandes (large) + Paramètres ── */}
+      {/* ── Row 3 : Commandes + Paramètres ── */}
       <div className="grid grid-cols-4 gap-4">
-
-        {/* Commandes — 3 cols */}
         <div className="col-span-3 p-5" style={card}>
-          <div className="flex items-center gap-2 mb-4">
-            <p className="text-base font-semibold text-slate-800">Commandes disponibles</p>
-          </div>
+          <p className="text-base font-semibold mb-4" style={textPrimary}>Commandes disponibles</p>
           <CommandsReference commands={[
             {
               name: "/roulette",
@@ -230,15 +187,7 @@ export default async function HomePage() {
             },
           ]} />
         </div>
-
-        {/* Paramètres */}
-        <QuickCard
-          href="/parametres"
-          title="Paramètres"
-          subtitle="Configuration du bot"
-          icon={Settings}
-        />
-
+        <QuickCard href="/parametres" title="Paramètres" subtitle="Configuration du bot" icon={Settings} />
       </div>
 
     </div>

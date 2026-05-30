@@ -28,10 +28,10 @@ export function TopNav() {
         <div
           className="h-10 w-10 rounded-full flex items-center justify-center"
           style={{
-            background: "rgba(255,255,255,0.85)",
-            backdropFilter: "blur(16px)",
-            WebkitBackdropFilter: "blur(16px)",
-            border: "1px solid rgba(255,255,255,0.96)",
+            background: "rgba(255,255,255,0.20)",
+            backdropFilter: "blur(28px) saturate(160%)",
+            WebkitBackdropFilter: "blur(28px) saturate(160%)",
+            border: "1px solid rgba(255,255,255,0.35)",
             boxShadow: "0 2px 12px rgba(0,0,0,0.10)",
           }}
         >
@@ -40,7 +40,7 @@ export function TopNav() {
 
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="flex items-center gap-1.5 text-sm font-medium text-slate-700 px-3.5 py-2 rounded-full transition-all hover:bg-white/80"
+          className="flex items-center gap-1.5 text-sm font-medium text-white px-3.5 py-2 rounded-full transition-all hover:bg-white/25"
           style={{
             background: "rgba(255,255,255,0.82)",
             backdropFilter: "blur(16px)",
@@ -59,11 +59,11 @@ export function TopNav() {
         <div
           className="flex items-center gap-0.5 p-1 rounded-full overflow-x-auto scrollbar-none"
           style={{
-            background: "rgba(255,255,255,0.75)",
-            backdropFilter: "blur(24px)",
-            WebkitBackdropFilter: "blur(24px)",
-            border: "1px solid rgba(255,255,255,0.92)",
-            boxShadow: "0 2px 14px rgba(0,0,0,0.10)",
+            background: "rgba(255,255,255,0.20)",
+            backdropFilter: "blur(28px) saturate(160%)",
+            WebkitBackdropFilter: "blur(28px) saturate(160%)",
+            border: "1px solid rgba(255,255,255,0.35)",
+            boxShadow: "0 2px 14px rgba(0,0,0,0.12)",
           }}
         >
           {navItems.map(({ href, label }) => {
@@ -75,8 +75,8 @@ export function TopNav() {
                 className={cn(
                   "px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-150 whitespace-nowrap",
                   active
-                    ? "bg-white text-slate-900 shadow-sm"
-                    : "text-slate-600 hover:text-slate-800 hover:bg-white/50",
+                    ? "bg-white/30 text-white font-semibold shadow-sm"
+                    : "text-white/75 hover:text-white hover:bg-white/15",
                 )}
               >
                 {label}
@@ -89,7 +89,7 @@ export function TopNav() {
       {/* ── Right: Search ── */}
       <div className="shrink-0">
         <button
-          className="h-9 w-9 rounded-full flex items-center justify-center text-slate-600 transition-all hover:bg-white/80"
+          className="h-9 w-9 rounded-full flex items-center justify-center text-white transition-all hover:bg-white/25"
           style={{
             background: "rgba(255,255,255,0.82)",
             backdropFilter: "blur(16px)",

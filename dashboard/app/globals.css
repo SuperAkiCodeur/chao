@@ -7,15 +7,15 @@
 
 /* ── Design Tokens — Nature Glass (light, dark text) ──────────────────── */
 @theme inline {
-  /* Foreground / text — dark on light glass */
-  --color-foreground:             rgb(15, 23, 42);
-  --color-card-foreground:        rgb(15, 23, 42);
-  --color-popover-foreground:     rgb(15, 23, 42);
+  /* Foreground / text — blanc sur verre */
+  --color-foreground:             rgb(255, 255, 255);
+  --color-card-foreground:        rgb(255, 255, 255);
+  --color-popover-foreground:     rgb(255, 255, 255);
 
   /* Backgrounds */
-  --color-background:             rgb(120, 170, 90);
-  --color-card:                   rgba(255, 255, 255, 0.68);
-  --color-popover:                rgba(255, 255, 255, 0.88);
+  --color-background:             rgb(30, 80, 160);
+  --color-card:                   rgba(255, 255, 255, 0.18);
+  --color-popover:                rgba(255, 255, 255, 0.22);
 
   /* Primary */
   --color-primary:                rgb(15, 23, 42);
@@ -26,8 +26,8 @@
   --color-secondary-foreground:   rgb(15, 23, 42);
 
   /* Muted */
-  --color-muted:                  rgba(255, 255, 255, 0.40);
-  --color-muted-foreground:       rgb(100, 116, 139);
+  --color-muted:                  rgba(255, 255, 255, 0.15);
+  --color-muted-foreground:       rgba(255, 255, 255, 0.68);
 
   /* Accent */
   --color-accent:                 rgba(255, 255, 255, 0.55);
@@ -89,27 +89,29 @@ body {
 
 /* ── Glass Utilities ────────────────────────────────────────────────────── */
 @utility glass-card {
-  background: rgba(255, 255, 255, 0.68);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.90);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(36px) saturate(180%);
+  -webkit-backdrop-filter: blur(36px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
 @utility glass-bar {
-  background: rgba(235, 245, 248, 0.58);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.82);
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
+  background: rgba(255, 255, 255, 0.20);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
 }
 
 @utility glass-pill {
-  background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.88);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.10);
 }
 
 /* ── Scrollbar ──────────────────────────────────────────────────────────── */
