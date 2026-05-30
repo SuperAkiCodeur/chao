@@ -26,17 +26,17 @@ async function getStats() {
 }
 
 const glass = {
-  background: "rgba(255, 255, 255, 0.10)",
-  backdropFilter: "blur(20px)",
-  WebkitBackdropFilter: "blur(20px)",
-  border: "1px solid rgba(255, 255, 255, 0.26)",
-  boxShadow: "0 8px 32px rgba(0, 30, 100, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.36)",
+  background: "rgba(5, 20, 85, 0.48)",
+  backdropFilter: "blur(24px)",
+  WebkitBackdropFilter: "blur(24px)",
+  border: "1px solid rgba(255, 255, 255, 0.18)",
+  boxShadow: "0 8px 32px rgba(0, 10, 60, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.22)",
 } as const;
 
 const glassBlue = {
   ...glass,
-  background: "rgba(0, 80, 220, 0.18)",
-  border: "1px solid rgba(100, 180, 255, 0.34)",
+  background: "rgba(0, 50, 170, 0.52)",
+  border: "1px solid rgba(100, 180, 255, 0.28)",
 } as const;
 
 export default async function HomePage() {
@@ -62,7 +62,7 @@ export default async function HomePage() {
           >
             Vue d'ensemble
           </h1>
-          <p className="text-sm mt-1" style={{ color: "rgba(175, 215, 255, 0.70)" }}>
+          <p className="text-sm mt-1" style={{ color: "rgba(200, 230, 255, 0.88)" }}>
             Tableau de bord du bot Chao
           </p>
         </div>
@@ -112,7 +112,7 @@ export default async function HomePage() {
           >
             {activeCinema}
           </p>
-          <p className="text-sm mt-1" style={{ color: "rgba(155, 210, 255, 0.70)" }}>
+          <p className="text-sm mt-1" style={{ color: "rgba(190, 225, 255, 0.88)" }}>
             Séances cinéma en cours
           </p>
         </div>
@@ -139,7 +139,7 @@ export default async function HomePage() {
           >
             {totalValorant}
           </p>
-          <p className="text-sm mt-1" style={{ color: "rgba(200, 220, 255, 0.65)" }}>
+          <p className="text-sm mt-1" style={{ color: "rgba(200, 225, 255, 0.88)" }}>
             Comptes Valorant liés
           </p>
         </div>
@@ -170,7 +170,7 @@ export default async function HomePage() {
           >
             100%
           </p>
-          <p className="text-sm mt-1" style={{ color: "rgba(200, 220, 255, 0.65)" }}>
+          <p className="text-sm mt-1" style={{ color: "rgba(200, 225, 255, 0.88)" }}>
             Disponibilité du bot
           </p>
         </div>
@@ -189,11 +189,11 @@ export default async function HomePage() {
             <h2 className="text-sm font-bold tracking-widest uppercase text-white/90">
               Séances cinéma récentes
             </h2>
-            <TrendingUp className="h-4 w-4" style={{ color: "rgba(160, 210, 255, 0.5)" }} />
+            <TrendingUp className="h-4 w-4" style={{ color: "rgba(180, 220, 255, 0.70)" }} />
           </div>
           <div className="space-y-1">
             {recentCinema.length === 0 ? (
-              <p className="text-sm py-4 text-center" style={{ color: "rgba(160, 210, 255, 0.5)" }}>
+              <p className="text-sm py-4 text-center" style={{ color: "rgba(180, 220, 255, 0.70)" }}>
                 Aucune séance pour l'instant.
               </p>
             ) : (
@@ -220,7 +220,7 @@ export default async function HomePage() {
                     style={
                       party.status === "active"
                         ? { color: "#00E5FF", background: "rgba(0,229,255,0.10)", border: "1px solid rgba(0,229,255,0.20)" }
-                        : { color: "rgba(200, 220, 255, 0.38)", background: "rgba(255,255,255,0.05)" }
+                        : { color: "rgba(200, 220, 255, 0.65)", background: "rgba(255,255,255,0.05)" }
                     }
                   >
                     {party.status === "active" ? "En cours" : "Terminé"}
@@ -234,7 +234,7 @@ export default async function HomePage() {
         {/* Commandes */}
         <div className="rounded-2xl p-6" style={glass}>
           <div className="flex items-center gap-2 mb-5">
-            <Users className="h-4 w-4" style={{ color: "rgba(160, 210, 255, 0.5)" }} />
+            <Users className="h-4 w-4" style={{ color: "rgba(180, 220, 255, 0.70)" }} />
             <h2 className="text-sm font-bold tracking-widest uppercase text-white/90">
               Commandes disponibles
             </h2>

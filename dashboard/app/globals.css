@@ -115,22 +115,21 @@ body {
 
 /* ── Glass Utilities ────────────────────────────────────────────────────── */
 @utility glass-panel {
-  background: rgba(255, 255, 255, 0.11);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.27);
+  background: rgba(5, 20, 85, 0.48);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow:
-    0 8px 32px rgba(0, 30, 100, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.38),
-    inset 0 -1px 0 rgba(0, 30, 100, 0.08);
+    0 8px 32px rgba(0, 10, 60, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
 @utility glass-sidebar {
-  background: rgba(8, 25, 85, 0.30);
+  background: rgba(4, 12, 55, 0.62);
   backdrop-filter: blur(28px);
   -webkit-backdrop-filter: blur(28px);
-  border-right: 1px solid rgba(100, 180, 255, 0.2);
-  box-shadow: 4px 0 24px rgba(0, 20, 80, 0.18);
+  border-right: 1px solid rgba(100, 180, 255, 0.22);
+  box-shadow: 4px 0 32px rgba(0, 10, 60, 0.40);
 }
 
 @utility glass-nav-active {

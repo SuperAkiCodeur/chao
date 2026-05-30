@@ -45,11 +45,11 @@ export function Sidebar() {
     <aside
       className="flex h-screen w-60 flex-col shrink-0"
       style={{
-        background: "rgba(6, 18, 72, 0.32)",
+        background: "rgba(4, 12, 55, 0.62)",
         backdropFilter: "blur(28px)",
         WebkitBackdropFilter: "blur(28px)",
-        borderRight: "1px solid rgba(120, 180, 255, 0.18)",
-        boxShadow: "4px 0 32px rgba(0, 10, 60, 0.25)",
+        borderRight: "1px solid rgba(120, 180, 255, 0.22)",
+        boxShadow: "4px 0 32px rgba(0, 10, 60, 0.40)",
       }}
     >
       {/* ── Logo ── */}
@@ -88,7 +88,7 @@ export function Sidebar() {
               <span className="text-[8px]" style={{ color: "rgba(0,229,255,0.45)" }}>◆</span>
               <p
                 className="text-[9px] font-bold uppercase tracking-[0.22em]"
-                style={{ color: "rgba(150, 205, 255, 0.55)" }}
+                style={{ color: "rgba(180, 220, 255, 0.70)" }}
               >
                 {label}
               </p>
@@ -111,7 +111,7 @@ export function Sidebar() {
                       "transition-all duration-200 ease-out",
                       active
                         ? "text-cyan-300"
-                        : "text-sky-200/55 hover:bg-white/[0.05] hover:text-sky-100",
+                        : "text-sky-100/75 hover:bg-white/[0.07] hover:text-white",
                     )}
                     style={active ? {
                       background: "rgba(0, 229, 255, 0.10)",
