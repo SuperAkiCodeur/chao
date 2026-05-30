@@ -34,25 +34,12 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside
-      className="flex h-screen w-56 flex-col shrink-0"
-      style={{
-        background: "rgba(255, 255, 255, 0.12)",
-        backdropFilter: "blur(32px) saturate(160%)",
-        WebkitBackdropFilter: "blur(32px) saturate(160%)",
-        borderRight: "1px solid rgba(255, 255, 255, 0.20)",
-      }}
-    >
-      {/* Logo */}
-      <div
-        className="flex h-16 items-center gap-3 px-5"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.12)" }}
-      >
-        <LogoSVG className="h-7 w-auto text-white" />
-        <span className="font-semibold text-white text-sm tracking-wide">Chao</span>
+    <aside className="flex h-screen w-56 flex-col border-r border-gray-200 bg-white shrink-0">
+      <div className="flex h-16 items-center gap-3 px-5 border-b border-gray-200">
+        <LogoSVG className="h-7 w-auto text-gray-800" />
+        <span className="font-semibold text-gray-800 text-sm">Chao</span>
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-0.5">
         {navItems.map(({ href, label, icon: Icon }) => {
           const active = pathname === href;
@@ -61,17 +48,12 @@ export function Sidebar() {
               key={href}
               href={href}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150",
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 active
-                  ? "bg-white/20 text-white"
-                  : "text-white/60 hover:bg-white/10 hover:text-white",
+                  ? "bg-gray-100 text-gray-900"
+                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-800",
               )}
             >
-              {active && (
-                <span className="absolute left-0 w-0.5 h-5 rounded-full bg-white"
-                  style={{ position: "relative", width: "2px", height: "18px", borderRadius: "999px", background: "white", flexShrink: 0, marginLeft: "-4px" }}
-                />
-              )}
               <Icon className="h-4 w-4 shrink-0" />
               {label}
             </Link>
@@ -79,15 +61,11 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Logout */}
-      <div
-        className="p-3"
-        style={{ borderTop: "1px solid rgba(255,255,255,0.12)" }}
-      >
+      <div className="p-3 border-t border-gray-200">
         <button
           type="button"
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/50 hover:bg-white/10 hover:text-white transition-all duration-150"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-800 transition-colors"
         >
           <LogOut className="h-4 w-4 shrink-0" />
           Se déconnecter
