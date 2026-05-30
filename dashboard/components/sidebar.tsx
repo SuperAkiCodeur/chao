@@ -3,32 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { cn } from "@/lib/utils";
-import {
-  LayoutDashboard, Clapperboard, Users, ScrollText,
-  Gamepad2, Settings, LogOut,
-} from "lucide-react";
-import { LogoSVG } from "./LogoSVG";
-
-function ValorantIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
-      <polygon points="0,1 3.5,1 12,21 8.5,21" />
-      <polygon points="12,21 15.5,21 19,12 15.5,12" />
-      <polygon points="16.5,10 20,10 23,1 19.5,1" />
-    </svg>
-  );
-}
 
 const navItems = [
-  { href: "/",           label: "Dashboard",  icon: LayoutDashboard },
-  { href: "/membres",    label: "Membres",    icon: Users           },
-  { href: "/cinema",     label: "Cinéma",     icon: Clapperboard    },
-  { href: "/logs",       label: "Logs",       icon: ScrollText      },
-  { href: "/valorant",   label: "Valorant",   icon: ValorantIcon    },
-  { href: "/steam",      label: "Steam",      icon: Gamepad2        },
-  { href: "/parametres", label: "Paramètres", icon: Settings        },
+  { href: "/",           label: "Dashboard"  },
+  { href: "/membres",    label: "Membres"    },
+  { href: "/cinema",     label: "Cinéma"     },
+  { href: "/logs",       label: "Logs"       },
+  { href: "/valorant",   label: "Valorant"   },
+  { href: "/steam",      label: "Steam"      },
+  { href: "/parametres", label: "Paramètres" },
 ];
+
+const DIV = "1px solid rgba(255,255,255,0.07)";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -37,35 +23,44 @@ export function Sidebar() {
     <div className="flex h-full flex-col" style={{ background: "#111111" }}>
 
       {/* Logo */}
-      <div className="px-6 pt-8 pb-8">
-        <div className="flex items-center gap-2.5">
-          <LogoSVG className="h-6 w-auto text-white" />
-          <span className="text-xs font-bold uppercase tracking-[0.2em] text-white">Chao</span>
-        </div>
+      <div className="px-7 py-8" style={{ borderBottom: DIV }}>
+        <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", color: "#fff" }}>
+          Chao
+        </p>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-4">
-        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-          {navItems.map(({ href, label, icon: Icon }, i) => {
+      <nav className="flex-1 px-7 py-6" style={{ borderBottom: DIV }}>
+        <p style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "0.28em", textTransform: "uppercase", color: "rgba(255,255,255,0.2)", marginBottom: "20px" }}>
+          / Nav
+        </p>
+        <div>
+          {navItems.map(({ href, label }, i) => {
             const active = pathname === href;
             return (
               <Link
                 key={href}
                 href={href}
-                className={cn(
-                  "flex items-center justify-between py-3.5 px-2 text-xs font-semibold uppercase tracking-[0.12em] transition-colors duration-150",
-                  active ? "text-white" : "text-white/30 hover:text-white/65",
-                )}
-                style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "16px",
+                  padding: "10px 0",
+                  borderBottom: DIV,
+                  textDecoration: "none",
+                  color: active ? "#fff" : "rgba(255,255,255,0.32)",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  transition: "color 0.15s",
+                }}
               >
-                <div className="flex items-center gap-3">
-                  <span style={{ color: active ? "#C8FF47" : "rgba(255,255,255,0.18)", fontSize: "10px", fontWeight: 700 }}>
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  {label}
-                </div>
-                {active && <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: "#C8FF47" }} />}
+                <span style={{ color: active ? "#C8FF47" : "rgba(255,255,255,0.15)", fontSize: "9px", fontWeight: 700, letterSpacing: "0.1em", minWidth: "16px" }}>
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                {label}
+                {active && <span style={{ marginLeft: "auto", height: "5px", width: "5px", borderRadius: "50%", background: "#C8FF47", flexShrink: 0 }} />}
               </Link>
             );
           })}
@@ -73,14 +68,15 @@ export function Sidebar() {
       </nav>
 
       {/* Logout */}
-      <div className="px-6 pb-6 pt-4">
+      <div className="px-7 py-6">
         <button
           type="button"
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-white/25 hover:text-white/50 transition-colors"
+          style={{ background: "none", border: "none", padding: 0, fontSize: "9px", fontWeight: 700, letterSpacing: "0.28em", textTransform: "uppercase", color: "rgba(255,255,255,0.18)", cursor: "pointer", transition: "color 0.15s" }}
+          onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
+          onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.18)")}
         >
-          <LogOut className="h-3.5 w-3.5" />
-          Déconnexion
+          Déconnexion →
         </button>
       </div>
 

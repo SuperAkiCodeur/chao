@@ -2,22 +2,17 @@
 
 @theme inline {
   --font-sans: var(--font-inter);
-  --color-lime-fluo: #C8FF47;
 }
 
-* { box-sizing: border-box; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
   height: 100%;
-  margin: 0;
-  padding: 0;
-  font-family: var(--font-inter), sans-serif;
+  font-family: var(--font-inter), "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
-  background: #0D0D0D url('/background.jpg') center / cover no-repeat fixed;
+  background: #0A0A0A url('/background.jpg') center / cover no-repeat fixed;
 }
 
-button, [role="button"] { cursor: pointer; }
+::selection { background: #C8FF47; color: #000; }
 
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 99px; }
+::-webkit-scrollbar { width: 0px; }

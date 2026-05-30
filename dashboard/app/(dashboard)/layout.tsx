@@ -1,24 +1,20 @@
 import { Sidebar } from "@/components/sidebar";
 import { SplashScreen } from "@/components/SplashScreen";
 
+const DIV = "1px solid rgba(255,255,255,0.07)";
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <SplashScreen />
-      <div className="h-screen w-screen p-3 flex gap-3">
+      <div style={{ height: "100vh", width: "100vw", padding: "10px", display: "flex", gap: "10px" }}>
         {/* Sidebar */}
-        <div
-          className="w-56 h-full flex-shrink-0 overflow-hidden rounded-2xl"
-          style={{ boxShadow: "0 0 0 1px rgba(255,255,255,0.06), 0 8px 32px rgba(0,0,0,0.5)" }}
-        >
+        <div style={{ width: "200px", flexShrink: 0, height: "100%", borderRadius: "16px", overflow: "hidden", boxShadow: `inset 0 0 0 ${DIV}` }}>
           <Sidebar />
         </div>
         {/* Main */}
-        <div
-          className="flex-1 h-full overflow-hidden rounded-2xl"
-          style={{ background: "#F7F7F7", boxShadow: "0 8px 32px rgba(0,0,0,0.35)" }}
-        >
-          <main className="h-full overflow-y-auto">
+        <div style={{ flex: 1, height: "100%", borderRadius: "16px", overflow: "hidden", background: "#111111" }}>
+          <main style={{ height: "100%", overflowY: "auto" }}>
             {children}
           </main>
         </div>
