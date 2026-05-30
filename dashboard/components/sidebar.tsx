@@ -20,24 +20,14 @@ function ValorantIcon({ className }: { className?: string }) {
   );
 }
 
-const groups = [
-  {
-    label: "Général",
-    items: [
-      { href: "/",           label: "Dashboard",  icon: LayoutDashboard },
-      { href: "/membres",    label: "Membres",    icon: Users           },
-      { href: "/cinema",     label: "Cinéma",     icon: Clapperboard    },
-      { href: "/logs",       label: "Logs",       icon: ScrollText      },
-    ],
-  },
-  {
-    label: "Fonctionnalités",
-    items: [
-      { href: "/valorant",   label: "Valorant",   icon: ValorantIcon    },
-      { href: "/steam",      label: "Steam",      icon: Gamepad2        },
-      { href: "/parametres", label: "Paramètres", icon: Settings        },
-    ],
-  },
+const navItems = [
+  { href: "/",           label: "Dashboard",  icon: LayoutDashboard },
+  { href: "/membres",    label: "Membres",    icon: Users           },
+  { href: "/cinema",     label: "Cinéma",     icon: Clapperboard    },
+  { href: "/logs",       label: "Logs",       icon: ScrollText      },
+  { href: "/valorant",   label: "Valorant",   icon: ValorantIcon    },
+  { href: "/steam",      label: "Steam",      icon: Gamepad2        },
+  { href: "/parametres", label: "Paramètres", icon: Settings        },
 ];
 
 export function Sidebar() {
@@ -47,57 +37,53 @@ export function Sidebar() {
     <div className="flex h-full flex-col" style={{ background: "#111111" }}>
 
       {/* Logo */}
-      <div className="flex h-[64px] items-center gap-3 px-6" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <LogoSVG className="h-7 w-auto text-white" />
-        <span className="font-bold text-white text-sm tracking-wide">Chao</span>
+      <div className="px-6 pt-8 pb-8">
+        <div className="flex items-center gap-2.5">
+          <LogoSVG className="h-6 w-auto text-white" />
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-white">Chao</span>
+        </div>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-6">
-        {groups.map(({ label, items }) => (
-          <div key={label}>
-            <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.22)" }}>
-              {label}
-            </p>
-            <div className="space-y-0.5">
-              {items.map(({ href, label: itemLabel, icon: Icon }) => {
-                const active = pathname === href;
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
-                      active
-                        ? "text-white bg-white/10"
-                        : "text-white/40 hover:text-white/75 hover:bg-white/5",
-                    )}
-                  >
-                    <Icon className="h-4 w-4 shrink-0" />
-                    {itemLabel}
-                    {/* Seul usage du lime : petit point actif */}
-                    {active && (
-                      <span className="ml-auto h-1.5 w-1.5 rounded-full shrink-0" style={{ background: "#C8FF47" }} />
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+      <nav className="flex-1 px-4">
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+          {navItems.map(({ href, label, icon: Icon }, i) => {
+            const active = pathname === href;
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  "flex items-center justify-between py-3.5 px-2 text-xs font-semibold uppercase tracking-[0.12em] transition-colors duration-150",
+                  active ? "text-white" : "text-white/30 hover:text-white/65",
+                )}
+                style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
+              >
+                <div className="flex items-center gap-3">
+                  <span style={{ color: active ? "#C8FF47" : "rgba(255,255,255,0.18)", fontSize: "10px", fontWeight: 700 }}>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  {label}
+                </div>
+                {active && <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: "#C8FF47" }} />}
+              </Link>
+            );
+          })}
+        </div>
       </nav>
 
       {/* Logout */}
-      <div className="px-4 py-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+      <div className="px-6 pb-6 pt-4">
         <button
           type="button"
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/30 hover:text-white/60 hover:bg-white/5 transition-all duration-150"
+          className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-white/25 hover:text-white/50 transition-colors"
         >
-          <LogOut className="h-4 w-4 shrink-0" />
-          Se déconnecter
+          <LogOut className="h-3.5 w-3.5" />
+          Déconnexion
         </button>
       </div>
+
     </div>
   );
 }

@@ -1,7 +1,6 @@
 import { db } from "@/lib/db";
 import { cinemaParties, valorantLinks } from "@/lib/schema";
 import { eq, count } from "drizzle-orm";
-import { Clapperboard, Crosshair, Activity, TrendingUp } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -28,135 +27,93 @@ async function getStats() {
   return { activeCinema, totalCinema, totalValorant, recentCinema };
 }
 
-function StatCard({
-  label, value, sub, icon: Icon, dark = false,
-}: {
-  label: string; value: string | number; sub: string;
-  icon: React.ElementType; dark?: boolean;
-}) {
-  return (
-    <div
-      className="rounded-2xl p-6 flex flex-col gap-5"
-      style={dark
-        ? { background: "#111111" }
-        : { background: "#ffffff", border: "1px solid #E8E8E8" }
-      }
-    >
-      <div className="flex items-center justify-between">
-        <div
-          className="h-9 w-9 rounded-xl flex items-center justify-center"
-          style={dark
-            ? { background: "rgba(255,255,255,0.08)" }
-            : { background: "#F3F3F3" }
-          }
-        >
-          <Icon className="h-4 w-4" style={{ color: dark ? "#fff" : "#555" }} />
-        </div>
-        <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: dark ? "rgba(255,255,255,0.25)" : "#CCC" }}>
-          Live
-        </span>
-      </div>
-      <div>
-        <p className="text-4xl font-bold tracking-tight leading-none" style={{ color: dark ? "#ffffff" : "#111111" }}>
-          {value}
-        </p>
-        <p className="text-sm font-medium mt-2" style={{ color: dark ? "rgba(255,255,255,0.50)" : "#888" }}>
-          {label}
-        </p>
-        <p className="text-xs mt-0.5" style={{ color: dark ? "rgba(255,255,255,0.25)" : "#BBB" }}>
-          {sub}
-        </p>
-      </div>
-    </div>
-  );
-}
-
 export default async function HomePage() {
   const { activeCinema, totalCinema, totalValorant, recentCinema } = await getStats();
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="h-full flex flex-col" style={{ background: "#ffffff" }}>
 
       {/* ── Header ── */}
-      <div className="flex items-center justify-between">
+      <div className="px-10 pt-10 pb-8 flex items-end justify-between" style={{ borderBottom: "1px solid #EBEBEB" }}>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "#BBBBBB" }}>
-            Tableau de bord
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em] mb-2" style={{ color: "#BBBBBB" }}>
+            Vue d'ensemble
           </p>
-          <h1 className="text-2xl font-bold tracking-tight" style={{ color: "#111111" }}>Vue d'ensemble</h1>
+          <h1 className="text-4xl font-bold tracking-tight" style={{ color: "#111111", lineHeight: 1.1 }}>
+            Dashboard
+          </h1>
         </div>
-        <div className="flex items-center gap-3">
-          {/* Lime utilisé ici uniquement pour le dot "en ligne" */}
-          <div className="flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-full" style={{ background: "#F3F3F3", color: "#555" }}>
-            <span className="h-1.5 w-1.5 rounded-full" style={{ background: "#C8FF47" }} />
+        <div className="flex items-center gap-2 pb-1">
+          <span className="h-1.5 w-1.5 rounded-full" style={{ background: "#C8FF47" }} />
+          <span className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: "#AAAAAA" }}>
             Bot en ligne
-          </div>
-          <button
-            className="text-sm font-semibold px-4 py-2 rounded-xl text-white transition-opacity hover:opacity-80"
-            style={{ background: "#111111" }}
-          >
-            + Nouveau
-          </button>
+          </span>
         </div>
       </div>
 
-      {/* ── Stat cards ── */}
-      <div className="grid grid-cols-3 gap-4">
-        <StatCard dark label="Séances cinéma actives" value={activeCinema} sub={`${totalCinema} au total`} icon={Clapperboard} />
-        <StatCard      label="Comptes Valorant"       value={totalValorant} sub="Comptes Discord liés"   icon={Crosshair}    />
-        <StatCard      label="Disponibilité bot"      value="100%"          sub="Aucune interruption"    icon={Activity}     />
+      {/* ── Stats ── */}
+      <div className="grid grid-cols-3" style={{ borderBottom: "1px solid #EBEBEB" }}>
+        {[
+          { n: "01", value: activeCinema,   label: "Séances actives",   sub: `${totalCinema} au total`    },
+          { n: "02", value: totalValorant,  label: "Comptes Valorant",  sub: "Comptes Discord liés"       },
+          { n: "03", value: "100%",         label: "Disponibilité",     sub: "Aucune interruption"        },
+        ].map(({ n, value, label, sub }, i) => (
+          <div
+            key={n}
+            className="px-10 py-10"
+            style={{ borderRight: i < 2 ? "1px solid #EBEBEB" : undefined }}
+          >
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] mb-6" style={{ color: "#CCCCCC" }}>{n}</p>
+            <p className="font-bold leading-none mb-3" style={{ fontSize: "clamp(48px, 5vw, 72px)", color: "#111111", letterSpacing: "-0.03em" }}>
+              {value}
+            </p>
+            <p className="text-sm font-semibold" style={{ color: "#333333" }}>{label}</p>
+            <p className="text-xs mt-0.5" style={{ color: "#BBBBBB" }}>{sub}</p>
+          </div>
+        ))}
       </div>
 
       {/* ── Séances récentes ── */}
-      <div className="rounded-2xl bg-white" style={{ border: "1px solid #E8E8E8" }}>
-        <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: "1px solid #F0F0F0" }}>
-          <div>
-            <h2 className="text-sm font-bold" style={{ color: "#111" }}>Séances cinéma récentes</h2>
-            <p className="text-xs mt-0.5" style={{ color: "#BBB" }}>Historique des dernières sessions</p>
-          </div>
-          <TrendingUp className="h-4 w-4" style={{ color: "#DDD" }} />
+      <div className="flex-1 overflow-y-auto">
+        <div className="px-10 py-8 flex items-center justify-between" style={{ borderBottom: "1px solid #EBEBEB" }}>
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: "#BBBBBB" }}>
+            Séances cinéma récentes
+          </p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: "#BBBBBB" }}>
+            Statut
+          </p>
         </div>
 
         {recentCinema.length === 0 ? (
-          <p className="text-sm text-center py-12" style={{ color: "#CCC" }}>Aucune séance pour l'instant.</p>
+          <p className="px-10 py-16 text-sm" style={{ color: "#CCCCCC" }}>Aucune séance pour l'instant.</p>
         ) : (
-          <div>
-            <div className="grid grid-cols-3 px-6 py-3" style={{ borderBottom: "1px solid #F5F5F5" }}>
-              <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#CCC" }}>Titre</span>
-              <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#CCC" }}>Date</span>
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-right" style={{ color: "#CCC" }}>Statut</span>
-            </div>
-            {recentCinema.map((party, i) => (
-              <div
-                key={party.messageId}
-                className="grid grid-cols-3 items-center px-6 py-4 hover:bg-gray-50 transition-colors"
-                style={{ borderBottom: i < recentCinema.length - 1 ? "1px solid #F5F5F5" : undefined }}
-              >
-                <span className="text-sm font-medium truncate pr-4" style={{ color: "#111" }}>{party.title}</span>
-                <span className="text-xs" style={{ color: "#BBB" }}>
+          recentCinema.map((party, i) => (
+            <div
+              key={party.messageId}
+              className="px-10 py-5 flex items-center justify-between hover:bg-gray-50 transition-colors"
+              style={{ borderBottom: "1px solid #F0F0F0" }}
+            >
+              <div className="flex items-center gap-6">
+                <span className="text-[10px] font-bold" style={{ color: "#DDDDDD", minWidth: "24px" }}>
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="text-sm font-semibold" style={{ color: "#111111" }}>{party.title}</span>
+              </div>
+              <div className="flex items-center gap-6">
+                <span className="text-xs" style={{ color: "#CCCCCC" }}>
                   {party.viewingAt
-                    ? new Date(party.viewingAt).toLocaleDateString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
+                    ? new Date(party.viewingAt).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })
                     : "—"}
                 </span>
-                <div className="flex justify-end">
-                  <span
-                    className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full"
-                    style={party.status === "active"
-                      ? { background: "#F5F5F5", color: "#333" }
-                      : { background: "#F5F5F5", color: "#CCC" }
-                    }
-                  >
-                    {/* Lime uniquement pour le dot "actif" */}
-                    <span
-                      className="h-1.5 w-1.5 rounded-full"
-                      style={{ background: party.status === "active" ? "#C8FF47" : "#DDD" }}
-                    />
-                    {party.status === "active" ? "En cours" : "Terminé"}
-                  </span>
-                </div>
+                <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em]"
+                  style={{ color: party.status === "active" ? "#333" : "#CCCCCC" }}>
+                  <span className="h-1.5 w-1.5 rounded-full"
+                    style={{ background: party.status === "active" ? "#C8FF47" : "#E0E0E0" }} />
+                  {party.status === "active" ? "En cours" : "Terminé"}
+                </span>
               </div>
-            ))}
-          </div>
+            </div>
+          ))
         )}
       </div>
 
