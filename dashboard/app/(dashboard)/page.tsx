@@ -90,9 +90,7 @@ export default async function HomePage() {
           recentCinema.map((party, i) => (
             <div
               key={party.messageId}
-              style={{ display: "grid", gridTemplateColumns: "40px 1fr 120px 100px", gap: "0", alignItems: "center", padding: "18px 0", borderBottom: DIV, transition: "opacity 0.15s", cursor: "default" }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = "0.6")}
-              onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+              style={{ display: "grid", gridTemplateColumns: "40px 1fr 120px 100px", gap: "0", alignItems: "center", padding: "18px 0", borderBottom: DIV }}
             >
               <span style={{ fontSize: "9px", fontWeight: 700, color: "rgba(255,255,255,0.18)", letterSpacing: "0.1em" }}>
                 {String(i + 1).padStart(2, "0")}
