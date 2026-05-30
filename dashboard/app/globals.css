@@ -2,7 +2,10 @@
 
 @theme inline {
   --font-sans: var(--font-inter);
+  --color-lime-fluo: #C8FF47;
 }
+
+* { box-sizing: border-box; }
 
 html, body {
   height: 100%;
@@ -10,5 +13,11 @@ html, body {
   padding: 0;
   font-family: var(--font-inter), sans-serif;
   -webkit-font-smoothing: antialiased;
-  background: #e5e7eb;
+  background: #0D0D0D;
 }
+
+button, [role="button"] { cursor: pointer; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 99px; }
