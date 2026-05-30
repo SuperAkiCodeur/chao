@@ -1,48 +1,48 @@
 @import "tailwindcss";
 
 :root {
-  /* ── Fond papier chaud / éditorial ── */
-  --background:    38 26% 91%;   /* #EEE7D9 crème papier */
-  --foreground:    28 22%  9%;   /* #1C1712 encre chaude */
+  /* ── Light mode — clean white/neutral ── */
+  --background:    0 0% 98%;          /* #FAFAFA near-white */
+  --foreground:    222 47% 11%;       /* #0F172A slate-900 */
 
-  --card:          38 20% 88%;   /* #E8DFCF carte légèrement plus sombre */
-  --card-foreground: 28 22% 9%;
+  --card:          0 0% 100%;         /* #FFFFFF pure white */
+  --card-foreground: 222 47% 11%;
 
-  --popover:       38 20% 88%;
-  --popover-foreground: 28 22% 9%;
+  --popover:       0 0% 100%;
+  --popover-foreground: 222 47% 11%;
 
-  --primary:       15 68% 44%;   /* #BC3D1A terracotta / accent editorial */
-  --primary-foreground: 38 26% 95%;
+  --primary:       199 89% 48%;       /* #0EA5E9 sky-500 — light blue accent */
+  --primary-foreground: 0 0% 100%;
 
-  --secondary:     38 15% 82%;   /* #D5CEBC gris chaud secondaire */
-  --secondary-foreground: 28 12% 35%;
+  --secondary:     210 20% 96%;       /* #F1F5F9 slate-100 */
+  --secondary-foreground: 222 47% 11%;
 
-  --muted:         38 16% 85%;   /* #DDD6C8 surfaces subtiles */
-  --muted-foreground: 30  8% 46%; /* #7A7268 texte atténué */
+  --muted:         210 20% 96%;
+  --muted-foreground: 215 16% 47%;    /* #64748B slate-500 */
 
-  --accent:        38 16% 83%;
-  --accent-foreground: 28 22% 9%;
+  --accent:        210 20% 96%;
+  --accent-foreground: 222 47% 11%;
 
-  --destructive:    5 68% 48%;   /* #D4341C rouge chaud */
-  --destructive-foreground: 38 26% 95%;
+  --destructive:   0 72% 51%;         /* red-500 */
+  --destructive-foreground: 0 0% 100%;
 
-  --border:        36 13% 72%;   /* #BFBAAD bordure visible, warm */
-  --input:         38 16% 85%;
-  --ring:          15 68% 44%;
+  --border:        214 32% 91%;       /* #E2E8F0 slate-200 */
+  --input:         214 32% 91%;
+  --ring:          199 89% 48%;
 
-  --radius: 0.15rem;             /* Presque carré — éditorial brutal */
+  --radius: 0.5rem;
 
-  /* ── Sidebar — encre sombre sur papier clair ── */
-  --sidebar:               28 25%  8%;  /* #181410 */
-  --sidebar-foreground:    38 20% 87%;  /* #DDD4C3 */
-  --sidebar-border:        28 18% 14%;  /* #26200A */
-  --sidebar-accent:        28 20% 12%;  /* #211C15 */
-  --sidebar-accent-foreground: 38 20% 87%;
-  --sidebar-muted:         34  8% 50%;  /* #8A8278 */
+  /* ── Sidebar — very dark navy ── */
+  --sidebar:               222 47% 9%;   /* #0D1526 */
+  --sidebar-foreground:    210 20% 88%;
+  --sidebar-border:        222 35% 14%;
+  --sidebar-accent:        222 40% 13%;
+  --sidebar-accent-foreground: 210 20% 88%;
+  --sidebar-muted:         217 15% 50%;
 
-  /* ── Sémantique ── */
-  --success: 145 52% 30%;  /* vert foncé lisible sur fond clair */
-  --warning:  32 85% 38%;  /* ambre foncé lisible sur fond clair */
+  /* ── Semantic ── */
+  --success: 199 89% 40%;             /* sky blue (replaces green) */
+  --warning:  38 92% 50%;
 }
 
 @theme inline {
@@ -71,65 +71,64 @@
   --color-success:                hsl(var(--success));
   --color-warning:                hsl(var(--warning));
 
-  /* Rayon presque nul sur toutes les tailles */
-  --radius-sm:  0.1rem;
-  --radius-md:  0.15rem;
-  --radius-lg:  0.2rem;
-  --radius-xl:  0.25rem;
-  --radius-2xl: 0.3rem;
-  --radius-3xl: 0.4rem;
+  --radius-sm:  0.25rem;
+  --radius-md:  0.5rem;
+  --radius-lg:  0.75rem;
+  --radius-xl:  1rem;
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.5rem;
   --radius-full: 9999px;
 
-  --font-sans: var(--font-space-mono);
-  --font-mono: var(--font-space-mono);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-inter);
 
-  /* Animation tokens (fade uniquement — les store sont définis via @utility) */
+  /* Animation tokens */
   --animate-fade-up: fade-up 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-fade-in: fade-in 0.2s  ease-out both;
 }
 
-/* ── Mode nuit ───────────────────────────────────────────────────────── */
+/* ── Dark mode ───────────────────────────────────────────────────────── */
 html.dark {
-  --background:    28 22%  9%;   /* #18140F encre chaude sombre */
-  --foreground:    38 20% 85%;   /* #D9D0BF crème chaud */
+  --background:    222 47% 7%;        /* #0A0F1E near-black navy */
+  --foreground:    210 20% 90%;
 
-  --card:          28 20% 12%;   /* #1F1A13 */
-  --card-foreground: 38 20% 85%;
+  --card:          222 40% 10%;       /* #101828 */
+  --card-foreground: 210 20% 90%;
 
-  --popover:       28 20% 12%;
-  --popover-foreground: 38 20% 85%;
+  --popover:       222 40% 10%;
+  --popover-foreground: 210 20% 90%;
 
-  --primary:       15 65% 52%;   /* terracotta légèrement plus vif */
-  --primary-foreground: 38 26% 95%;
+  --primary:       199 89% 55%;       /* sky-400 slightly brighter in dark */
+  --primary-foreground: 0 0% 100%;
 
-  --secondary:     28 15% 18%;
-  --secondary-foreground: 38 12% 65%;
+  --secondary:     222 35% 14%;
+  --secondary-foreground: 210 20% 75%;
 
-  --muted:         28 16% 15%;
-  --muted-foreground: 32  8% 52%;
+  --muted:         222 35% 13%;
+  --muted-foreground: 215 16% 52%;
 
-  --accent:        28 15% 17%;
-  --accent-foreground: 38 20% 85%;
+  --accent:        222 35% 14%;
+  --accent-foreground: 210 20% 90%;
 
-  --destructive:    5 65% 52%;
-  --destructive-foreground: 38 26% 95%;
+  --destructive:   0 72% 55%;
+  --destructive-foreground: 0 0% 100%;
 
-  --border:        28 14% 22%;
-  --input:         28 15% 15%;
-  --ring:          15 65% 52%;
+  --border:        222 30% 18%;
+  --input:         222 35% 13%;
+  --ring:          199 89% 55%;
 
-  --sidebar:               28 22%  7%;
-  --sidebar-foreground:    38 20% 85%;
-  --sidebar-border:        28 16% 13%;
-  --sidebar-accent:        28 18% 11%;
-  --sidebar-accent-foreground: 38 20% 85%;
-  --sidebar-muted:         32  8% 48%;
+  --sidebar:               222 47% 6%;
+  --sidebar-foreground:    210 20% 88%;
+  --sidebar-border:        222 35% 11%;
+  --sidebar-accent:        222 40% 10%;
+  --sidebar-accent-foreground: 210 20% 88%;
+  --sidebar-muted:         217 15% 48%;
 
-  --success: 145 45% 40%;
-  --warning:  32 80% 48%;
+  --success: 199 89% 50%;
+  --warning:  38 92% 55%;
 }
 
-/* ── Curseur ─────────────────────────────────────────────────────────── */
+/* ── Cursor ─────────────────────────────────────────────────────────── */
 button, [role="button"] { cursor: pointer; }
 
 * { border-color: hsl(var(--border)); }
@@ -137,20 +136,9 @@ button, [role="button"] { cursor: pointer; }
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
-  font-family: var(--font-space-mono), monospace;
+  font-family: var(--font-inter), sans-serif;
   -webkit-font-smoothing: antialiased;
   line-height: 1.6;
-}
-
-/* Grain papier subtil */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9998;
-  opacity: 0.035;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 ::-webkit-scrollbar { width: 4px; height: 4px; }

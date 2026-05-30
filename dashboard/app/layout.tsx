@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Space_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const spaceMono = Space_Mono({
-  weight: ["400", "700"],
-  variable: "--font-space-mono",
+const inter = Inter({
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
@@ -19,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className={`${spaceMono.variable} h-full`} suppressHydrationWarning>
+    <html lang="fr" className={`${inter.variable} h-full`} suppressHydrationWarning>
       <head>
         {/* Anti-flash : applique le thème avant le premier rendu */}
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})();` }} />
