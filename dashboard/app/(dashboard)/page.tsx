@@ -1,9 +1,8 @@
 import { db } from "@/lib/db";
 import { cinemaParties, valorantLinks } from "@/lib/schema";
 import { eq, count } from "drizzle-orm";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CommandsReference } from "@/components/CommandsReference";
-import { Clapperboard, Crosshair, TrendingUp } from "lucide-react";
+import { Clapperboard, Crosshair, Users, TrendingUp, Activity } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -29,105 +28,112 @@ async function getStats() {
 export default async function HomePage() {
   const { activeCinema, totalValorant, recentCinema } = await getStats();
 
-  const stats = [
-    {
-      label: "Séances cinéma actives",
-      value: String(activeCinema),
-      sub: "diffusions en cours",
-      icon: Clapperboard,
-      color: "text-rose-600",
-      bg: "bg-rose-600/10",
-    },
-    {
-      label: "Comptes Valorant",
-      value: String(totalValorant),
-      sub: "joueurs enregistrés",
-      icon: Crosshair,
-      color: "text-red-600",
-      bg: "bg-red-600/10",
-    },
-  ];
-
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between animate-fade-up" style={{ animationDelay: "0ms" }}>
+    <div className="space-y-8">
+
+      {/* ── Header ── */}
+      <div className="flex items-start justify-between animate-fade-up" style={{ animationDelay: "0ms" }}>
         <div>
-          <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Vue d'ensemble du bot Chao</p>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">Vue d'ensemble</h1>
+          <p className="text-sm text-muted-foreground mt-1">Tableau de bord du bot Chao</p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-card px-3 py-1.5 rounded-lg border border-border">
-          <span className="h-1.5 w-1.5 rounded-full bg-success" />
+        <div className="flex items-center gap-2 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
           Bot en ligne
         </div>
       </div>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 animate-fade-up" style={{ animationDelay: "60ms" }}>
-        {stats.map(({ label, value, sub, icon: Icon, color, bg }) => (
-          <Card key={label}>
-            <CardContent className="p-5">
-              <div className="flex items-start justify-between mb-3">
-                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${bg}`}>
-                  <Icon className={`h-4 w-4 ${color}`} />
-                </div>
-              </div>
-              <p className="text-2xl font-bold tracking-tight text-foreground">{value}</p>
-              <p className="text-xs text-muted-foreground mt-1">{label}</p>
-              <p className="text-xs text-muted-foreground/60 mt-0.5 truncate">{sub}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* ── Stat cards ── */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 animate-fade-up" style={{ animationDelay: "60ms" }}>
 
-      {/* Utilitaires */}
-      <div className="animate-fade-up" style={{ animationDelay: "100ms" }}>
-        <CommandsReference commands={[
-          {
-            name: "/roulette",
-            description:
-              "Tire au sort un membre parmi une sélection. La commande ouvre un sélecteur multi-membres natif Discord (visible uniquement par toi). Sélectionne 2 à 10 participants, valide — le bot anime la roulette en public puis révèle le gagnant avec un ping.",
-            params: [
-              {
-                name: "(aucun paramètre)",
-                description: "Un sélecteur de membres Discord s'ouvre directement après la commande. Choisis 2 à 10 participants via le picker natif, puis confirme.",
-                required: false,
-              },
-            ],
-            note: "La réponse est publique : tout le monde voit l'animation et le résultat dans le salon. Le gagnant reçoit un ping.",
-          },
-        ]} />
-      </div>
-
-      {/* Historique récent */}
-      <div className="animate-fade-up" style={{ animationDelay: "120ms" }}>
-        <Card>
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-semibold text-foreground">Séances cinéma récentes</CardTitle>
-              <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
+        {/* Cinéma actif */}
+        <div className="rounded-2xl bg-sky-500 p-6 text-white shadow-lg shadow-sky-200">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
+              <Clapperboard className="h-5 w-5 text-white" />
             </div>
-          </CardHeader>
-          <CardContent className="space-y-1">
+            <span className="text-xs font-medium bg-white/20 rounded-full px-2.5 py-1">Actif</span>
+          </div>
+          <p className="text-4xl font-bold tracking-tight">{activeCinema}</p>
+          <p className="text-sm text-sky-100 mt-1">Séances cinéma en cours</p>
+        </div>
+
+        {/* Valorant */}
+        <div className="rounded-2xl bg-white p-6 shadow-[0_2px_12px_-2px_rgba(0,0,0,0.08)] border border-border/60">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50">
+              <Crosshair className="h-5 w-5 text-rose-500" />
+            </div>
+            <span className="text-xs font-medium text-muted-foreground bg-muted rounded-full px-2.5 py-1">Total</span>
+          </div>
+          <p className="text-4xl font-bold tracking-tight text-foreground">{totalValorant}</p>
+          <p className="text-sm text-muted-foreground mt-1">Comptes Valorant liés</p>
+        </div>
+
+        {/* Bot status */}
+        <div className="rounded-2xl bg-white p-6 shadow-[0_2px_12px_-2px_rgba(0,0,0,0.08)] border border-border/60">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50">
+              <Activity className="h-5 w-5 text-violet-500" />
+            </div>
+            <span className="text-xs font-medium text-emerald-700 bg-emerald-50 rounded-full px-2.5 py-1">En ligne</span>
+          </div>
+          <p className="text-4xl font-bold tracking-tight text-foreground">100%</p>
+          <p className="text-sm text-muted-foreground mt-1">Disponibilité du bot</p>
+        </div>
+
+      </div>
+
+      {/* ── Séances récentes + Commandes ── */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 animate-fade-up" style={{ animationDelay: "100ms" }}>
+
+        {/* Séances récentes */}
+        <div className="rounded-2xl bg-white p-6 shadow-[0_2px_12px_-2px_rgba(0,0,0,0.08)] border border-border/60">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-sm font-semibold text-foreground">Séances cinéma récentes</h2>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <div className="space-y-1">
             {recentCinema.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-2">Aucune séance cinéma pour l'instant.</p>
+              <p className="text-sm text-muted-foreground py-4 text-center">Aucune séance pour l'instant.</p>
             ) : (
-              recentCinema.map((wp) => (
+              recentCinema.map((party) => (
                 <div
-                  key={wp.messageId}
-                  className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-muted/40 transition-colors"
+                  key={party.messageId}
+                  className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-muted/50 transition-colors"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${wp.status === "active" ? "bg-success" : "bg-border"}`} />
-                    <span className="text-xs text-muted-foreground">{wp.viewingAt}</span>
-                    <span className="text-xs font-medium text-foreground truncate max-w-[160px]">{wp.title}</span>
+                  <div className="flex items-center gap-3">
+                    <span className={`h-2 w-2 rounded-full shrink-0 ${party.status === "active" ? "bg-sky-400" : "bg-border"}`} />
+                    <span className="text-xs font-medium text-foreground truncate max-w-[160px]">{party.title}</span>
                   </div>
-                  <span className="text-xs text-muted-foreground truncate max-w-[80px]">{wp.status}</span>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                    party.status === "active"
+                      ? "text-sky-700 bg-sky-50"
+                      : "text-muted-foreground bg-muted"
+                  }`}>
+                    {party.status === "active" ? "En cours" : "Terminé"}
+                  </span>
                 </div>
               ))
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+
+        {/* Commandes */}
+        <div className="rounded-2xl bg-white p-6 shadow-[0_2px_12px_-2px_rgba(0,0,0,0.08)] border border-border/60">
+          <div className="flex items-center gap-2 mb-5">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            <h2 className="text-sm font-semibold text-foreground">Commandes disponibles</h2>
+          </div>
+          <CommandsReference commands={[
+            {
+              name: "/roulette",
+              description: "Tire au sort un membre parmi une sélection de 2 à 10 participants. Le résultat est annoncé publiquement avec un ping.",
+              params: [{ name: "(aucun paramètre)", description: "Un sélecteur de membres Discord s'ouvre directement.", required: false }],
+            },
+          ]} />
+        </div>
+
       </div>
     </div>
   );

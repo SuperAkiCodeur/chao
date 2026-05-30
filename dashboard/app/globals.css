@@ -2,7 +2,7 @@
 
 :root {
   /* ── Light mode — intelly-inspired, light blue background ── */
-  --background:    204 65% 94%;       /* #DDF0FB — bleu clair teinté, remplace le beige */
+  --background:    210 45% 96%;       /* #EEF4FB — bleu très clair, quasi blanc teinté */
   --foreground:    222 47% 11%;       /* #0F172A slate-900 */
 
   --card:          0 0% 100%;         /* #FFFFFF cartes blanches qui ressortent */
@@ -14,19 +14,19 @@
   --primary:       199 89% 42%;       /* #0284C7 sky-600 — bleu principal */
   --primary-foreground: 0 0% 100%;
 
-  --secondary:     204 50% 90%;       /* légèrement plus sombre que le fond */
+  --secondary:     210 30% 93%;
   --secondary-foreground: 222 47% 11%;
 
-  --muted:         204 45% 91%;
-  --muted-foreground: 215 20% 50%;    /* texte atténué */
+  --muted:         210 30% 93%;
+  --muted-foreground: 215 16% 50%;
 
-  --accent:        204 50% 90%;
+  --accent:        210 30% 93%;
   --accent-foreground: 222 47% 11%;
 
   --destructive:   0 72% 51%;
   --destructive-foreground: 0 0% 100%;
 
-  --border:        204 35% 85%;       /* bordure visible sur fond bleu clair */
+  --border:        210 25% 88%;
   --input:         0 0% 100%;
   --ring:          199 89% 42%;
 
