@@ -31,9 +31,9 @@ const navGroups = [
   {
     label: "Fonctionnalités",
     items: [
-      { href: "/valorant",    label: "Valorant",    icon: ValorantIcon },
-      { href: "/steam",       label: "Steam",       icon: Gamepad2 },
-      { href: "/parametres",  label: "Paramètres",  icon: Settings },
+      { href: "/valorant",   label: "Valorant",   icon: ValorantIcon },
+      { href: "/steam",      label: "Steam",      icon: Gamepad2 },
+      { href: "/parametres", label: "Paramètres", icon: Settings },
     ],
   },
 ];
@@ -42,20 +42,63 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-screen w-56 flex-col bg-sidebar border-r border-sidebar-border shrink-0">
-      {/* Logo */}
-      <div className="flex h-16 items-center gap-3 px-5 border-b border-sidebar-border">
-        <LogoSVG className="h-7 w-auto text-sidebar-foreground" />
-        <span className="font-semibold text-sm tracking-wide text-sidebar-foreground">Chao</span>
+    <aside
+      className="flex h-screen w-60 flex-col shrink-0"
+      style={{
+        background: "rgba(6, 18, 72, 0.32)",
+        backdropFilter: "blur(28px)",
+        WebkitBackdropFilter: "blur(28px)",
+        borderRight: "1px solid rgba(120, 180, 255, 0.18)",
+        boxShadow: "4px 0 32px rgba(0, 10, 60, 0.25)",
+      }}
+    >
+      {/* ── Logo ── */}
+      <div
+        className="relative flex h-16 items-center gap-3 px-5 overflow-hidden"
+        style={{
+          background: "linear-gradient(135deg, rgba(0, 80, 220, 0.35) 0%, rgba(0, 180, 255, 0.18) 50%, rgba(0, 80, 200, 0.28) 100%)",
+          borderBottom: "1px solid rgba(100, 180, 255, 0.2)",
+        }}
+      >
+        {/* Chrome shimmer line at bottom */}
+        <div
+          className="absolute inset-x-0 bottom-0 h-px"
+          style={{ background: "linear-gradient(90deg, transparent 0%, rgba(0,229,255,0.5) 50%, transparent 100%)" }}
+        />
+        <LogoSVG className="h-7 w-auto text-cyan-300 drop-shadow-[0_0_7px_rgba(0,229,255,0.85)]" />
+        <span
+          className="font-bold text-base tracking-[0.18em] uppercase"
+          style={{
+            background: "linear-gradient(135deg, #fff 0%, #a8d4ff 30%, #fff 52%, #cce8ff 76%, #fff 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}
+        >
+          Chao
+        </span>
       </div>
 
-      {/* Nav groupée */}
-      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-5">
+      {/* ── Nav ── */}
+      <nav className="flex-1 overflow-y-auto py-5 px-3 space-y-6">
         {navGroups.map(({ label, items }) => (
           <div key={label}>
-            <p className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-sidebar-muted select-none">
-              {label}
-            </p>
+            {/* Section label */}
+            <div className="flex items-center gap-2 px-2 mb-2.5">
+              <span className="text-[8px]" style={{ color: "rgba(0,229,255,0.45)" }}>◆</span>
+              <p
+                className="text-[9px] font-bold uppercase tracking-[0.22em]"
+                style={{ color: "rgba(150, 205, 255, 0.55)" }}
+              >
+                {label}
+              </p>
+              <div
+                className="flex-1 h-px"
+                style={{ background: "linear-gradient(90deg, rgba(0,229,255,0.25) 0%, transparent 100%)" }}
+              />
+            </div>
+
+            {/* Nav items */}
             <div className="space-y-0.5">
               {items.map(({ href, label: itemLabel, icon: Icon }) => {
                 const active = pathname === href;
@@ -64,17 +107,26 @@ export function Sidebar() {
                     key={href}
                     href={href}
                     className={cn(
-                      "relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium",
-                      "transition-all duration-150 ease-out",
+                      "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium",
+                      "transition-all duration-200 ease-out",
                       active
-                        ? "bg-primary/15 text-primary"
-                        : "text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground",
+                        ? "text-cyan-300"
+                        : "text-sky-200/55 hover:bg-white/[0.05] hover:text-sky-100",
                     )}
+                    style={active ? {
+                      background: "rgba(0, 229, 255, 0.10)",
+                      boxShadow: "inset 0 0 18px rgba(0,229,255,0.05)",
+                    } : undefined}
                   >
                     {active && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full bg-primary" />
+                      <span
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-6 rounded-full bg-cyan-400"
+                        style={{ boxShadow: "0 0 8px #00E5FF, 0 0 18px rgba(0,229,255,0.55)" }}
+                      />
                     )}
-                    <Icon className="h-4 w-4 shrink-0" />
+                    <Icon
+                      className={cn("h-4 w-4 shrink-0", active && "drop-shadow-[0_0_4px_rgba(0,229,255,0.75)]")}
+                    />
                     {itemLabel}
                   </Link>
                 );
@@ -84,13 +136,16 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {/* Bottom actions */}
-      <div className="border-t border-sidebar-border p-3 space-y-0.5">
+      {/* ── Bottom actions ── */}
+      <div
+        className="p-3 space-y-0.5"
+        style={{ borderTop: "1px solid rgba(100, 180, 255, 0.15)" }}
+      >
         <ThemeToggle />
         <button
           type="button"
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-muted transition-all hover:bg-sidebar-accent hover:text-sidebar-foreground"
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 text-sky-200/55 hover:bg-red-500/10 hover:text-red-300"
         >
           <LogOut className="h-4 w-4 shrink-0" />
           Se déconnecter
