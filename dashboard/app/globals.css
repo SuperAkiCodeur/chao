@@ -80,34 +80,11 @@ body {
   line-height: 1.6;
   color: rgb(15, 23, 42);
 
-  background-color: #7DA850;
-  background-image:
-    /* Sun warmth */
-    radial-gradient(ellipse 70% 28% at 62% 0%, rgba(255, 235, 160, 0.32) 0%, transparent 65%),
-    /* Atmospheric haze at horizon */
-    radial-gradient(ellipse 100% 10% at 50% 38%, rgba(215, 238, 245, 0.45) 0%, transparent 100%),
-    /* Main sky-to-hills gradient */
-    linear-gradient(
-      180deg,
-      #4A8CB6  0%,   /* deep sky blue */
-      #68AACE 10%,
-      #84C0DC 20%,
-      #9DD2E5 29%,
-      #B4DDE8 34%,   /* pale horizon sky */
-      #C2E3E8 37%,   /* horizon glow */
-      #AECE88 39%,   /* very first grass */
-      #8CB260 42%,   /* rolling hills */
-      #75A046 48%,
-      #659238 55%,
-      #5E8A33 62%,
-      #669040 69%,
-      #719C4C 76%,
-      #7AA555 83%,
-      #80AA5A 90%,
-      #83AC5C 100%
-    );
+  background-color: #1a6fa8;
+  background-image: url('/background.jpg');
   background-attachment: fixed;
   background-size: cover;
+  background-position: center;
 }
 
 /* ── Glass Utilities ────────────────────────────────────────────────────── */
