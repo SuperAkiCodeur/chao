@@ -1,159 +1,36 @@
 @import "tailwindcss";
 
-/* ── Minimal HSL refs ── */
-:root {
-  --radius: 1.25rem;
-}
-
-/* ── Design Tokens — Nature Glass (light, dark text) ──────────────────── */
 @theme inline {
-  /* Foreground / text — blanc sur verre */
-  --color-foreground:             rgb(255, 255, 255);
-  --color-card-foreground:        rgb(255, 255, 255);
-  --color-popover-foreground:     rgb(255, 255, 255);
-
-  /* Backgrounds */
-  --color-background:             rgb(30, 80, 160);
-  --color-card:                   rgba(255, 255, 255, 0.18);
-  --color-popover:                rgba(255, 255, 255, 0.22);
-
-  /* Primary */
-  --color-primary:                rgb(15, 23, 42);
-  --color-primary-foreground:     rgb(255, 255, 255);
-
-  /* Secondary */
-  --color-secondary:              rgba(255, 255, 255, 0.55);
-  --color-secondary-foreground:   rgb(15, 23, 42);
-
-  /* Muted */
-  --color-muted:                  rgba(255, 255, 255, 0.15);
-  --color-muted-foreground:       rgba(255, 255, 255, 0.68);
-
-  /* Accent */
-  --color-accent:                 rgba(255, 255, 255, 0.55);
-  --color-accent-foreground:      rgb(15, 23, 42);
-
-  /* Semantic */
-  --color-destructive:            rgb(239, 68, 68);
-  --color-border:                 rgba(255, 255, 255, 0.70);
-  --color-input:                  rgba(255, 255, 255, 0.55);
-  --color-ring:                   rgb(15, 23, 42);
-
-  /* Sidebar — kept for compat but unused */
-  --color-sidebar:                rgba(255, 255, 255, 0.55);
-  --color-sidebar-foreground:     rgb(15, 23, 42);
-  --color-sidebar-border:         rgba(255, 255, 255, 0.70);
-  --color-sidebar-accent:         rgba(255, 255, 255, 0.40);
-  --color-sidebar-accent-foreground: rgb(15, 23, 42);
-  --color-sidebar-muted:          rgb(100, 116, 139);
-
-  --color-success:                rgb(34, 197, 94);
-  --color-warning:                rgb(234, 179, 8);
-
-  /* Radii */
-  --radius-sm:  0.5rem;
-  --radius-md:  0.75rem;
-  --radius-lg:  1rem;
-  --radius-xl:  1.25rem;
-  --radius-2xl: 1.5rem;
-  --radius-3xl: 2rem;
-  --radius-full: 9999px;
-
   --font-sans: var(--font-inter);
   --font-mono: var(--font-inter);
-
   --animate-fade-up: fade-up 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-fade-in: fade-in 0.2s ease-out both;
+  --radius-full: 9999px;
 }
 
-/* ── Base ───────────────────────────────────────────────────────────────── */
-button, [role="button"] { cursor: pointer; }
-* { border-color: rgba(255, 255, 255, 0.60); }
-
-/* ── Nature Background ──────────────────────────────────────────────────── */
-html { height: 100%; }
-
-body {
-  min-height: 100%;
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
   font-family: var(--font-inter), sans-serif;
   -webkit-font-smoothing: antialiased;
-  line-height: 1.6;
-  color: rgb(15, 23, 42);
+}
 
-  background-color: #1a6fa8;
+body {
   background-image: url('/background.jpg');
-  background-attachment: fixed;
   background-size: cover;
   background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
 }
 
-/* ── Glass Utilities ────────────────────────────────────────────────────── */
-@utility glass-card {
-  background: rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(36px) saturate(180%);
-  -webkit-backdrop-filter: blur(36px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.32);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.45);
-}
+button, [role="button"] { cursor: pointer; }
 
-@utility glass-bar {
-  background: rgba(255, 255, 255, 0.20);
-  backdrop-filter: blur(28px) saturate(160%);
-  -webkit-backdrop-filter: blur(28px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.36);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
-}
-
-@utility glass-pill {
-  background: rgba(255, 255, 255, 0.22);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.38);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.10);
-}
-
-/* ── Scrollbar ──────────────────────────────────────────────────────────── */
-::-webkit-scrollbar       { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.15); border-radius: 99px; }
-
-/* ── Keyframes ──────────────────────────────────────────────────────────── */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes fade-in {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
-
-@keyframes expand-down {
-  from { clip-path: inset(0 0 100% 0); }
-  to   { clip-path: inset(0 0 -30px 0); }
-}
-@keyframes expand-up {
-  from { clip-path: inset(0 0 -30px 0); }
-  to   { clip-path: inset(0 0 100% 0); }
-}
-
-@keyframes accordion-down {
-  from { grid-template-rows: 0fr; }
-  to   { grid-template-rows: 1fr; }
-}
-@keyframes accordion-up {
-  from { grid-template-rows: 1fr; }
-  to   { grid-template-rows: 0fr; }
-}
-
-@keyframes logo-fill {
-  from { clip-path: inset(100% 0 0 0); }
-  to   { clip-path: inset(0% 0 0 0); }
-}
-
-@utility animate-expand-down    { animation: expand-down    0.22s ease-out both; }
-@utility animate-expand-up      { animation: expand-up      0.18s ease-in  both; }
-@utility animate-accordion-down { display: grid; overflow: hidden; animation: accordion-down 0.3s ease-out both; }
-@utility animate-accordion-up   { display: grid; overflow: hidden; animation: accordion-up   0.22s ease-in  both; }
