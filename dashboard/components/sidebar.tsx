@@ -10,8 +10,6 @@ import {
 } from "lucide-react";
 import { LogoSVG } from "./LogoSVG";
 
-const LIME = "#C8FF47";
-
 function ValorantIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
@@ -50,9 +48,7 @@ export function Sidebar() {
 
       {/* Logo */}
       <div className="flex h-[64px] items-center gap-3 px-6" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: LIME }}>
-          <LogoSVG className="h-5 w-auto text-[#111111]" />
-        </div>
+        <LogoSVG className="h-7 w-auto text-white" />
         <span className="font-bold text-white text-sm tracking-wide">Chao</span>
       </div>
 
@@ -60,7 +56,7 @@ export function Sidebar() {
       <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-6">
         {groups.map(({ label, items }) => (
           <div key={label}>
-            <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.25)" }}>
+            <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.22)" }}>
               {label}
             </p>
             <div className="space-y-0.5">
@@ -72,24 +68,16 @@ export function Sidebar() {
                     href={href}
                     className={cn(
                       "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
+                      active
+                        ? "text-white bg-white/10"
+                        : "text-white/40 hover:text-white/75 hover:bg-white/5",
                     )}
-                    style={active ? {
-                      background: "rgba(200,255,71,0.10)",
-                      color: LIME,
-                    } : {
-                      color: "rgba(255,255,255,0.45)",
-                    }}
-                    onMouseEnter={e => {
-                      if (!active) (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.85)";
-                    }}
-                    onMouseLeave={e => {
-                      if (!active) (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.45)";
-                    }}
                   >
                     <Icon className="h-4 w-4 shrink-0" />
                     {itemLabel}
+                    {/* Seul usage du lime : petit point actif */}
                     {active && (
-                      <span className="ml-auto h-1.5 w-1.5 rounded-full" style={{ background: LIME }} />
+                      <span className="ml-auto h-1.5 w-1.5 rounded-full shrink-0" style={{ background: "#C8FF47" }} />
                     )}
                   </Link>
                 );
@@ -104,10 +92,7 @@ export function Sidebar() {
         <button
           type="button"
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150"
-          style={{ color: "rgba(255,255,255,0.30)" }}
-          onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.70)")}
-          onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.30)")}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/30 hover:text-white/60 hover:bg-white/5 transition-all duration-150"
         >
           <LogOut className="h-4 w-4 shrink-0" />
           Se déconnecter

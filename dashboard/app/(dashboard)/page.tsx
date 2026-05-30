@@ -1,11 +1,9 @@
 import { db } from "@/lib/db";
 import { cinemaParties, valorantLinks } from "@/lib/schema";
 import { eq, count } from "drizzle-orm";
-import { Clapperboard, Crosshair, Activity, TrendingUp, TrendingDown } from "lucide-react";
+import { Clapperboard, Crosshair, Activity, TrendingUp } from "lucide-react";
 
 export const dynamic = "force-dynamic";
-
-const LIME = "#C8FF47";
 
 async function getStats() {
   const [{ total: activeCinema }] = await db
@@ -31,57 +29,41 @@ async function getStats() {
 }
 
 function StatCard({
-  label, value, sub, icon: Icon, accent = false,
+  label, value, sub, icon: Icon, dark = false,
 }: {
   label: string; value: string | number; sub: string;
-  icon: React.ElementType; accent?: boolean;
+  icon: React.ElementType; dark?: boolean;
 }) {
   return (
     <div
-      className="rounded-2xl p-6 flex flex-col gap-4"
-      style={accent
-        ? { background: LIME }
-        : { background: "#fff", border: "1px solid #EBEBEB" }
+      className="rounded-2xl p-6 flex flex-col gap-5"
+      style={dark
+        ? { background: "#111111" }
+        : { background: "#ffffff", border: "1px solid #E8E8E8" }
       }
     >
       <div className="flex items-center justify-between">
         <div
-          className="h-10 w-10 rounded-xl flex items-center justify-center"
-          style={accent
-            ? { background: "rgba(0,0,0,0.12)" }
+          className="h-9 w-9 rounded-xl flex items-center justify-center"
+          style={dark
+            ? { background: "rgba(255,255,255,0.08)" }
             : { background: "#F3F3F3" }
           }
         >
-          <Icon
-            className="h-5 w-5"
-            style={{ color: accent ? "#111111" : "#555" }}
-          />
+          <Icon className="h-4 w-4" style={{ color: dark ? "#fff" : "#555" }} />
         </div>
-        <span
-          className="flex items-center gap-1 text-xs font-medium"
-          style={{ color: accent ? "rgba(0,0,0,0.5)" : "#AAA" }}
-        >
-          <TrendingUp className="h-3 w-3" />
+        <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: dark ? "rgba(255,255,255,0.25)" : "#CCC" }}>
           Live
         </span>
       </div>
       <div>
-        <p
-          className="text-4xl font-bold tracking-tight leading-none"
-          style={{ color: accent ? "#111111" : "#111111" }}
-        >
+        <p className="text-4xl font-bold tracking-tight leading-none" style={{ color: dark ? "#ffffff" : "#111111" }}>
           {value}
         </p>
-        <p
-          className="text-sm font-medium mt-2"
-          style={{ color: accent ? "rgba(0,0,0,0.60)" : "#888" }}
-        >
+        <p className="text-sm font-medium mt-2" style={{ color: dark ? "rgba(255,255,255,0.50)" : "#888" }}>
           {label}
         </p>
-        <p
-          className="text-xs mt-0.5"
-          style={{ color: accent ? "rgba(0,0,0,0.40)" : "#BBB" }}
-        >
+        <p className="text-xs mt-0.5" style={{ color: dark ? "rgba(255,255,255,0.25)" : "#BBB" }}>
           {sub}
         </p>
       </div>
@@ -98,22 +80,20 @@ export default async function HomePage() {
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "#BBB" }}>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "#BBBBBB" }}>
             Tableau de bord
           </p>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Vue d'ensemble</h1>
+          <h1 className="text-2xl font-bold tracking-tight" style={{ color: "#111111" }}>Vue d'ensemble</h1>
         </div>
-        <div className="flex items-center gap-2">
-          <div
-            className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full"
-            style={{ background: "rgba(200,255,71,0.15)", color: "#6B9900" }}
-          >
-            <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: LIME }} />
+        <div className="flex items-center gap-3">
+          {/* Lime utilisé ici uniquement pour le dot "en ligne" */}
+          <div className="flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-full" style={{ background: "#F3F3F3", color: "#555" }}>
+            <span className="h-1.5 w-1.5 rounded-full" style={{ background: "#C8FF47" }} />
             Bot en ligne
           </div>
           <button
-            className="text-sm font-semibold px-4 py-2 rounded-xl transition-all"
-            style={{ background: LIME, color: "#111111" }}
+            className="text-sm font-semibold px-4 py-2 rounded-xl text-white transition-opacity hover:opacity-80"
+            style={{ background: "#111111" }}
           >
             + Nouveau
           </button>
@@ -122,71 +102,54 @@ export default async function HomePage() {
 
       {/* ── Stat cards ── */}
       <div className="grid grid-cols-3 gap-4">
-        <StatCard
-          accent
-          label="Séances cinéma actives"
-          value={activeCinema}
-          sub={`${totalCinema} séances au total`}
-          icon={Clapperboard}
-        />
-        <StatCard
-          label="Comptes Valorant"
-          value={totalValorant}
-          sub="Comptes Discord liés"
-          icon={Crosshair}
-        />
-        <StatCard
-          label="Disponibilité bot"
-          value="100%"
-          sub="Aucune interruption"
-          icon={Activity}
-        />
+        <StatCard dark label="Séances cinéma actives" value={activeCinema} sub={`${totalCinema} au total`} icon={Clapperboard} />
+        <StatCard      label="Comptes Valorant"       value={totalValorant} sub="Comptes Discord liés"   icon={Crosshair}    />
+        <StatCard      label="Disponibilité bot"      value="100%"          sub="Aucune interruption"    icon={Activity}     />
       </div>
 
       {/* ── Séances récentes ── */}
-      <div className="rounded-2xl bg-white" style={{ border: "1px solid #EBEBEB" }}>
+      <div className="rounded-2xl bg-white" style={{ border: "1px solid #E8E8E8" }}>
         <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: "1px solid #F0F0F0" }}>
           <div>
-            <h2 className="text-sm font-bold text-gray-900">Séances cinéma récentes</h2>
-            <p className="text-xs text-gray-400 mt-0.5">Historique des dernières sessions</p>
+            <h2 className="text-sm font-bold" style={{ color: "#111" }}>Séances cinéma récentes</h2>
+            <p className="text-xs mt-0.5" style={{ color: "#BBB" }}>Historique des dernières sessions</p>
           </div>
-          <TrendingUp className="h-4 w-4 text-gray-300" />
+          <TrendingUp className="h-4 w-4" style={{ color: "#DDD" }} />
         </div>
 
         {recentCinema.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-12">Aucune séance pour l'instant.</p>
+          <p className="text-sm text-center py-12" style={{ color: "#CCC" }}>Aucune séance pour l'instant.</p>
         ) : (
           <div>
-            {/* Table header */}
             <div className="grid grid-cols-3 px-6 py-3" style={{ borderBottom: "1px solid #F5F5F5" }}>
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Titre</span>
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Date</span>
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 text-right">Statut</span>
+              <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#CCC" }}>Titre</span>
+              <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#CCC" }}>Date</span>
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-right" style={{ color: "#CCC" }}>Statut</span>
             </div>
-            {/* Rows */}
             {recentCinema.map((party, i) => (
               <div
                 key={party.messageId}
-                className="grid grid-cols-3 items-center px-6 py-4 transition-colors hover:bg-gray-50"
+                className="grid grid-cols-3 items-center px-6 py-4 hover:bg-gray-50 transition-colors"
                 style={{ borderBottom: i < recentCinema.length - 1 ? "1px solid #F5F5F5" : undefined }}
               >
-                <span className="text-sm font-medium text-gray-800 truncate pr-4">{party.title}</span>
-                <span className="text-xs text-gray-400">
+                <span className="text-sm font-medium truncate pr-4" style={{ color: "#111" }}>{party.title}</span>
+                <span className="text-xs" style={{ color: "#BBB" }}>
                   {party.viewingAt
                     ? new Date(party.viewingAt).toLocaleDateString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
                     : "—"}
                 </span>
                 <div className="flex justify-end">
                   <span
-                    className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full"
+                    className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full"
                     style={party.status === "active"
-                      ? { background: "rgba(200,255,71,0.18)", color: "#5A8000" }
-                      : { background: "#F5F5F5", color: "#AAAAAA" }
+                      ? { background: "#F5F5F5", color: "#333" }
+                      : { background: "#F5F5F5", color: "#CCC" }
                     }
                   >
+                    {/* Lime uniquement pour le dot "actif" */}
                     <span
                       className="h-1.5 w-1.5 rounded-full"
-                      style={{ background: party.status === "active" ? LIME : "#DDD" }}
+                      style={{ background: party.status === "active" ? "#C8FF47" : "#DDD" }}
                     />
                     {party.status === "active" ? "En cours" : "Terminé"}
                   </span>
