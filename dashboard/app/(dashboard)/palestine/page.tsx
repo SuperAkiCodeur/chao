@@ -232,6 +232,52 @@ export default async function PalestinePage() {
         </a>
       </div>
 
+      {/* Article du jour — dernier post du bot */}
+      {botPosts.length > 0 && (() => {
+        const post = botPosts[0];
+        const date = new Date(post.timestamp);
+        return (
+          <div className="anim-fade-up" style={{
+            background: "#202020", borderRadius: 12,
+            border: "1px solid rgba(255,255,255,0.08)",
+            overflow: "hidden",
+          }}>
+            {/* Header */}
+            <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <p style={{ fontSize: 20, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)" }}>Article du jour</p>
+              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.30)" }}>
+                {date.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })} · {date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+              </span>
+            </div>
+            {/* Content */}
+            <div style={{ padding: "24px 28px" }}>
+              <a
+                href={post.url}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  fontSize: "clamp(22px, 2.5vw, 30px)", fontWeight: 400,
+                  color: "#fff", fontFamily: "var(--font-serif)",
+                  textDecoration: "none", lineHeight: 1.3, letterSpacing: "-0.01em",
+                  display: "inline-flex", alignItems: "flex-start", gap: 8,
+                }}
+              >
+                <span style={{ flex: 1 }}>{post.title}</span>
+                <ArrowSquareOut size={16} style={{ flexShrink: 0, opacity: 0.4, marginTop: 6 }} />
+              </a>
+              {post.description && (
+                <p style={{
+                  fontSize: 14, color: "rgba(255,255,255,0.45)", marginTop: 14,
+                  lineHeight: 1.7, maxWidth: 680,
+                }}>
+                  {post.description.slice(0, 320)}{post.description.length > 320 ? " […]" : ""}
+                </p>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Today's articles */}
       <TodayArticlesClient articles={todayArticles} />
 

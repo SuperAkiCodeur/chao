@@ -176,7 +176,7 @@ button { cursor: pointer; }
   transition: transform 0.18s cubic-bezier(0.16,1,0.3,1);
   display: block;
 }
-.hover-slide:hover { transform: translateX(3px); }
+.hover-slide:hover { transform: translateX(1.5px); }
 
 /* ── Hover glow (active button-like elements) ── */
 .hover-glow {

@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { dealsGames, dealsConfig } from "@/lib/schema";
 import { eq } from "drizzle-orm";
-import { PageShell, SectionCard, StatCard } from "@/components/PageShell";
+import { PageShell } from "@/components/PageShell";
 import { DealsClient } from "./DealsClient";
 import { DealsCreator } from "./DealsCreator";
 import type { DiscordChannel } from "@/components/FeatureSettings";
@@ -46,18 +46,8 @@ async function getChannels(): Promise<DiscordChannel[]> {
 export default async function DealsPage() {
   const [data, channels] = await Promise.all([getData(), getChannels()]);
 
-  const allGames   = [...data.values()].flatMap((v) => v.games);
-  const totalGames = allGames.length;
-  const onSale     = allGames.filter((g) => g.isOnSale === 1).length;
-
   return (
     <PageShell title="Deals" description="Suivi de prix et alertes promotions Steam par salon">
-
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
-        <StatCard value={data.size}   label="Listes actives" />
-        <StatCard value={totalGames}  label="Jeux trackés"   />
-        <StatCard value={onSale}      label="En promo"        sub="actuellement" />
-      </div>
 
       {[...data.entries()].map(([channelId, { games, notifChannelId, listName }]) => {
         const channel = channels.find((c) => c.id === channelId);

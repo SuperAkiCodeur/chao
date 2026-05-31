@@ -37,7 +37,7 @@ export function TodayArticlesClient({ articles }: { articles: TodayArticle[] }) 
 
   return (
     <SectionCard
-      title="Articles du jour"
+      title="Dernières 24h"
       badge={articles.length > 0 ? `${articles.length} article${articles.length !== 1 ? "s" : ""}` : undefined}
       noPadding
     >

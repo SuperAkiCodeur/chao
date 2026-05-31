@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { X } from "@phosphor-icons/react";
+import { deleteLog } from "./actions";
 
 const LINE = "1px solid rgba(255,255,255,0.08)";
 
@@ -36,8 +38,19 @@ function formatFull(iso: string): string {
   });
 }
 
-export function LogsClient({ logs }: { logs: Log[] }) {
-  const [active, setActive] = useState<FilterId>("all");
+export function LogsClient({ logs: initialLogs }: { logs: Log[] }) {
+  const [active, setActive]   = useState<FilterId>("all");
+  const [deleted, setDeleted] = useState<Set<number>>(new Set());
+  const [, startTransition]   = useTransition();
+
+  const logs = initialLogs.filter((l) => !deleted.has(l.id));
+
+  function handleDelete(id: number) {
+    setDeleted((prev) => new Set([...prev, id]));
+    startTransition(async () => {
+      await deleteLog(id);
+    });
+  }
 
   const activeFilter = FILTERS.find((f) => f.id === active)!;
   const filtered = logs.filter((log) =>
@@ -95,7 +108,7 @@ export function LogsClient({ logs }: { logs: Log[] }) {
         </div>
       )}
 
-      {/* Groups — stagger */}
+      {/* Groups */}
       {Array.from(groups.entries()).map(([day, entries], gi) => (
         <div key={day} className="anim-fade-up" style={{ display: "flex", flexDirection: "column", gap: 8, animationDelay: `${gi * 80}ms` }}>
 
@@ -124,20 +137,20 @@ export function LogsClient({ logs }: { logs: Log[] }) {
                     key={log.id}
                     style={{
                       display: "flex", alignItems: "flex-start", justifyContent: "space-between",
-                      gap: 16, padding: "11px 20px",
+                      gap: 12, padding: "11px 20px",
                       borderTop: i > 0 ? LINE : undefined,
-                      transition: "background 0.12s, transform 0.18s cubic-bezier(0.16,1,0.3,1)",
+                      transition: "background 0.12s",
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.background = "rgba(255,255,255,0.03)";
-                      e.currentTarget.style.transform = "translateX(3px)";
+                      (e.currentTarget.querySelector(".log-del-btn") as HTMLElement | null)?.style.setProperty("opacity", "1");
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.background = "transparent";
-                      e.currentTarget.style.transform = "none";
+                      (e.currentTarget.querySelector(".log-del-btn") as HTMLElement | null)?.style.setProperty("opacity", "0");
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "flex-start", gap: 12, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: 12, minWidth: 0, flex: 1 }}>
                       {/* Type badge */}
                       <span style={{
                         fontSize: 11, fontWeight: 700, flexShrink: 0, marginTop: 2,
@@ -148,12 +161,32 @@ export function LogsClient({ logs }: { logs: Log[] }) {
                       </span>
                       <span style={{ fontSize: 14, color: "#fff", lineHeight: 1.5 }}>{log.description}</span>
                     </div>
-                    <span
-                      style={{ fontSize: 12, color: "rgba(255,255,255,0.28)", flexShrink: 0, marginTop: 2 }}
-                      title={formatFull(log.createdAt)}
-                    >
-                      {formatRelative(log.createdAt)}
-                    </span>
+
+                    {/* Right: time + delete */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                      <span
+                        style={{ fontSize: 12, color: "rgba(255,255,255,0.28)", whiteSpace: "nowrap" }}
+                        title={formatFull(log.createdAt)}
+                      >
+                        {formatRelative(log.createdAt)}
+                      </span>
+                      <button
+                        className="log-del-btn"
+                        onClick={() => handleDelete(log.id)}
+                        title="Supprimer"
+                        style={{
+                          padding: 4, background: "none", border: "none", cursor: "pointer",
+                          color: "rgba(255,255,255,0.30)", borderRadius: 5,
+                          display: "flex", alignItems: "center",
+                          opacity: 0, transition: "opacity 0.15s, color 0.15s",
+                          flexShrink: 0,
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.color = "#ef4444"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.30)"; }}
+                      >
+                        <X size={12} weight="bold" />
+                      </button>
+                    </div>
                   </div>
                 );
               })}

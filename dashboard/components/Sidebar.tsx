@@ -6,77 +6,34 @@ import { useState, useEffect } from "react";
 import { signOut } from "next-auth/react";
 import {
   SquaresFour, Users, Popcorn,
-  Scroll, Sword, Fire, GearSix, SignOut,
-  BookOpen, Stack, CaretDown, type IconWeight,
+  Scroll, Sword, Fire, SignOut,
+  BookOpen, Stack, CaretDown, Globe, type IconWeight,
 } from "@phosphor-icons/react";
 
-const SW: Record<string, number> = { thin: 8, light: 12, regular: 16, bold: 24, fill: 16, duotone: 16 };
-
-function WatermelonIcon({ size = 17, weight = "regular", style }: { size?: number; weight?: IconWeight; strokeWidth?: number; style?: React.CSSProperties }) {
-  const sw = SW[weight] ?? 16;
-  const seed = sw * 0.55;
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={size}
-      height={size}
-      viewBox="0 0 256 256"
-      aria-hidden="true"
-      style={style}
-    >
-      {/* Half-circle slice */}
-      <path
-        d="M232,128A104,104,0,0,0,24,128Z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={sw}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* Flat bottom edge */}
-      <line x1="24" y1="128" x2="232" y2="128" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" />
-      {/* Rind band */}
-      <path
-        d="M52,128A76,76,0,0,1,204,128"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={sw * 0.55}
-        strokeLinecap="round"
-        opacity="0.45"
-      />
-      {/* Seeds */}
-      <circle cx="94"  cy="106" r={seed} fill="currentColor" />
-      <circle cx="128" cy="90"  r={seed} fill="currentColor" />
-      <circle cx="162" cy="106" r={seed} fill="currentColor" />
-    </svg>
-  );
-}
-
 const FEATURES = [
-  { href: "/cinema",    label: "Cinéma",    Icon: Popcorn        },
-  { href: "/valorant",  label: "Valorant",  Icon: Sword          },
-  { href: "/deals",     label: "Deals",     Icon: Fire           },
-  { href: "/palestine", label: "Palestine", Icon: WatermelonIcon },
+  { href: "/cinema",    label: "Cinéma",    Icon: Popcorn },
+  { href: "/valorant",  label: "Valorant",  Icon: Sword   },
+  { href: "/deals",     label: "Deals",     Icon: Fire    },
+  { href: "/palestine", label: "Palestine", Icon: Globe   },
 ];
 
 const FEATURE_HREFS = new Set(FEATURES.map((f) => f.href));
 
 const NAV_TOP = [
-  { href: "/",          label: "Dashboard",  Icon: SquaresFour },
-  { href: "/membres",   label: "Membres",    Icon: Users       },
+  { href: "/",        label: "Dashboard", Icon: SquaresFour },
+  { href: "/membres", label: "Membres",   Icon: Users       },
 ];
 
 const NAV_BOTTOM = [
-  { href: "/commandes",  label: "Commandes",  Icon: BookOpen, iconClass: ""           },
-  { href: "/logs",       label: "Logs",       Icon: Scroll,   iconClass: ""           },
-  { href: "/parametres", label: "Paramètres", Icon: GearSix,  iconClass: "hover-spin" },
+  { href: "/commandes", label: "Commandes", Icon: BookOpen, iconClass: "" },
+  { href: "/logs",      label: "Logs",      Icon: Scroll,   iconClass: "" },
 ];
 
 const linkBase: React.CSSProperties = {
   display: "flex", alignItems: "center", gap: 12,
   padding: "10px 12px", borderRadius: 10, marginBottom: 2,
   textDecoration: "none", fontSize: 15, fontWeight: 500,
-  transition: "background 0.15s, color 0.15s, transform 0.18s cubic-bezier(0.16,1,0.3,1)",
+  transition: "background 0.15s, color 0.15s",
 };
 
 export function Sidebar() {
@@ -100,7 +57,7 @@ export function Sidebar() {
   function toggle() {
     if (open) {
       setAnimClass("animate-accordion-up");
-      setTimeout(() => { setOpen(false); setAnimClass(""); }, 220);
+      // setOpen(false) is called in onAnimEnd once animation completes
     } else {
       setOpen(true);
       setAnimClass("animate-accordion-down");
@@ -108,10 +65,13 @@ export function Sidebar() {
   }
 
   function onAnimEnd() {
-    if (animClass === "animate-accordion-down") setAnimClass("");
+    if (animClass === "animate-accordion-down") {
+      setAnimClass("");
+    } else if (animClass === "animate-accordion-up") {
+      setOpen(false);
+      setAnimClass("");
+    }
   }
-
-  const allItems = [...NAV_TOP, ...NAV_BOTTOM];
 
   return (
     <aside style={{
@@ -209,19 +169,13 @@ export function Sidebar() {
                         textDecoration: "none", fontSize: 14, fontWeight: 500,
                         color: active ? "#fff" : "rgba(255,255,255,0.38)",
                         background: active ? "#2A2A2A" : "transparent",
-                        transition: "background 0.15s, color 0.15s, transform 0.18s cubic-bezier(0.16,1,0.3,1)",
+                        transition: "background 0.15s, color 0.15s",
                       }}
                       onMouseEnter={(e) => {
-                        if (!active) {
-                          e.currentTarget.style.color = "rgba(255,255,255,0.70)";
-                          e.currentTarget.style.transform = "translateX(3px)";
-                        }
+                        if (!active) e.currentTarget.style.color = "rgba(255,255,255,0.70)";
                       }}
                       onMouseLeave={(e) => {
-                        if (!active) {
-                          e.currentTarget.style.color = "rgba(255,255,255,0.38)";
-                          e.currentTarget.style.transform = "none";
-                        }
+                        if (!active) e.currentTarget.style.color = "rgba(255,255,255,0.38)";
                       }}
                     >
                       <Icon size={15} weight={active ? "bold" : "regular"} />
@@ -234,10 +188,7 @@ export function Sidebar() {
           )}
         </div>
 
-        {/* Separator */}
-        <div style={{ height: 1, background: "rgba(255,255,255,0.05)", margin: "6px 4px" }} />
-
-        {/* Bottom items */}
+        {/* Bottom items — no separator */}
         {NAV_BOTTOM.map(({ href, label, Icon, iconClass }, i) => {
           const active = path === href;
           return (
@@ -263,17 +214,15 @@ export function Sidebar() {
             border: "none", borderRadius: 10, padding: "10px 12px",
             fontSize: 14, fontWeight: 500, cursor: "pointer",
             display: "flex", alignItems: "center", gap: 10,
-            transition: "color 0.15s, background 0.15s, transform 0.18s cubic-bezier(0.16,1,0.3,1)",
+            transition: "color 0.15s, background 0.15s",
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.color = "#ef4444";
             e.currentTarget.style.background = "rgba(239,68,68,0.08)";
-            e.currentTarget.style.transform = "translateX(3px)";
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.color = "rgba(255,255,255,0.30)";
             e.currentTarget.style.background = "transparent";
-            e.currentTarget.style.transform = "none";
           }}
         >
           <SignOut size={15} />
@@ -303,16 +252,10 @@ function NavLink({ href, label, Icon, active, delay, iconClass = "" }: {
         animationDelay: `${delay}ms`,
       }}
       onMouseEnter={(e) => {
-        if (!active) {
-          e.currentTarget.style.color = "rgba(255,255,255,0.70)";
-          e.currentTarget.style.transform = "translateX(3px)";
-        }
+        if (!active) e.currentTarget.style.color = "rgba(255,255,255,0.70)";
       }}
       onMouseLeave={(e) => {
-        if (!active) {
-          e.currentTarget.style.color = "rgba(255,255,255,0.38)";
-          e.currentTarget.style.transform = "none";
-        }
+        if (!active) e.currentTarget.style.color = "rgba(255,255,255,0.38)";
       }}
     >
       <span className={iconClass || undefined}><Icon size={17} weight={active ? "bold" : "regular"} /></span>

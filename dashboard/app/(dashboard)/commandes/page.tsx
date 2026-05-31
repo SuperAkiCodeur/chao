@@ -21,11 +21,6 @@ const COMMANDS: Command[] = [
     ],
   },
   {
-    name: "Auto-rôle à l'arrivée", auto: true,
-    description: "À chaque fois qu'un nouveau membre rejoint le serveur, le bot lui attribue automatiquement le rôle configuré dans les paramètres.",
-    note: "Ce n'est pas une commande slash — c'est un comportement automatique déclenché par l'événement guildMemberAdd de Discord.",
-  },
-  {
     name: "/selfrole create", adminOnly: true,
     description: "Poste un message interactif dans un salon avec des boutons permettant aux membres de s'attribuer ou de retirer eux-mêmes un rôle d'un simple clic.",
     params: [
@@ -38,8 +33,8 @@ const COMMANDS: Command[] = [
     ],
   },
   {
-    name: "/steam",
-    description: "Ouvre un menu interactif éphémère avec 5 actions : 🔍 Ajouter un jeu, 📋 Voir la liste, 💰 Comparer les prix, 🗑️ Retirer un jeu, 🔥 Voir les promos en cours.",
+    name: "/deals",
+    description: "Ouvre un menu interactif éphémère pour gérer la liste de jeux du salon. Actions : 📋 Voir la liste, 🔍 Ajouter un jeu, 🗑 Retirer un jeu, 🔥 Promos en cours, 💰 Comparer les prix, ✏️ Renommer la liste, ⚙️ Salon de notifications.",
     note: "La comparaison de prix multi-boutiques nécessite une clé ITAD_API_KEY configurée sur le serveur.",
   },
   {
@@ -72,12 +67,13 @@ export default function CommandesPage() {
     <PageShell title="Commandes" description="Référence complète des commandes et comportements du bot">
 
       {/* Search */}
-      <div className="anim-fade-in" style={{ position: "relative", maxWidth: 400 }}>
+      <div className="anim-fade-in" style={{ position: "relative" }}>
         <MagnifyingGlass size={13} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.30)", pointerEvents: "none" }} />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={`Rechercher parmi ${COMMANDS.length} commandes…`}
+          autoComplete="off"
           style={{
             width: "100%", height: 38,
             background: "rgba(255,255,255,0.05)", border: BDI,
