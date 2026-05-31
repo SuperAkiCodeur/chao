@@ -1,346 +1,173 @@
 "use client";
 
-import { useState, useTransition, useRef, useEffect } from "react";
-import { Trash, CaretDown, MagnifyingGlass, Check, GearSix, FloppyDisk, Hash, SpeakerHigh } from "@phosphor-icons/react";
-import { saveDealsConfig, removeDealsGame } from "./actions";
-import type { DiscordChannel, DiscordRole } from "@/components/FeatureSettings";
+import { useState, useTransition } from "react";
+import { CaretDown, Hash, SpeakerHigh, FloppyDisk } from "@phosphor-icons/react";
+import { setDealsNotifChannel } from "./actions";
+import type { DiscordChannel } from "@/components/FeatureSettings";
 
-export type DealsGame = {
-  id: number;
-  steamAppId: number;
-  title: string;
-  headerImage: string | null;
-  addedByName: string | null;
-  addedAt: string;
-  lastKnownPriceEur: number | null;
-  lastKnownDiscount: number | null;
-  isOnSale: number;
-  lastCheckedAt: string | null;
+const BD  = "1px solid rgba(255,255,255,0.08)";
+const BDI = "1px solid rgba(255,255,255,0.12)";
+
+type Game = {
+  id: number; steamAppId: number; title: string; headerImage: string | null;
+  addedByName: string; isOnSale: number; lastKnownPriceEur: number | null;
+  lastKnownDiscount: number | null; lastCheckedAt: string | null;
+};
+type Member = { userId: string; userName: string };
+type List = {
+  id: number; name: string; ownerId: string; ownerName: string;
+  notifChannelId: string | null; createdAt: string;
+  games: Game[]; members: Member[];
 };
 
-export type DealsConfigData = {
-  notifChannelId: string | null;
-  notifRoleId: string | null;
-};
+function formatEur(cents: number) { return `${(cents / 100).toFixed(2)} €`; }
 
-const LINE  = "1px solid rgba(255,255,255,0.08)";
-const LINE2 = "1px solid rgba(255,255,255,0.12)";
-
-function formatEur(cents: number) {
-  return `${(cents / 100).toFixed(2)} €`;
-}
-
-function roleColor(color: number) {
-  return color === 0 ? "#6b7280" : `#${color.toString(16).padStart(6, "0")}`;
-}
-
-// ── SelectDropdown ────────────────────────────────────────────────────────────
-
-type Option = { id: string; label: string; sub?: string; color?: string; icon?: React.ReactNode };
-
-function SelectDropdown({
-  name, options, value, onChange, placeholder = "Sélectionner…",
-}: {
-  name: string; options: Option[]; value: string; onChange: (v: string) => void; placeholder?: string;
-}) {
+export function DealsClient({ list, channels }: { list: List; channels: DiscordChannel[] }) {
   const [open, setOpen]           = useState(false);
-  const [animClass, setAnimClass] = useState("");
-  const [query, setQuery]         = useState("");
-  const ref       = useRef<HTMLDivElement>(null);
-  const searchRef = useRef<HTMLInputElement>(null);
-  const selected  = options.find((o) => o.id === value);
-  const isVisible = open && animClass !== "animate-expand-up";
-  const filtered  = query ? options.filter((o) => o.label.toLowerCase().includes(query.toLowerCase())) : options;
+  const [notifId, setNotifId]     = useState(list.notifChannelId ?? "");
+  const [saved, setSaved]         = useState(false);
+  const [error, setError]         = useState<string | null>(null);
+  const [pending, start]          = useTransition();
 
-  function doOpen()  { setOpen(true);  setAnimClass("animate-expand-down"); setTimeout(() => searchRef.current?.focus(), 10); }
-  function doClose() { if (!open) return; setAnimClass("animate-expand-up"); }
-  function onAnimEnd() { if (animClass === "animate-expand-up") { setOpen(false); setQuery(""); } setAnimClass(""); }
-
-  useEffect(() => {
-    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) doClose(); };
-    document.addEventListener("mousedown", h);
-    return () => document.removeEventListener("mousedown", h);
-  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  return (
-    <>
-      <input type="hidden" name={name} value={value} />
-      <div ref={ref} style={{ position: "relative" }}>
-        <button
-          type="button"
-          onClick={() => open ? doClose() : doOpen()}
-          style={{
-            height: 36, width: "100%", display: "flex", alignItems: "center", gap: 8,
-            background: "rgba(255,255,255,0.06)", border: LINE2, borderRadius: 8,
-            paddingLeft: 12, paddingRight: 10, fontSize: 14, cursor: "pointer",
-          }}
-        >
-          {selected ? (
-            <span style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0 }}>
-              {selected.icon}
-              {selected.color && <span style={{ width: 8, height: 8, borderRadius: "50%", background: selected.color, flexShrink: 0 }} />}
-              <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: selected.color ?? "#fff" }}>
-                {selected.label}
-              </span>
-              {selected.sub && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.30)", flexShrink: 0 }}>· {selected.sub}</span>}
-            </span>
-          ) : (
-            <span style={{ flex: 1, textAlign: "left", color: "rgba(255,255,255,0.35)" }}>{placeholder}</span>
-          )}
-          <CaretDown size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0, transform: isVisible ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
-        </button>
-
-        {open && (
-          <div
-            className={animClass}
-            onAnimationEnd={onAnimEnd}
-            style={{
-              position: "absolute", left: 0, top: "calc(100% + 4px)", zIndex: 50,
-              width: "100%", minWidth: 200, borderRadius: 12,
-              border: LINE2, background: "#2c2c2c", boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderBottom: LINE }}>
-              <MagnifyingGlass size={13} style={{ color: "rgba(255,255,255,0.30)", flexShrink: 0 }} />
-              <input
-                ref={searchRef}
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Escape" && doClose()}
-                placeholder="Rechercher…"
-                style={{ flex: 1, background: "transparent", border: "none", outline: "none", fontSize: 14, color: "#fff" }}
-              />
-            </div>
-            <div style={{ maxHeight: 210, overflowY: "auto", padding: "4px 0" }}>
-              <button type="button" onClick={() => { onChange(""); doClose(); }}
-                style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "rgba(255,255,255,0.35)" }}>
-                <span style={{ flex: 1, textAlign: "left" }}>— Aucun —</span>
-                {!value && <Check size={13} style={{ color: "#fff" }} />}
-              </button>
-              {filtered.length === 0 ? (
-                <p style={{ padding: "8px 12px", fontSize: 12, color: "rgba(255,255,255,0.30)", fontStyle: "italic" }}>Aucun résultat</p>
-              ) : filtered.map((o) => (
-                <button key={o.id} type="button" onClick={() => { onChange(o.id); doClose(); }}
-                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 14 }}>
-                  {o.icon}
-                  {o.color && <span style={{ width: 8, height: 8, borderRadius: "50%", background: o.color, flexShrink: 0 }} />}
-                  <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: o.color ?? "#fff" }}>{o.label}</span>
-                  {o.sub && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.30)", flexShrink: 0 }}>{o.sub}</span>}
-                  {value === o.id && <Check size={13} style={{ color: "#fff", flexShrink: 0 }} />}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </>
-  );
-}
-
-// ── GamesList ─────────────────────────────────────────────────────────────────
-
-function GamesList({ games }: { games: DealsGame[] }) {
-  const [pending, start] = useTransition();
-  const [removing, setRemoving] = useState<number | null>(null);
-
-  function handleRemove(id: number) {
-    setRemoving(id);
-    start(async () => { await removeDealsGame(id); setRemoving(null); });
-  }
-
-  if (games.length === 0) {
-    return (
-      <p style={{ fontSize: 14, color: "rgba(255,255,255,0.35)", padding: "8px 0" }}>
-        Aucun jeu tracké. Utilise{" "}
-        <code style={{ fontSize: 12, background: "rgba(255,255,255,0.08)", padding: "1px 6px", borderRadius: 4 }}>
-          /deals add
-        </code>{" "}
-        dans Discord.
-      </p>
-    );
-  }
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-      {games.map((g) => {
-        const priceStr = g.lastKnownPriceEur !== null
-          ? g.isOnSale
-            ? `En promo — ${formatEur(g.lastKnownPriceEur)} (-${g.lastKnownDiscount ?? 0}%)`
-            : formatEur(g.lastKnownPriceEur)
-          : "Prix non vérifié";
-
-        return (
-          <div
-            key={g.id}
-            style={{ display: "flex", alignItems: "center", gap: 12, background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "10px 14px", transition: "background 0.15s, transform 0.2s cubic-bezier(0.16,1,0.3,1), box-shadow 0.2s" }}
-            onMouseEnter={(e) => {
-              (e.currentTarget.querySelector(".remove-btn") as HTMLElement | null)?.style.setProperty("opacity", "1");
-              e.currentTarget.style.background = "rgba(255,255,255,0.07)";
-              e.currentTarget.style.transform = "translateY(-2px)";
-              e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.25)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget.querySelector(".remove-btn") as HTMLElement | null)?.style.setProperty("opacity", "0");
-              e.currentTarget.style.background = "rgba(255,255,255,0.04)";
-              e.currentTarget.style.transform = "none";
-              e.currentTarget.style.boxShadow = "none";
-            }}
-          >
-            {g.headerImage ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={g.headerImage} alt={g.title} style={{ height: 34, width: 56, borderRadius: 6, objectFit: "cover", flexShrink: 0 }} />
-            ) : (
-              <div style={{ height: 34, width: 56, borderRadius: 6, background: "rgba(255,255,255,0.06)", flexShrink: 0 }} />
-            )}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <a
-                href={`https://store.steampowered.com/app/${g.steamAppId}`}
-                target="_blank" rel="noreferrer"
-                style={{ fontSize: 14, fontWeight: 600, color: "#fff", textDecoration: "none", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-              >
-                {g.title}
-              </a>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3 }}>
-                {g.isOnSale === 1 && (
-                  <span className="anim-pulse" style={{ fontSize: 11, fontWeight: 700, color: "#4ade80", background: "rgba(74,222,128,0.12)", padding: "1px 6px", borderRadius: 99 }}>
-                    PROMO
-                  </span>
-                )}
-                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.40)" }}>{priceStr}</span>
-              </div>
-            </div>
-            {g.addedByName && (
-              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", flexShrink: 0 }}>{g.addedByName}</span>
-            )}
-            <button
-              className="remove-btn"
-              type="button"
-              onClick={() => handleRemove(g.id)}
-              disabled={pending && removing === g.id}
-              style={{ padding: 6, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.30)", borderRadius: 6, display: "flex", opacity: 0, transition: "opacity 0.15s, color 0.15s", flexShrink: 0 }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#ef4444")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.30)")}
-              title="Retirer"
-            >
-              <Trash size={14} />
-            </button>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// ── DealsConfig ───────────────────────────────────────────────────────────────
-
-function DealsConfig({ config, channels, roles }: {
-  config: DealsConfigData; channels: DiscordChannel[]; roles: DiscordRole[];
-}) {
-  const [open, setOpen]     = useState(false);
-  const [vals, setVals]     = useState({ notifChannelId: config.notifChannelId ?? "", notifRoleId: config.notifRoleId ?? "" });
-  const [saved, setSaved]   = useState(false);
-  const [error, setError]   = useState<string | null>(null);
-  const [pending, start]    = useTransition();
-
-  const categoryMap    = new Map(channels.filter((c) => c.type === 4).map((c) => [c.id, c.name]));
-  const channelOptions = channels
+  const textChannels = channels
     .filter((c) => c.type !== 4)
-    .sort((a, b) => a.position - b.position)
-    .map((c) => ({
-      id: c.id, label: c.name,
-      sub: c.parent_id ? (categoryMap.get(c.parent_id) ?? undefined) : undefined,
-      icon: c.type === 2 || c.type === 13
-        ? <SpeakerHigh size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />
-        : <Hash    size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />,
-    }));
+    .sort((a, b) => a.position - b.position);
 
-  const roleOptions = roles
-    .filter((r) => r.name !== "@everyone")
-    .sort((a, b) => b.position - a.position)
-    .map((r) => ({ id: r.id, label: r.name, color: roleColor(r.color) }));
+  const onSale = list.games.filter((g) => g.isOnSale === 1);
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
+  function handleSave() {
     setError(null); setSaved(false);
     start(async () => {
-      const res = await saveDealsConfig(fd);
+      const res = await setDealsNotifChannel(list.id, notifId || null);
       if (res.success) { setSaved(true); setTimeout(() => setSaved(false), 2500); }
       else setError(res.error);
     });
   }
 
   return (
-    <div style={{ background: "#202020", borderRadius: 12, border: LINE }}>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        style={{ width: "100%", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px" }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <GearSix size={13} style={{ color: "rgba(255,255,255,0.45)" }} />
-          <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.70)", textTransform: "uppercase", letterSpacing: "0.07em" }}>Configuration</span>
-        </div>
-        <CaretDown size={13} style={{ color: "rgba(255,255,255,0.35)", transform: open ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
-      </button>
+    <div className="card-glow anim-fade-up" style={{ background: "#202020", borderRadius: 12, border: BD, overflow: "hidden" }}>
 
-      {open && (
-        <form onSubmit={handleSubmit} style={{ borderTop: LINE }}>
-          <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, alignItems: "center" }}>
-              <div>
-                <p style={{ fontSize: 14, fontWeight: 600, color: "#fff" }}>Salon autorisé</p>
-                <p style={{ fontSize: 12, color: "rgba(255,255,255,0.40)", marginTop: 4 }}>
-                  Seul ce salon peut utiliser{" "}
-                  <code style={{ fontSize: 11, background: "rgba(255,255,255,0.08)", padding: "1px 5px", borderRadius: 4 }}>/deals</code>{" "}
-                  et reçoit les alertes
-                </p>
+      {/* Header */}
+      <div style={{ padding: "14px 20px", borderBottom: BD, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div>
+          <p style={{ fontSize: 20, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)" }}>{list.name}</p>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.30)", marginTop: 3 }}>
+            par {list.ownerName}
+            {list.members.length > 0 && ` · partagée avec ${list.members.map((m) => m.userName).join(", ")}`}
+          </p>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {onSale.length > 0 && (
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#4ade80", background: "rgba(74,222,128,0.12)", padding: "3px 10px", borderRadius: 99 }}>
+              🔥 {onSale.length} en promo
+            </span>
+          )}
+          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.30)", background: "rgba(255,255,255,0.06)", padding: "3px 10px", borderRadius: 99 }}>
+            {list.games.length} jeu{list.games.length !== 1 ? "x" : ""}
+          </span>
+        </div>
+      </div>
+
+      {/* Games list */}
+      {list.games.length > 0 && (
+        <div style={{ padding: "8px 0" }}>
+          {list.games.map((g, i) => {
+            const priceStr = g.lastKnownPriceEur !== null
+              ? g.isOnSale === 1
+                ? `En promo — ${formatEur(g.lastKnownPriceEur)} (-${g.lastKnownDiscount ?? 0}%)`
+                : formatEur(g.lastKnownPriceEur)
+              : "Prix non vérifié";
+
+            return (
+              <div key={g.id} style={{
+                display: "flex", alignItems: "center", gap: 12,
+                padding: "10px 20px",
+                borderTop: i > 0 ? BD : undefined,
+              }}>
+                {g.headerImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={g.headerImage} alt={g.title} style={{ width: 56, height: 34, borderRadius: 6, objectFit: "cover", flexShrink: 0 }} />
+                ) : (
+                  <div style={{ width: 56, height: 34, borderRadius: 6, background: "rgba(255,255,255,0.06)", flexShrink: 0 }} />
+                )}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <a
+                    href={`https://store.steampowered.com/app/${g.steamAppId}`}
+                    target="_blank" rel="noreferrer"
+                    style={{ fontSize: 19, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", textDecoration: "none", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                  >
+                    {g.title}
+                  </a>
+                  <p style={{ fontSize: 12, color: g.isOnSale === 1 ? "#4ade80" : "rgba(255,255,255,0.38)", marginTop: 2 }}>
+                    {priceStr}
+                  </p>
+                </div>
+                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.22)", flexShrink: 0 }}>
+                  {g.addedByName}
+                </span>
               </div>
-              <SelectDropdown name="notifChannelId" options={channelOptions} value={vals.notifChannelId} onChange={(v) => setVals((p) => ({ ...p, notifChannelId: v }))} placeholder="Choisir un salon…" />
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, alignItems: "center" }}>
-              <div>
-                <p style={{ fontSize: 14, fontWeight: 600, color: "#fff" }}>Rôle autorisé</p>
-                <p style={{ fontSize: 12, color: "rgba(255,255,255,0.40)", marginTop: 4 }}>Seul ce rôle peut utiliser la commande et reçoit les pings promo</p>
-              </div>
-              <SelectDropdown name="notifRoleId" options={roleOptions} value={vals.notifRoleId} onChange={(v) => setVals((p) => ({ ...p, notifRoleId: v }))} placeholder="Choisir un rôle…" />
-            </div>
-          </div>
-          <div style={{ padding: "12px 20px", borderTop: LINE, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div style={{ fontSize: 12 }}>
-              {error && <span style={{ color: "#ef4444" }}>{error}</span>}
-              {saved && <span style={{ color: "#4ade80" }}>✓ Enregistré</span>}
-            </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Config salon notifs */}
+      <div style={{ borderTop: BD }}>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          style={{ width: "100%", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px" }}
+        >
+          <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.50)", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+            Salon de notifications
+            {list.notifChannelId && (
+              <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 400, color: "rgba(255,255,255,0.30)", textTransform: "none", letterSpacing: 0 }}>
+                configuré
+              </span>
+            )}
+          </span>
+          <CaretDown size={12} style={{ color: "rgba(255,255,255,0.30)", transform: open ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
+        </button>
+
+        {open && (
+          <div style={{ padding: "0 20px 16px", display: "flex", gap: 10, alignItems: "center" }}>
+            <select
+              value={notifId}
+              onChange={(e) => setNotifId(e.target.value)}
+              style={{
+                flex: 1, height: 34,
+                background: "rgba(255,255,255,0.05)", border: BDI, borderRadius: 8,
+                padding: "0 10px", fontSize: 13, color: notifId ? "#fff" : "rgba(255,255,255,0.35)",
+                outline: "none", cursor: "pointer",
+              }}
+            >
+              <option value="">— Aucun —</option>
+              {textChannels.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.type === 2 || c.type === 13 ? "🔊" : "#"} {c.name}
+                </option>
+              ))}
+            </select>
             <button
-              type="submit"
+              type="button"
+              onClick={handleSave}
               disabled={pending}
               style={{
-                display: "flex", alignItems: "center", gap: 6,
-                background: "rgba(255,255,255,0.10)", color: "#fff", border: "1px solid rgba(255,255,255,0.16)", borderRadius: 8,
-                padding: "8px 16px", fontSize: 14, fontWeight: 600,
+                display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
+                background: "rgba(255,255,255,0.10)", color: "#fff", border: "1px solid rgba(255,255,255,0.16)",
+                borderRadius: 8, padding: "0 14px", height: 34, fontSize: 13, fontWeight: 600,
                 cursor: pending ? "not-allowed" : "pointer", opacity: pending ? 0.6 : 1,
               }}
             >
               <FloppyDisk size={13} />
-              {pending ? "Enregistrement…" : "Enregistrer"}
+              {pending ? "…" : "Sauvegarder"}
             </button>
+            {saved  && <span style={{ fontSize: 12, color: "#4ade80" }}>✓</span>}
+            {error  && <span style={{ fontSize: 12, color: "#ef4444" }}>{error}</span>}
           </div>
-        </form>
-      )}
-    </div>
-  );
-}
+        )}
+      </div>
 
-// ── Main ──────────────────────────────────────────────────────────────────────
-
-export function DealsClient({ games, config, channels, roles }: {
-  games: DealsGame[]; config: DealsConfigData; channels: DiscordChannel[]; roles: DiscordRole[];
-}) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      <GamesList games={games} />
-      <DealsConfig config={config} channels={channels} roles={roles} />
     </div>
   );
 }

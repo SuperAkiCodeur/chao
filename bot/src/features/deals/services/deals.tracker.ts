@@ -2,7 +2,7 @@ import { EmbedBuilder, type Client } from "discord.js";
 import { logger } from "../../../core/app/logger.js";
 import { DEALS_CONSTANTS } from "../domain/deals.constants.js";
 import { formatEur, getSteamAppDetails, getSteamUrl } from "./deals.api.js";
-import { getAllGames, getDealsChannelConfig, updateGameTrackerData } from "./deals.repository.js";
+import { getAllGames, getListById, getMembersForList, updateGamePrice } from "./deals.repository.js";
 
 async function checkPromos(client: Client): Promise<void> {
   logger.info("[deals.tracker] démarrage de la vérification des promos");
@@ -10,18 +10,8 @@ async function checkPromos(client: Client): Promise<void> {
   const games = await getAllGames();
   if (games.length === 0) return;
 
-  // Mise en cache des configs par (guildId:channelId) — une liste = un salon
-  const channelKeys = [...new Set(games.map((g) => `${g.guildId}:${g.channelId}`))];
-  const configs = new Map(
-    await Promise.all(
-      channelKeys.map(async (key) => {
-        const sep = key.indexOf(":");
-        const guildId = key.slice(0, sep);
-        const channelId = key.slice(sep + 1);
-        return [key, await getDealsChannelConfig(guildId, channelId)] as const;
-      }),
-    ),
-  );
+  // Cache des listes pour éviter les requêtes répétées
+  const listCache = new Map<number, Awaited<ReturnType<typeof getListById>>>();
 
   for (const game of games) {
     try {
@@ -32,7 +22,7 @@ async function checkPromos(client: Client): Promise<void> {
       const wasOnSale = game.isOnSale === 1;
       const isNowOnSale = !details.is_free && price ? price.discount_percent > 0 : false;
 
-      await updateGameTrackerData(game.id, {
+      await updateGamePrice(game.id, {
         lastKnownPriceEur: price?.final ?? null,
         lastKnownDiscount: price?.discount_percent ?? 0,
         isOnSale: isNowOnSale ? 1 : 0,
@@ -41,33 +31,41 @@ async function checkPromos(client: Client): Promise<void> {
 
       // Notification uniquement si le jeu vient de passer en promo
       if (!wasOnSale && isNowOnSale && price) {
-        const config = configs.get(`${game.guildId}:${game.channelId}`);
-        if (!config?.notifChannelId) continue;
+        if (!listCache.has(game.listId)) {
+          listCache.set(game.listId, await getListById(game.listId));
+        }
+        const list = listCache.get(game.listId);
+        if (!list?.notifChannelId) continue;
 
-        const channel = await client.channels.fetch(config.notifChannelId).catch(() => null);
+        const channel = await client.channels.fetch(list.notifChannelId).catch(() => null);
         if (!channel?.isSendable()) continue;
+
+        // Mention du propriétaire + membres
+        const members = await getMembersForList(game.listId);
+        const mentions = [list.ownerId, ...members.map((m) => m.userId)]
+          .map((id) => `<@${id}>`).join(" ");
 
         const embed = new EmbedBuilder()
           .setColor(DEALS_CONSTANTS.EMBED_COLOR_SALE)
-          .setTitle("🎮 Promo Steam !")
+          .setTitle("🔥 Nouvelle promo !")
           .setDescription(
             `**[${game.title}](${getSteamUrl(game.steamAppId)})**\n\n` +
-            `~~${formatEur(price.initial)}~~ → **${formatEur(price.final)}** (-${price.discount_percent}%)`,
+            `~~${formatEur(price.initial)}~~ → **${formatEur(price.final)}** (-${price.discount_percent}%)\n\n` +
+            `📋 Liste : **${list.name}**`,
           )
           .setThumbnail(game.headerImage ?? null)
-          .setFooter({ text: "Offre disponible sur Steam • Tracker Chao" });
+          .setFooter({ text: "Tracker Chao • Deals" });
 
-        const mention = config.notifRoleId ? `<@&${config.notifRoleId}> ` : "";
-        await channel.send({ content: mention || undefined, embeds: [embed] });
+        await channel.send({ content: mentions, embeds: [embed] });
 
         logger.info("[deals.tracker] notification envoyée", {
-          guildId: game.guildId,
+          listId: game.listId,
           title: game.title,
           discount: price.discount_percent,
         });
       }
     } catch (error) {
-      logger.error("[deals.tracker] erreur sur le jeu", { gameId: game.id, title: game.title, error });
+      logger.error("[deals.tracker] erreur", { gameId: game.id, title: game.title, error });
     }
   }
 
@@ -81,9 +79,7 @@ export function startDealsTracker(client: Client): void {
     });
   };
 
-  // Premier check 30s après le démarrage du bot
   setTimeout(run, 30_000);
-  // Puis toutes les 6h
   setInterval(run, DEALS_CONSTANTS.TRACKER_INTERVAL_MS);
 
   logger.info("[deals.tracker] démarré", { intervalHours: 6 });

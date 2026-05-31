@@ -46,20 +46,32 @@ import {
   ROULETTE_BACK_BTN_ID,
 } from "../../../features/roulette/domain/roulette.constants.js";
 import {
-  handleDealsMenu,
-  handleDealsBack,
-  handleDealsAddModal,
-  handleDealsAddSelect,
-  handleDealsPriceSelect,
+  handleDealsMainMenu,
+  handleDealsListSelect,
+  handleDealsActionMenu,
+  handleDealsAddResult,
   handleDealsRemoveSelect,
+  handleDealsPriceSelect,
+  handleDealsShareSelect,
+  handleDealsCreateModal,
+  handleDealsSearchModal,
+  handleDealsBackMain,
+  handleDealsBackList,
+  handleDealsDeleteConfirm,
 } from "../../../features/deals/services/deals.service.js";
 import {
-  DEALS_MENU_ID,
-  DEALS_ADD_SELECT_ID,
-  DEALS_PRICE_SELECT_ID,
-  DEALS_REMOVE_SELECT_ID,
-  DEALS_MODAL_ADD_ID,
-  DEALS_BACK_BTN_ID,
+  DEALS_MAIN_MENU_ID,
+  DEALS_LISTS_SELECT_ID,
+  DEALS_CREATE_MODAL_ID,
+  DEALS_BACK_MAIN_BTN_ID,
+  DEALS_ACTION_PREFIX,
+  DEALS_ADD_RESULT_PFX,
+  DEALS_REMOVE_PFX,
+  DEALS_PRICE_PFX,
+  DEALS_SHARE_PFX,
+  DEALS_SEARCH_MODAL_PFX,
+  DEALS_BACK_LIST_PFX,
+  DEALS_DELETE_PFX,
 } from "../../../features/deals/domain/deals.constants.js";
 import {
   handleValorantMenu,
@@ -78,18 +90,22 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
   name: Events.InteractionCreate,
 
   async execute(interaction: Interaction): Promise<void> {
+    const id = "customId" in interaction ? (interaction.customId as string) : "";
+
     // ── Modal submit ───────────────────────────────────────────────────────────
     if (interaction.isModalSubmit()) {
       try {
-        if (interaction.customId === DEALS_MODAL_ADD_ID) {
-          await handleDealsAddModal(interaction);
-        } else if (interaction.customId.startsWith(CINEMA_MODAL_START_PREFIX)) {
+        if (id === DEALS_CREATE_MODAL_ID) {
+          await handleDealsCreateModal(interaction);
+        } else if (id.startsWith(DEALS_SEARCH_MODAL_PFX)) {
+          await handleDealsSearchModal(interaction);
+        } else if (id.startsWith(CINEMA_MODAL_START_PREFIX)) {
           await handleCinemaStartModal(interaction);
-        } else if (interaction.customId === VALORANT_MODAL_LINK_ID) {
+        } else if (id === VALORANT_MODAL_LINK_ID) {
           await handleValorantLinkModal(interaction);
         }
       } catch (err) {
-        logger.error("Modal submit failed", { customId: interaction.customId, err });
+        logger.error("Modal submit failed", { customId: id, err });
         if (interaction.deferred || interaction.replied) {
           await interaction.editReply({ content: "❌ Une erreur est survenue. Réessaie." }).catch(() => null);
         } else {
@@ -101,7 +117,9 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
 
     // ── User select menus ──────────────────────────────────────────────────────
     if (interaction.isUserSelectMenu()) {
-      if (interaction.customId === ROULETTE_SELECT_ID) {
+      if (id.startsWith(DEALS_SHARE_PFX)) {
+        await handleDealsShareSelect(interaction);
+      } else if (id === ROULETTE_SELECT_ID) {
         await handleRouletteSelect(interaction);
       }
       return;
@@ -109,25 +127,29 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
 
     // ── String select menus ────────────────────────────────────────────────────
     if (interaction.isStringSelectMenu()) {
-      if (interaction.customId === DEALS_MENU_ID) {
-        await handleDealsMenu(interaction);
-      } else if (interaction.customId === DEALS_ADD_SELECT_ID) {
-        await handleDealsAddSelect(interaction);
-      } else if (interaction.customId === DEALS_PRICE_SELECT_ID) {
-        await handleDealsPriceSelect(interaction);
-      } else if (interaction.customId === DEALS_REMOVE_SELECT_ID) {
+      if (id === DEALS_MAIN_MENU_ID) {
+        await handleDealsMainMenu(interaction);
+      } else if (id === DEALS_LISTS_SELECT_ID) {
+        await handleDealsListSelect(interaction);
+      } else if (id.startsWith(DEALS_ACTION_PREFIX)) {
+        await handleDealsActionMenu(interaction);
+      } else if (id.startsWith(DEALS_ADD_RESULT_PFX)) {
+        await handleDealsAddResult(interaction);
+      } else if (id.startsWith(DEALS_REMOVE_PFX)) {
         await handleDealsRemoveSelect(interaction);
-      } else if (interaction.customId === ROULETTE_MENU_ID) {
+      } else if (id.startsWith(DEALS_PRICE_PFX)) {
+        await handleDealsPriceSelect(interaction);
+      } else if (id === ROULETTE_MENU_ID) {
         await handleRouletteMenu(interaction);
-      } else if (interaction.customId === CINEMA_TYPE_SELECT_START_ID) {
+      } else if (id === CINEMA_TYPE_SELECT_START_ID) {
         await handleCinemaStartTypeSelect(interaction);
-      } else if (interaction.customId === CINEMA_END_SELECT_ID) {
+      } else if (id === CINEMA_END_SELECT_ID) {
         await handleCinemaEndPartySelect(interaction);
-      } else if (interaction.customId === CINEMA_MENU_ID) {
+      } else if (id === CINEMA_MENU_ID) {
         await handleCinemaMenu(interaction);
-      } else if (interaction.customId === VALORANT_MENU_ID) {
+      } else if (id === VALORANT_MENU_ID) {
         await handleValorantMenu(interaction);
-      } else if (interaction.customId === VALORANT_STATS_SELECT_ID) {
+      } else if (id === VALORANT_STATS_SELECT_ID) {
         await handleValorantStatsSelect(interaction);
       }
       return;
@@ -135,49 +157,49 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
 
     // ── Buttons ────────────────────────────────────────────────────────────────
     if (interaction.isButton()) {
-      if (interaction.customId === CINEMA_CONSTANTS.TICKET_BUTTON_ID) {
+      if (id === DEALS_BACK_MAIN_BTN_ID) {
+        await handleDealsBackMain(interaction);
+      } else if (id.startsWith(DEALS_BACK_LIST_PFX)) {
+        await handleDealsBackList(interaction);
+      } else if (id.startsWith(DEALS_DELETE_PFX)) {
+        await handleDealsDeleteConfirm(interaction);
+      } else if (id === CINEMA_CONSTANTS.TICKET_BUTTON_ID) {
         await handleCinemaTicketButton(interaction);
-      } else if (interaction.customId === CINEMA_CONSTANTS.LAUNCH_BUTTON_ID) {
+      } else if (id === CINEMA_CONSTANTS.LAUNCH_BUTTON_ID) {
         await handleCinemaLaunchButton(interaction);
-      } else if (interaction.customId === CINEMA_CONSTANTS.END_BUTTON_ID) {
+      } else if (id === CINEMA_CONSTANTS.END_BUTTON_ID) {
         await handleCinemaEndButton(interaction);
-      } else if (interaction.customId.startsWith(CINEMA_CONSTANTS.RATING_BUTTON_PREFIX)) {
+      } else if (id.startsWith(CINEMA_CONSTANTS.RATING_BUTTON_PREFIX)) {
         await handleCinemaRatingButton(interaction);
-      } else if (isSelfRoleButton(interaction.customId)) {
+      } else if (isSelfRoleButton(id)) {
         await handleSelfRoleButton(interaction);
-      } else if (interaction.customId.startsWith(ROULETTE_LAUNCH_PREFIX)) {
+      } else if (id.startsWith(ROULETTE_LAUNCH_PREFIX)) {
         await handleRouletteLaunch(interaction);
-      } else if (interaction.customId === ROULETTE_RETRY_ID) {
+      } else if (id === ROULETTE_RETRY_ID) {
         await handleRouletteRetry(interaction);
-      } else if (interaction.customId === "roulette:cancel") {
+      } else if (id === "roulette:cancel") {
         await handleRouletteCancel(interaction);
-      } else if (interaction.customId === DEALS_BACK_BTN_ID) {
-        await handleDealsBack(interaction);
-      } else if (interaction.customId === ROULETTE_BACK_BTN_ID) {
+      } else if (id === ROULETTE_BACK_BTN_ID) {
         await handleRouletteBack(interaction);
-      } else if (interaction.customId === CINEMA_BACK_BTN_ID) {
+      } else if (id === CINEMA_BACK_BTN_ID) {
         await handleCinemaBack(interaction);
-      } else if (interaction.customId === CINEMA_PANEL_START_BTN_ID) {
+      } else if (id === CINEMA_PANEL_START_BTN_ID) {
         await handleCinemaPanelStartButton(interaction);
-      } else if (interaction.customId === CINEMA_PANEL_END_BTN_ID) {
+      } else if (id === CINEMA_PANEL_END_BTN_ID) {
         await handleCinemaPanelEndButton(interaction);
-      } else if (interaction.customId === CINEMA_PANEL_HELP_BTN_ID) {
+      } else if (id === CINEMA_PANEL_HELP_BTN_ID) {
         await handleCinemaPanelHelpButton(interaction);
-      } else if (interaction.customId === VALORANT_BACK_BTN_ID) {
+      } else if (id === VALORANT_BACK_BTN_ID) {
         await handleValorantBack(interaction);
       }
       return;
     }
 
-    if (!interaction.isChatInputCommand()) {
-      return;
-    }
+    if (!interaction.isChatInputCommand()) return;
 
     const command = getCommand(interaction.commandName);
-
     if (!command) {
       logger.warn("Command not found", { commandName: interaction.commandName });
-
       if (!interaction.replied && !interaction.deferred) {
         await interaction.reply({ content: "❌ Commande inconnue.", flags: MessageFlags.Ephemeral });
       }
@@ -193,19 +215,11 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
         guildId: interaction.guildId ?? null,
         error,
       });
-
       if (interaction.replied || interaction.deferred) {
-        await interaction.followUp({
-          content: "❌ Une erreur est survenue pendant l'exécution de la commande.",
-          flags: MessageFlags.Ephemeral,
-        }).catch(() => null);
+        await interaction.followUp({ content: "❌ Une erreur est survenue.", flags: MessageFlags.Ephemeral }).catch(() => null);
         return;
       }
-
-      await interaction.reply({
-        content: "❌ Une erreur est survenue pendant l'exécution de la commande.",
-        flags: MessageFlags.Ephemeral,
-      }).catch(() => null);
+      await interaction.reply({ content: "❌ Une erreur est survenue.", flags: MessageFlags.Ephemeral }).catch(() => null);
     }
   },
 };
