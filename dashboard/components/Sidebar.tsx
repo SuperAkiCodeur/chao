@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   LayoutDashboard, Users, Clapperboard,
-  ScrollText, Crosshair, Gamepad2, Settings, LogOut, BookOpen,
+  ScrollText, Crosshair, Gamepad2, Settings, LogOut, BookOpen, Flag,
 } from "lucide-react";
 
 const NAV = [
@@ -14,6 +14,7 @@ const NAV = [
   { href: "/cinema",      label: "Cinéma",     Icon: Clapperboard    },
   { href: "/valorant",    label: "Valorant",   Icon: Crosshair       },
   { href: "/steam",       label: "Steam",      Icon: Gamepad2        },
+  { href: "/palestine",   label: "Palestine",  Icon: Flag            },
   { href: "/commandes",   label: "Commandes",  Icon: BookOpen        },
   { href: "/logs",        label: "Logs",       Icon: ScrollText      },
   { href: "/parametres",  label: "Paramètres", Icon: Settings        },
