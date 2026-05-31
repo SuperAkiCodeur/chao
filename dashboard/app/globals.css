@@ -8,12 +8,11 @@
 
 html, body {
   height: 100%;
-  font-family: var(--font-inter), "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-inter), sans-serif;
   -webkit-font-smoothing: antialiased;
-  background: #0A0A0A url('/background.jpg') center / cover no-repeat fixed;
+  background: #111 url('/background.jpg') center / cover no-repeat fixed;
 }
 
 ::selection { background: #C8FF47; color: #000; }
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); border-radius: 99px; }
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 99px; }
