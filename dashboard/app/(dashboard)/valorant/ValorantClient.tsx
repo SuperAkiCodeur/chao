@@ -119,7 +119,7 @@ function AddDialog({ defaultGuildId, open, onClose }: { defaultGuildId: string; 
             </select>
           </div>
 
-          {error && <p style={{ fontSize: 13, color: "#ef4444" }}>{error}</p>}
+          {error && <p style={{ fontSize: 12, color: "#ef4444" }}>{error}</p>}
 
           <DialogFooter style={{ marginTop: 4 }}>
             <BtnCancel onClick={onClose} />
@@ -153,7 +153,7 @@ function EditDialog({ account, open, onClose }: { account: Account; open: boolea
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Modifier le compte</DialogTitle>
-          <DialogDescription style={{ fontFamily: "ui-monospace, monospace", fontSize: 13 }}>
+          <DialogDescription style={{ fontFamily: "ui-monospace, monospace", fontSize: 12 }}>
             {account.discordUserId}
           </DialogDescription>
         </DialogHeader>
@@ -169,7 +169,7 @@ function EditDialog({ account, open, onClose }: { account: Account; open: boolea
               {REGIONS.map((r) => <option key={r} value={r}>{r.toUpperCase()}</option>)}
             </select>
           </div>
-          {error && <p style={{ fontSize: 13, color: "#ef4444" }}>{error}</p>}
+          {error && <p style={{ fontSize: 12, color: "#ef4444" }}>{error}</p>}
           <DialogFooter style={{ marginTop: 4 }}>
             <BtnCancel onClick={onClose} />
             <BtnPrimary disabled={pending}>{pending ? "Enregistrement…" : "Enregistrer"}</BtnPrimary>
@@ -206,7 +206,7 @@ function DeleteDialog({ account, open, onClose }: { account: Account; open: bool
             {" "}sera délié. Cette action est irréversible.
           </DialogDescription>
         </DialogHeader>
-        {error && <p style={{ fontSize: 13, color: "#ef4444", marginTop: 8 }}>{error}</p>}
+        {error && <p style={{ fontSize: 12, color: "#ef4444", marginTop: 8 }}>{error}</p>}
         <DialogFooter style={{ marginTop: 8 }}>
           <BtnCancel onClick={onClose} />
           <BtnDestructive disabled={pending} onClick={handleDelete}>

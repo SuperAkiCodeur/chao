@@ -70,7 +70,7 @@ export function LogsClient({ logs }: { logs: Log[] }) {
               onClick={() => setActive(f.id)}
               className="anim-fade-up hover-glow"
               style={{
-                padding: "6px 14px", borderRadius: 8, fontSize: 13, fontWeight: 500,
+                padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 500,
                 border: "none", cursor: "pointer",
                 background: isActive ? "#fff" : "rgba(255,255,255,0.06)",
                 color: isActive ? "#000" : "rgba(255,255,255,0.50)",

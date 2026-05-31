@@ -105,8 +105,8 @@ const labelSt: React.CSSProperties = {
 function InfoRow({ label, value, color, divider = true }: { label: string; value: string; color?: string; divider?: boolean }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, padding: "14px 20px", borderTop: divider ? BD : undefined }}>
-      <span style={{ fontSize: 13, color: "rgba(255,255,255,0.40)", flexShrink: 0 }}>{label}</span>
-      <span style={{ fontSize: 13, fontWeight: 500, color: color ?? "#fff", fontFamily: label === "Discord ID" ? "ui-monospace, monospace" : undefined, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right", maxWidth: "58%" }}>
+      <span style={{ fontSize: 12, color: "rgba(255,255,255,0.40)", flexShrink: 0 }}>{label}</span>
+      <span style={{ fontSize: 12, fontWeight: 500, color: color ?? "#fff", fontFamily: label === "Discord ID" ? "ui-monospace, monospace" : undefined, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right", maxWidth: "58%" }}>
         {value}
       </span>
     </div>
@@ -183,8 +183,8 @@ function DetailDialog({
             onError={(e) => { (e.target as HTMLImageElement).src = "https://cdn.discordapp.com/embed/avatars/0.png"; }}
           />
           <div style={{ minWidth: 0 }}>
-            <DialogTitle style={{ fontSize: 18, fontWeight: 700 }}>{displayName(member)}</DialogTitle>
-            <DialogDescription style={{ fontSize: 13, marginTop: 4 }}>@{member.user.username}</DialogDescription>
+            <DialogTitle style={{ fontSize: 15, fontWeight: 700 }}>{displayName(member)}</DialogTitle>
+            <DialogDescription style={{ fontSize: 12, marginTop: 4 }}>@{member.user.username}</DialogDescription>
           </div>
         </div>
       </DialogHeader>
@@ -208,7 +208,7 @@ function DetailDialog({
               {memberRoles.map((r) => {
                 const c = roleColor(r.color);
                 return (
-                  <span key={r.id} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 6, padding: "4px 11px", fontSize: 13, fontWeight: 600, backgroundColor: `${c}22`, color: c }}>
+                  <span key={r.id} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 6, padding: "4px 11px", fontSize: 12, fontWeight: 600, backgroundColor: `${c}22`, color: c }}>
                     <span style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: c, flexShrink: 0 }} />
                     {r.name}
                   </span>
@@ -241,7 +241,7 @@ function DetailDialog({
               <button
                 key={action}
                 onClick={() => { onClose(); onAction(action); }}
-                style={{ ...btnBase, flex: 1, padding: "12px 8px", background: bg, border: `1px solid ${border}`, color, fontSize: 13 }}
+                style={{ ...btnBase, flex: 1, padding: "12px 8px", background: bg, border: `1px solid ${border}`, color, fontSize: 12 }}
                 onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.80"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
               >
@@ -289,7 +289,7 @@ function KickDialog({ member, onClose }: { member: DiscordMember; onClose: () =>
       </DialogHeader>
       <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 8 }}>
         <ReasonField value={reason} onChange={setReason} />
-        {error && <p style={{ fontSize: 13, color: "#ef4444" }}>{error}</p>}
+        {error && <p style={{ fontSize: 12, color: "#ef4444" }}>{error}</p>}
       </div>
       <DialogFooter style={{ marginTop: 4 }}>
         <BtnCancel onClick={onClose} />
@@ -318,7 +318,7 @@ function BanDialog({ member, onClose }: { member: DiscordMember; onClose: () => 
       </DialogHeader>
       <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 8 }}>
         <ReasonField value={reason} onChange={setReason} />
-        {error && <p style={{ fontSize: 13, color: "#ef4444" }}>{error}</p>}
+        {error && <p style={{ fontSize: 12, color: "#ef4444" }}>{error}</p>}
       </div>
       <DialogFooter style={{ marginTop: 4 }}>
         <BtnCancel onClick={onClose} />
@@ -360,7 +360,7 @@ function TimeoutDialog({ member, onClose }: { member: DiscordMember; onClose: ()
           </select>
         </div>
         <ReasonField value={reason} onChange={setReason} />
-        {error && <p style={{ fontSize: 13, color: "#ef4444" }}>{error}</p>}
+        {error && <p style={{ fontSize: 12, color: "#ef4444" }}>{error}</p>}
       </div>
       <DialogFooter style={{ marginTop: 4 }}>
         <BtnCancel onClick={onClose} />
@@ -432,7 +432,7 @@ function RolesDialog({ member, roles, onClose }: { member: DiscordMember; roles:
         })}
       </div>
 
-      {error && <p style={{ fontSize: 13, color: "#ef4444" }}>{error}</p>}
+      {error && <p style={{ fontSize: 12, color: "#ef4444" }}>{error}</p>}
 
       <DialogFooter>
         <BtnCancel onClick={onClose} />
@@ -563,13 +563,13 @@ export function MembresClient({ members, roles }: { members: DiscordMember[]; ro
       {/* Active filter indicator */}
       {roleFilter && selectedRole && (
         <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px 0" }}>
-          <span style={{ fontSize: 13, color: "rgba(255,255,255,0.45)" }}>Filtré par :</span>
+          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>Filtré par :</span>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 4, borderRadius: 4, padding: "2px 8px", fontSize: 12, fontWeight: 500, backgroundColor: `${roleColor(selectedRole.color)}22`, color: roleColor(selectedRole.color) }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: roleColor(selectedRole.color) }} />
             {selectedRole.name}
           </span>
-          <button onClick={() => setRoleFilter("")} style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", background: "none", border: "none", cursor: "pointer" }}>✕</button>
-          <span style={{ fontSize: 13, color: "rgba(255,255,255,0.35)" }}>— {filtered.length} membre{filtered.length !== 1 ? "s" : ""}</span>
+          <button onClick={() => setRoleFilter("")} style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", background: "none", border: "none", cursor: "pointer" }}>✕</button>
+          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>— {filtered.length} membre{filtered.length !== 1 ? "s" : ""}</span>
         </div>
       )}
 

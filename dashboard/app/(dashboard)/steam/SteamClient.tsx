@@ -308,7 +308,7 @@ function SteamConfig({ config, channels, roles }: {
             </div>
           </div>
           <div style={{ padding: "12px 20px", borderTop: LINE, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div style={{ fontSize: 13 }}>
+            <div style={{ fontSize: 12 }}>
               {error && <span style={{ color: "#ef4444" }}>{error}</span>}
               {saved && <span style={{ color: "#4ade80" }}>✓ Enregistré</span>}
             </div>

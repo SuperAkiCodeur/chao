@@ -127,7 +127,7 @@ export default function CommandesPage() {
             </div>
 
             {/* Description */}
-            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.52)", lineHeight: 1.6, marginBottom: (cmd.params || cmd.note) ? 10 : 0 }}>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.52)", lineHeight: 1.6, marginBottom: (cmd.params || cmd.note) ? 10 : 0 }}>
               {cmd.description}
             </p>
 

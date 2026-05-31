@@ -97,7 +97,7 @@ function SelectDropdown({
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === "Escape" && doClose()}
                 placeholder={searchPlaceholder}
-                style={{ flex: 1, background: "transparent", border: "none", outline: "none", fontSize: 13, color: "#fff" }}
+                style={{ flex: 1, background: "transparent", border: "none", outline: "none", fontSize: 12, color: "#fff" }}
               />
               {query && (
                 <button type="button" onClick={() => setQuery("")}
@@ -109,7 +109,7 @@ function SelectDropdown({
             <div style={{ maxHeight: 200, overflowY: "auto", padding: "3px 0" }}>
               {!query && (
                 <button type="button" onClick={() => { onChange(""); doClose(); }}
-                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 7, padding: "7px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "rgba(255,255,255,0.35)" }}>
+                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 7, padding: "7px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 12, color: "rgba(255,255,255,0.35)" }}>
                   <span style={{ flex: 1, textAlign: "left" }}>— Aucun —</span>
                   {!value && <Check size={12} style={{ color: "#fff" }} />}
                 </button>
@@ -124,7 +124,7 @@ function SelectDropdown({
                 </p>
               ) : filtered.map((o) => (
                 <button key={o.id} type="button" onClick={() => { onChange(o.id); doClose(); }}
-                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 7, padding: "7px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 13, textAlign: "left" }}>
+                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 7, padding: "7px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 12, textAlign: "left" }}>
                   {o.icon}
                   {o.color && <span style={{ width: 7, height: 7, borderRadius: "50%", background: o.color, flexShrink: 0 }} />}
                   <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: o.color ?? "#fff" }}>{o.label}</span>
@@ -220,7 +220,7 @@ export function FeatureSettings({ fields, channels, roles, settings, noCollapse 
       style={{
         display: "flex", alignItems: "center", gap: 6,
         background: "#fff", color: "#000", border: "none", borderRadius: 8,
-        padding: "7px 14px", fontSize: 13, fontWeight: 600,
+        padding: "7px 14px", fontSize: 12, fontWeight: 600,
         cursor: pending ? "not-allowed" : "pointer", opacity: pending ? 0.6 : 1,
       }}
     >
@@ -236,7 +236,7 @@ export function FeatureSettings({ fields, channels, roles, settings, noCollapse 
           {fieldsBlock}
         </div>
         <div style={{ marginTop: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ fontSize: 13 }}>
+          <div style={{ fontSize: 12 }}>
             {error && <span style={{ color: "#ef4444" }}>{error}</span>}
             {saved && <span style={{ color: "#4ade80" }}>✓ Enregistré</span>}
           </div>
@@ -250,7 +250,7 @@ export function FeatureSettings({ fields, channels, roles, settings, noCollapse 
     <form onSubmit={handleSubmit} style={{ borderTop: BD }}>
       {fieldsBlock}
       <div style={{ padding: "11px 20px", borderTop: BD, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ fontSize: 13 }}>
+        <div style={{ fontSize: 12 }}>
           {error && <span style={{ color: "#ef4444" }}>{error}</span>}
           {saved && <span style={{ color: "#4ade80" }}>✓ Enregistré</span>}
         </div>

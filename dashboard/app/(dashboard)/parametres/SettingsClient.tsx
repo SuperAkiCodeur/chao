@@ -129,7 +129,7 @@ function Section({
       {/* Header */}
       <div style={{ padding: "14px 20px", borderBottom: LINE }}>
         <p style={{ fontSize: 15, fontWeight: 700, color: "#fff" }}>{title}</p>
-        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.40)", marginTop: 3 }}>{description}</p>
+        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.40)", marginTop: 3 }}>{description}</p>
       </div>
       {/* Fields */}
       <form onSubmit={handleSubmit}>
@@ -138,7 +138,7 @@ function Section({
         </div>
         {/* Footer */}
         <div style={{ padding: "12px 20px", borderTop: LINE, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ fontSize: 13 }}>
+          <div style={{ fontSize: 12 }}>
             {error && <span style={{ color: "#ef4444" }}>{error}</span>}
             {saved && <span style={{ color: "#4ade80" }}>✓ Enregistré</span>}
           </div>

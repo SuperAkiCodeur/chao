@@ -81,7 +81,7 @@ export default async function CinemaPage() {
                     <p style={{ fontSize: 15, fontWeight: 700, color: "#fff" }}>{p.title}</p>
                     <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>{meta.genres.length > 0 ? meta.genres.join(", ") : (p.mediaType === "movie" ? "Film" : "Série")}</p>
                     {meta.overview && <p style={{ fontSize: 12, color: "rgba(255,255,255,0.25)", marginTop: 6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{meta.overview}</p>}
-                    <p style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.60)", marginTop: 8 }}>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.60)", marginTop: 8 }}>
                       {date.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} à {date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
                     </p>
                   </div>

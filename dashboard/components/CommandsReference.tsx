@@ -51,7 +51,7 @@ export function CommandsReference({ commands }: { commands: BotCommand[] }) {
                   {/* Name + admin badge */}
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7, flexWrap: "wrap" }}>
                     <code style={{
-                      fontSize: 13, fontFamily: "ui-monospace, monospace", fontWeight: 700,
+                      fontSize: 12, fontFamily: "ui-monospace, monospace", fontWeight: 700,
                       color: "#fff", background: "rgba(255,255,255,0.08)",
                       padding: "3px 8px", borderRadius: 4,
                     }}>
@@ -69,7 +69,7 @@ export function CommandsReference({ commands }: { commands: BotCommand[] }) {
                   </div>
 
                   {/* Description */}
-                  <p style={{ fontSize: 13, color: "rgba(255,255,255,0.52)", lineHeight: 1.6 }}>
+                  <p style={{ fontSize: 12, color: "rgba(255,255,255,0.52)", lineHeight: 1.6 }}>
                     {cmd.description}
                   </p>
 
