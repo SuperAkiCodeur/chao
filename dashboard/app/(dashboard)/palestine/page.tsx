@@ -214,7 +214,7 @@ export default async function PalestinePage() {
           <Clock size={12} style={{ color: "#4ade80", flexShrink: 0 }} />
           <span style={{ fontSize: 13, color: "rgba(255,255,255,0.42)" }}>Prochain article</span>
           <span style={{
-            fontSize: 15, color: "#4ade80",
+            fontSize: 19, color: "#4ade80",
             fontFamily: "var(--font-serif)",
           }}>
             dans {countdownLabel}
@@ -266,7 +266,7 @@ export default async function PalestinePage() {
                         rel="noreferrer"
                         className="hover-slide"
                         style={{
-                          fontSize: 15, fontWeight: 400, color: "#fff",
+                          fontSize: 19, fontWeight: 400, color: "#fff",
                           fontFamily: "var(--font-serif)",
                           textDecoration: "none",
                           display: "inline-flex", alignItems: "center", gap: 6,

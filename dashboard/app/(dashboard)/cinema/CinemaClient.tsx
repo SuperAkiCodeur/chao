@@ -119,7 +119,7 @@ function LaunchDialog({ onClose }: { onClose: () => void }) {
           <div style={{ display: "flex", gap: 14, background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: 14 }}>
             <Poster url={tmdb.posterUrl} title={tmdb.resolvedTitle} width={60} />
             <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
-              <p style={{ fontSize: 16, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)" }}>{tmdb.resolvedTitle}</p>
+              <p style={{ fontSize: 20, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)" }}>{tmdb.resolvedTitle}</p>
               {tmdb.genres.length > 0 && <p style={{ fontSize: 12, color: "rgba(255,255,255,0.40)" }}>{tmdb.genres.join(", ")}</p>}
               {tmdb.overview && (
                 <p style={{ fontSize: 12, color: "rgba(255,255,255,0.28)", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical" }}>
@@ -339,7 +339,7 @@ export function CinemaClient({ partiesWithMeta }: { partiesWithMeta: PartyWithMe
               }}>
                 <Poster url={p.meta.posterUrl} title={p.title} width={96} />
                 <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-                  <p style={{ fontSize: 17, fontWeight: 400, color: "#fff", lineHeight: 1.2, fontFamily: "var(--font-serif)" }}>{p.title}</p>
+                  <p style={{ fontSize: 22, fontWeight: 400, color: "#fff", lineHeight: 1.2, fontFamily: "var(--font-serif)" }}>{p.title}</p>
                   {p.meta.genres.length > 0 && (
                     <p style={{ fontSize: 12, color: "rgba(255,255,255,0.40)", marginTop: 5 }}>{p.meta.genres.join(", ")}</p>
                   )}
@@ -384,7 +384,7 @@ export function CinemaClient({ partiesWithMeta }: { partiesWithMeta: PartyWithMe
                 <div key={p.messageId} style={{ display: "flex", gap: 14, padding: "12px 20px", borderTop: i > 0 ? BD : undefined, alignItems: "center" }}>
                   <Poster url={p.meta.posterUrl} title={p.title} width={40} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 15, fontWeight: 400, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "var(--font-serif)" }}>{p.title}</p>
+                    <p style={{ fontSize: 19, fontWeight: 400, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "var(--font-serif)" }}>{p.title}</p>
                     <p style={{ fontSize: 12, color: "rgba(255,255,255,0.32)", marginTop: 2 }}>
                       {p.meta.genres.length > 0 ? p.meta.genres.join(", ") : (p.mediaType === "movie" ? "Film" : "Série")}
                     </p>

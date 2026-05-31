@@ -38,7 +38,7 @@ export default async function HomePage() {
         ].map(({ icon, value, label }) => (
           <div key={label} className="anim-scale-in hover-glow" style={{ display: "flex", alignItems: "center", gap: 6, background: "#242424", border: BD, borderRadius: 99, padding: "5px 12px" }}>
             <span style={{ fontSize: 12 }}>{icon}</span>
-            <span style={{ fontSize: 15, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)" }}>{value}</span>
+            <span style={{ fontSize: 19, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)" }}>{value}</span>
             <span style={{ fontSize: 12, color: "rgba(255,255,255,0.30)" }}>{label}</span>
           </div>
         ))}
@@ -74,7 +74,7 @@ export default async function HomePage() {
               <div key={n} className="anim-scale-in hover-lift" style={{ width: 110, borderRadius: 10, padding: "14px", background: bg, border: "1px solid rgba(255,255,255,0.06)", display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 140, animationDelay: `${delay}ms` }}>
                 <span style={{ fontSize: 11, fontWeight: 700, color: muted, letterSpacing: "0.05em" }}>{n}</span>
                 <div>
-                  <p style={{ fontSize: 16, fontWeight: 400, color: fg, lineHeight: 1.2, fontFamily: "var(--font-serif)" }}>{title}</p>
+                  <p style={{ fontSize: 20, fontWeight: 400, color: fg, lineHeight: 1.2, fontFamily: "var(--font-serif)" }}>{title}</p>
                   <p style={{ fontSize: 12, color: muted, marginTop: 3 }}>{sub}</p>
                 </div>
               </div>
@@ -89,7 +89,7 @@ export default async function HomePage() {
           <div style={{ background: "#202020", borderRadius: 12, border: BD, overflow: "hidden", display: "flex", flexDirection: "column", minHeight: 0 }}>
             <div style={{ padding: "14px 20px", borderBottom: BD, flexShrink: 0 }}>
               <p style={{ fontSize: 12, color: "rgba(255,255,255,0.25)", fontWeight: 600, marginBottom: 3 }}>Total · {totalCinema} séances</p>
-              <p style={{ fontSize: 15, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", marginBottom: 10 }}>Séances cinéma</p>
+              <p style={{ fontSize: 18, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", marginBottom: 10 }}>Séances cinéma</p>
               {/* Progress bar animée */}
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{ flex: 1, height: 3, borderRadius: 99, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
@@ -99,7 +99,7 @@ export default async function HomePage() {
                     animation: "scale-in-x 1.2s cubic-bezier(0.16,1,0.3,1) 600ms both",
                   }} />
                 </div>
-                <span style={{ fontSize: 14, fontWeight: 400, color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-serif)", minWidth: 26 }}>{progress}%</span>
+                <span style={{ fontSize: 17, fontWeight: 400, color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-serif)", minWidth: 32 }}>{progress}%</span>
               </div>
             </div>
             <div style={{ flex: 1, overflowY: "auto" }}>
@@ -111,7 +111,7 @@ export default async function HomePage() {
                     {party.status === "active" ? "▶" : "✓"}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 15, fontWeight: 400, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "var(--font-serif)" }}>{party.title}</p>
+                    <p style={{ fontSize: 18, fontWeight: 400, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "var(--font-serif)" }}>{party.title}</p>
                     <p style={{ fontSize: 12, color: "rgba(255,255,255,0.28)", marginTop: 2 }}>
                       {party.viewingAt ? new Date(party.viewingAt).toLocaleDateString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "—"}
                     </p>
@@ -129,7 +129,7 @@ export default async function HomePage() {
 
             {/* Stats */}
             <div className="anim-fade-up d-200" style={{ background: "#202020", borderRadius: 12, border: BD, padding: "14px 20px" }}>
-              <p style={{ fontSize: 15, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", marginBottom: 12 }}>Statistiques</p>
+              <p style={{ fontSize: 18, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", marginBottom: 12 }}>Statistiques</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {[
                   { label: "Séances actives",  value: activeCinema,  sub: "en ce moment",  delay: 300 },
@@ -149,7 +149,7 @@ export default async function HomePage() {
 
             {/* Quick links */}
             <div className="anim-fade-up d-300" style={{ background: "#202020", borderRadius: 12, border: BD, padding: "14px 20px" }}>
-              <p style={{ fontSize: 15, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", marginBottom: 10 }}>Accès rapide</p>
+              <p style={{ fontSize: 18, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", marginBottom: 10 }}>Accès rapide</p>
               {[
                 { href: "/membres",    label: "Membres",    sub: "Gérer les membres", icon: "👥" },
                 { href: "/logs",       label: "Logs",       sub: "Voir l'historique", icon: "📋" },

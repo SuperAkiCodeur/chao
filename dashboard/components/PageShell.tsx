@@ -25,7 +25,7 @@ export function PageShell({
             {title}
           </h1>
           {description && (
-            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.35)", marginTop: 8, lineHeight: 1, fontStyle: "italic", fontFamily: "var(--font-serif)" }}>
+            <p style={{ fontSize: 16, color: "rgba(255,255,255,0.35)", marginTop: 8, lineHeight: 1, fontStyle: "italic", fontFamily: "var(--font-serif)" }}>
               {description}
             </p>
           )}
@@ -98,7 +98,7 @@ export function SectionCard({
           borderBottom: BD,
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
-          <p style={{ fontSize: 16, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)" }}>{title}</p>
+          <p style={{ fontSize: 20, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)" }}>{title}</p>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             {badge !== undefined && (
               <span style={{

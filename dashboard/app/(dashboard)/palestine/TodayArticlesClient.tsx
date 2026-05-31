@@ -68,7 +68,7 @@ export function TodayArticlesClient({ articles }: { articles: TodayArticle[] }) 
                       rel="noreferrer"
                       className="hover-slide"
                       style={{
-                        fontSize: 15, fontWeight: 400, color: "#fff",
+                        fontSize: 19, fontWeight: 400, color: "#fff",
                         fontFamily: "var(--font-serif)",
                         textDecoration: "none",
                         display: "inline-flex", alignItems: "center", gap: 6,
