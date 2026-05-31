@@ -214,7 +214,7 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
             <form onSubmit={handleSubmit} style={{ borderTop: BD }}>
               <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
                 {fields.map((f) => (
-                  <div key={f.key} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, alignItems: "center" }}>
+                  <div key={f.key} style={{ display: "grid", gridTemplateColumns: "1fr 260px", gap: 16, alignItems: "center" }}>
                     <div>
                       <p style={{ fontSize: 13, fontWeight: 600, color: "#fff", lineHeight: 1 }}>{f.label}</p>
                       <p style={{ fontSize: 11, color: "rgba(255,255,255,0.38)", marginTop: 4, lineHeight: 1.4 }}>{f.description}</p>

@@ -163,7 +163,7 @@ function Section({
 
 function Field({ label, description, children }: { label: string; description?: string; children: React.ReactNode }) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, alignItems: "center" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 260px", gap: 16, alignItems: "center" }}>
       <div>
         <p style={{ fontSize: 13, fontWeight: 600, color: "#fff", lineHeight: 1 }}>{label}</p>
         {description && <p style={{ fontSize: 11, color: "rgba(255,255,255,0.40)", marginTop: 4, lineHeight: 1.4 }}>{description}</p>}

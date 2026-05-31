@@ -12,10 +12,10 @@ const NAV = [
   { href: "/",            label: "Dashboard",  Icon: LayoutDashboard },
   { href: "/membres",     label: "Membres",    Icon: Users           },
   { href: "/cinema",      label: "Cinéma",     Icon: Clapperboard    },
-  { href: "/logs",        label: "Logs",       Icon: ScrollText      },
   { href: "/valorant",    label: "Valorant",   Icon: Crosshair       },
   { href: "/steam",       label: "Steam",      Icon: Gamepad2        },
   { href: "/commandes",   label: "Commandes",  Icon: BookOpen        },
+  { href: "/logs",        label: "Logs",       Icon: ScrollText      },
   { href: "/parametres",  label: "Paramètres", Icon: Settings        },
 ];
 
