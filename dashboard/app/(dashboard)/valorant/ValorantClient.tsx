@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Crosshair, Plus, Pencil, Trash2 } from "lucide-react";
+import { SectionCard } from "@/components/PageShell";
 import {
   Dialog,
   DialogContent,
@@ -232,34 +233,32 @@ export function ValorantClient({ accounts, defaultGuildId }: { accounts: Account
 
   return (
     <>
-      {/* Toolbar */}
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: accounts.length > 0 ? 12 : 0 }}>
-        <button
-          onClick={() => setDialog({ type: "add" })}
-          style={{
-            display: "flex", alignItems: "center", gap: 6,
-            padding: "7px 14px", borderRadius: 8, fontSize: 14, fontWeight: 600,
-            background: "rgba(255,255,255,0.10)", color: "#fff", border: "1px solid rgba(255,255,255,0.16)", cursor: "pointer",
-            transition: "opacity 0.15s",
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")}
-          onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-        >
-          <Plus size={14} />
-          Ajouter
-        </button>
-      </div>
-
-      {/* Empty state */}
-      {accounts.length === 0 && (
-        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.30)" }}>
-          Aucun compte Valorant lié. Utilisez le bouton "Ajouter" ou la commande{" "}
-          <code style={{ fontFamily: "ui-monospace, monospace", fontSize: 12, background: "rgba(255,255,255,0.08)", padding: "2px 6px", borderRadius: 4 }}>/valorant link</code>.
-        </p>
-      )}
-
-      {/* Accounts list */}
-      <div style={{ display: "flex", flexDirection: "column" }}>
+      <SectionCard
+        title="Comptes liés"
+        badge={`${accounts.length} compte${accounts.length !== 1 ? "s" : ""}`}
+        action={
+          <button
+            onClick={() => setDialog({ type: "add" })}
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "5px 12px", borderRadius: 7, fontSize: 12, fontWeight: 600,
+              background: "rgba(255,255,255,0.10)", color: "#fff",
+              border: "1px solid rgba(255,255,255,0.16)", cursor: "pointer",
+            }}
+          >
+            <Plus size={12} />
+            Ajouter
+          </button>
+        }
+      >
+        {/* Empty state */}
+        {accounts.length === 0 ? (
+          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.30)" }}>
+            Aucun compte Valorant lié. Utilisez le bouton "Ajouter" ou la commande{" "}
+            <code style={{ fontFamily: "ui-monospace, monospace", fontSize: 12, background: "rgba(255,255,255,0.08)", padding: "2px 6px", borderRadius: 4 }}>/valorant link</code>.
+          </p>
+        ) : (
+        <div style={{ display: "flex", flexDirection: "column" }}>
         {accounts.map((account, i) => {
           const rs = account.region ? (REGION_STYLE[account.region.toLowerCase()] ?? null) : null;
           return (
@@ -329,7 +328,9 @@ export function ValorantClient({ accounts, defaultGuildId }: { accounts: Account
             </div>
           );
         })}
-      </div>
+        </div>
+        )}
+      </SectionCard>
 
       {/* Dialogs */}
       <AddDialog defaultGuildId={defaultGuildId} open={dialog.type === "add"} onClose={close} />
