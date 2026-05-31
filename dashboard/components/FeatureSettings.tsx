@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useRef, useEffect } from "react";
-import { Check, ChevronDown, Save, Hash, Volume2, Settings, Search } from "lucide-react";
+import { Check, CheckCircle, XCircle, ChevronDown, Save, Hash, Volume2, Settings, Search } from "lucide-react";
 import { saveSection } from "@/app/(dashboard)/parametres/actions";
 import type { ActionResult } from "@/app/(dashboard)/parametres/actions";
 
@@ -151,9 +151,22 @@ export function FeatureSettings({ fields, channels, roles, settings, noCollapse 
   const [panelVisible, setPanelVisible] = useState(false);
   const [panelAnimClass, setPanelAnimClass] = useState("");
   const [vals, setVals] = useState<Record<string, string>>(settings);
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
+
+  type Toast = { message: string; type: "success" | "error"; leaving: boolean };
+  const [toast, setToast] = useState<Toast | null>(null);
+  const dismissTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const leaveTimer   = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function showToast(message: string, type: "success" | "error") {
+    if (dismissTimer.current) clearTimeout(dismissTimer.current);
+    if (leaveTimer.current)   clearTimeout(leaveTimer.current);
+    setToast({ message, type, leaving: false });
+    dismissTimer.current = setTimeout(() => {
+      setToast((t) => t ? { ...t, leaving: true } : null);
+      leaveTimer.current = setTimeout(() => setToast(null), 260);
+    }, 3200);
+  }
 
   const panelOpen = panelVisible && panelAnimClass !== "animate-accordion-up";
 
@@ -187,11 +200,10 @@ export function FeatureSettings({ fields, channels, roles, settings, noCollapse 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    setError(null); setSaved(false);
     start(async () => {
       const res: ActionResult = await saveSection(fd);
-      if (res.success) { setSaved(true); setTimeout(() => setSaved(false), 2500); }
-      else setError(res.error);
+      if (res.success) showToast("Paramètres enregistrés", "success");
+      else showToast(res.error, "error");
     });
   }
 
@@ -229,19 +241,35 @@ export function FeatureSettings({ fields, channels, roles, settings, noCollapse 
     </button>
   );
 
+  const toastEl = toast && (
+    <div className={toast.leaving ? "toast-leave" : "toast-enter"} style={{
+      position: "fixed", bottom: 24, right: 24, zIndex: 9999,
+      display: "flex", alignItems: "center", gap: 10,
+      padding: "12px 18px", borderRadius: 10,
+      background: toast.type === "success" ? "#0f1f0f" : "#1f0f0f",
+      border: `1px solid ${toast.type === "success" ? "rgba(74,222,128,0.22)" : "rgba(239,68,68,0.22)"}`,
+      color: toast.type === "success" ? "#4ade80" : "#ef4444",
+      fontSize: 14, fontWeight: 500,
+      boxShadow: "0 8px 32px rgba(0,0,0,0.55)",
+      pointerEvents: "none",
+    }}>
+      {toast.type === "success"
+        ? <CheckCircle size={15} strokeWidth={2.2} />
+        : <XCircle     size={15} strokeWidth={2.2} />}
+      {toast.message}
+    </div>
+  );
+
   if (noCollapse) {
     return (
       <form onSubmit={handleSubmit}>
         <div style={{ background: "#202020", borderRadius: 12, border: BD }}>
           {fieldsBlock}
         </div>
-        <div style={{ marginTop: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ fontSize: 12 }}>
-            {error && <span style={{ color: "#ef4444" }}>{error}</span>}
-            {saved && <span style={{ color: "#4ade80" }}>✓ Enregistré</span>}
-          </div>
+        <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end" }}>
           {saveButton}
         </div>
+        {toastEl}
       </form>
     );
   }
@@ -249,13 +277,10 @@ export function FeatureSettings({ fields, channels, roles, settings, noCollapse 
   const formBody = (
     <form onSubmit={handleSubmit} style={{ borderTop: BD }}>
       {fieldsBlock}
-      <div style={{ padding: "11px 20px", borderTop: BD, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ fontSize: 12 }}>
-          {error && <span style={{ color: "#ef4444" }}>{error}</span>}
-          {saved && <span style={{ color: "#4ade80" }}>✓ Enregistré</span>}
-        </div>
+      <div style={{ padding: "11px 20px", borderTop: BD, display: "flex", justifyContent: "flex-end" }}>
         {saveButton}
       </div>
+      {toastEl}
     </form>
   );
 
