@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { cinemaParties } from "@/lib/schema";
+import { cinemaParties, cinemaPartyRatings } from "@/lib/schema";
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { addLog } from "@/lib/logger";
@@ -203,12 +203,22 @@ export async function launchCinemaParty(params: {
 
 // ── Terminer ──────────────────────────────────────────────────────────────────
 
-export async function endCinemaParty(messageId: string, title: string): Promise<ActionResult> {
+export async function endCinemaParty(messageId: string, title: string, rating?: number): Promise<ActionResult> {
   try {
     await db
       .update(cinemaParties)
       .set({ status: "ended" })
       .where(and(eq(cinemaParties.messageId, messageId), eq(cinemaParties.guildId, GUILD_ID)));
+
+    if (rating && rating >= 1 && rating <= 5) {
+      await db
+        .insert(cinemaPartyRatings)
+        .values({ messageId, userId: "dashboard", rating })
+        .onConflictDoUpdate({
+          target: [cinemaPartyRatings.messageId, cinemaPartyRatings.userId],
+          set: { rating },
+        });
+    }
 
     void addLog({
       type: "cinema",

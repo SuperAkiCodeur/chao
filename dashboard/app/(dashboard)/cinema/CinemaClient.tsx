@@ -204,15 +204,21 @@ function LaunchDialog({ onClose }: { onClose: () => void }) {
 // ── EndDialog ─────────────────────────────────────────────────────────────────
 
 function EndDialog({ party, onClose }: { party: PartyWithMeta; onClose: () => void }) {
-  const [error, setError] = useState<string | null>(null);
-  const [pending, start] = useTransition();
+  const [error, setError]     = useState<string | null>(null);
+  const [rating, setRating]   = useState<number>(0);
+  const [hovered, setHovered] = useState<number>(0);
+  const [pending, start]      = useTransition();
+
   function handle() {
     setError(null);
     start(async () => {
-      const res: ActionResult = await endCinemaParty(party.messageId, party.title);
+      const res: ActionResult = await endCinemaParty(party.messageId, party.title, rating || undefined);
       if (res.success) onClose(); else setError(res.error);
     });
   }
+
+  const display = hovered || rating;
+
   return (
     <DialogContent>
       <DialogHeader>
@@ -221,6 +227,32 @@ function EndDialog({ party, onClose }: { party: PartyWithMeta; onClose: () => vo
           «&nbsp;<span style={{ fontWeight: 600, color: "#fff" }}>{party.title}</span>&nbsp;» sera marquée comme terminée.
         </DialogDescription>
       </DialogHeader>
+
+      <div style={{ marginTop: 16 }}>
+        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 10 }}>Note (optionnel)</p>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          {[1, 2, 3, 4, 5].map(n => (
+            <button key={n} type="button"
+              onClick={() => setRating(r => r === n ? 0 : n)}
+              onMouseEnter={() => setHovered(n)}
+              onMouseLeave={() => setHovered(0)}
+              style={{ background: "none", border: "none", cursor: "pointer", padding: 2 }}
+            >
+              <Star size={24}
+                fill={display >= n ? "#facc15" : "none"}
+                stroke={display >= n ? "#facc15" : "rgba(255,255,255,0.25)"}
+                strokeWidth={1.5}
+              />
+            </button>
+          ))}
+          {rating > 0 && (
+            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginLeft: 4 }}>
+              {rating}/5
+            </span>
+          )}
+        </div>
+      </div>
+
       {error && <p style={{ fontSize: 12, color: "#ef4444", marginTop: 8 }}>{error}</p>}
       <DialogFooter>
         <button style={btnGhost} onClick={onClose}>Retour</button>
