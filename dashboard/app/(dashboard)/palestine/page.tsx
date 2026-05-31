@@ -1,7 +1,7 @@
 import { PageShell, SectionCard } from "@/components/PageShell";
 import { FeatureSettings, type DiscordChannel, type DiscordRole } from "@/components/FeatureSettings";
 import { TodayArticlesClient, type TodayArticle } from "./TodayArticlesClient";
-import { ArrowSquareOut, Clock } from "@phosphor-icons/react";
+import { ArrowSquareOut, Clock } from "@phosphor-icons/react/dist/ssr";
 import { getAllSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";

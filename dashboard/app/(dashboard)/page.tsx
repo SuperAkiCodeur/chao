@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { cinemaParties, valorantLinks } from "@/lib/schema";
 import { eq, count } from "drizzle-orm";
-import { MagnifyingGlass } from "@phosphor-icons/react";
+import { MagnifyingGlass } from "@phosphor-icons/react/dist/ssr";
 
 export const dynamic = "force-dynamic";
 
