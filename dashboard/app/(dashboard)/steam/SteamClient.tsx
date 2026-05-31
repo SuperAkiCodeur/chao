@@ -72,7 +72,7 @@ function SelectDropdown({
           style={{
             height: 36, width: "100%", display: "flex", alignItems: "center", gap: 8,
             background: "rgba(255,255,255,0.06)", border: LINE2, borderRadius: 8,
-            paddingLeft: 12, paddingRight: 10, fontSize: 13, cursor: "pointer",
+            paddingLeft: 12, paddingRight: 10, fontSize: 14, cursor: "pointer",
           }}
         >
           {selected ? (
@@ -82,7 +82,7 @@ function SelectDropdown({
               <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: selected.color ?? "#fff" }}>
                 {selected.label}
               </span>
-              {selected.sub && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.30)", flexShrink: 0 }}>· {selected.sub}</span>}
+              {selected.sub && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.30)", flexShrink: 0 }}>· {selected.sub}</span>}
             </span>
           ) : (
             <span style={{ flex: 1, textAlign: "left", color: "rgba(255,255,255,0.35)" }}>{placeholder}</span>
@@ -109,24 +109,24 @@ function SelectDropdown({
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === "Escape" && doClose()}
                 placeholder="Rechercher…"
-                style={{ flex: 1, background: "transparent", border: "none", outline: "none", fontSize: 13, color: "#fff" }}
+                style={{ flex: 1, background: "transparent", border: "none", outline: "none", fontSize: 14, color: "#fff" }}
               />
             </div>
             <div style={{ maxHeight: 210, overflowY: "auto", padding: "4px 0" }}>
               <button type="button" onClick={() => { onChange(""); doClose(); }}
-                style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "rgba(255,255,255,0.35)" }}>
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "rgba(255,255,255,0.35)" }}>
                 <span style={{ flex: 1, textAlign: "left" }}>— Aucun —</span>
                 {!value && <Check size={13} style={{ color: "#fff" }} />}
               </button>
               {filtered.length === 0 ? (
-                <p style={{ padding: "8px 12px", fontSize: 11, color: "rgba(255,255,255,0.30)", fontStyle: "italic" }}>Aucun résultat</p>
+                <p style={{ padding: "8px 12px", fontSize: 12, color: "rgba(255,255,255,0.30)", fontStyle: "italic" }}>Aucun résultat</p>
               ) : filtered.map((o) => (
                 <button key={o.id} type="button" onClick={() => { onChange(o.id); doClose(); }}
-                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 13 }}>
+                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 14 }}>
                   {o.icon}
                   {o.color && <span style={{ width: 8, height: 8, borderRadius: "50%", background: o.color, flexShrink: 0 }} />}
                   <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: o.color ?? "#fff" }}>{o.label}</span>
-                  {o.sub && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.30)", flexShrink: 0 }}>{o.sub}</span>}
+                  {o.sub && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.30)", flexShrink: 0 }}>{o.sub}</span>}
                   {value === o.id && <Check size={13} style={{ color: "#fff", flexShrink: 0 }} />}
                 </button>
               ))}
@@ -151,9 +151,9 @@ function GamesList({ games }: { games: SteamGame[] }) {
 
   if (games.length === 0) {
     return (
-      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", padding: "8px 0" }}>
+      <p style={{ fontSize: 14, color: "rgba(255,255,255,0.35)", padding: "8px 0" }}>
         Aucun jeu tracké. Utilise{" "}
-        <code style={{ fontSize: 11, background: "rgba(255,255,255,0.08)", padding: "1px 6px", borderRadius: 4 }}>
+        <code style={{ fontSize: 12, background: "rgba(255,255,255,0.08)", padding: "1px 6px", borderRadius: 4 }}>
           /steam add
         </code>{" "}
         dans Discord.
@@ -197,21 +197,21 @@ function GamesList({ games }: { games: SteamGame[] }) {
               <a
                 href={`https://store.steampowered.com/app/${g.steamAppId}`}
                 target="_blank" rel="noreferrer"
-                style={{ fontSize: 13, fontWeight: 600, color: "#fff", textDecoration: "none", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                style={{ fontSize: 14, fontWeight: 600, color: "#fff", textDecoration: "none", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
               >
                 {g.title}
               </a>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3 }}>
                 {g.isOnSale === 1 && (
-                  <span className="anim-pulse" style={{ fontSize: 10, fontWeight: 700, color: "#4ade80", background: "rgba(74,222,128,0.12)", padding: "1px 6px", borderRadius: 99 }}>
+                  <span className="anim-pulse" style={{ fontSize: 11, fontWeight: 700, color: "#4ade80", background: "rgba(74,222,128,0.12)", padding: "1px 6px", borderRadius: 99 }}>
                     PROMO
                   </span>
                 )}
-                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.40)" }}>{priceStr}</span>
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.40)" }}>{priceStr}</span>
               </div>
             </div>
             {g.addedByName && (
-              <span style={{ fontSize: 10, color: "rgba(255,255,255,0.25)", flexShrink: 0 }}>{g.addedByName}</span>
+              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", flexShrink: 0 }}>{g.addedByName}</span>
             )}
             <button
               className="remove-btn"
@@ -280,7 +280,7 @@ function SteamConfig({ config, channels, roles }: {
       >
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Settings size={13} style={{ color: "rgba(255,255,255,0.45)" }} />
-          <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.70)", textTransform: "uppercase", letterSpacing: "0.07em" }}>Configuration</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.70)", textTransform: "uppercase", letterSpacing: "0.07em" }}>Configuration</span>
         </div>
         <ChevronDown size={13} style={{ color: "rgba(255,255,255,0.35)", transform: open ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
       </button>
@@ -290,10 +290,10 @@ function SteamConfig({ config, channels, roles }: {
           <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, alignItems: "center" }}>
               <div>
-                <p style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>Salon autorisé</p>
-                <p style={{ fontSize: 11, color: "rgba(255,255,255,0.40)", marginTop: 4 }}>
+                <p style={{ fontSize: 14, fontWeight: 600, color: "#fff" }}>Salon autorisé</p>
+                <p style={{ fontSize: 12, color: "rgba(255,255,255,0.40)", marginTop: 4 }}>
                   Seul ce salon peut utiliser{" "}
-                  <code style={{ fontSize: 10, background: "rgba(255,255,255,0.08)", padding: "1px 5px", borderRadius: 4 }}>/steam</code>{" "}
+                  <code style={{ fontSize: 11, background: "rgba(255,255,255,0.08)", padding: "1px 5px", borderRadius: 4 }}>/steam</code>{" "}
                   et reçoit les alertes
                 </p>
               </div>
@@ -301,14 +301,14 @@ function SteamConfig({ config, channels, roles }: {
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, alignItems: "center" }}>
               <div>
-                <p style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>Rôle autorisé</p>
-                <p style={{ fontSize: 11, color: "rgba(255,255,255,0.40)", marginTop: 4 }}>Seul ce rôle peut utiliser la commande et reçoit les pings promo</p>
+                <p style={{ fontSize: 14, fontWeight: 600, color: "#fff" }}>Rôle autorisé</p>
+                <p style={{ fontSize: 12, color: "rgba(255,255,255,0.40)", marginTop: 4 }}>Seul ce rôle peut utiliser la commande et reçoit les pings promo</p>
               </div>
               <SelectDropdown name="notifRoleId" options={roleOptions} value={vals.notifRoleId} onChange={(v) => setVals((p) => ({ ...p, notifRoleId: v }))} placeholder="Choisir un rôle…" />
             </div>
           </div>
           <div style={{ padding: "12px 20px", borderTop: LINE, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div style={{ fontSize: 12 }}>
+            <div style={{ fontSize: 13 }}>
               {error && <span style={{ color: "#ef4444" }}>{error}</span>}
               {saved && <span style={{ color: "#4ade80" }}>✓ Enregistré</span>}
             </div>
@@ -318,7 +318,7 @@ function SteamConfig({ config, channels, roles }: {
               style={{
                 display: "flex", alignItems: "center", gap: 6,
                 background: "#fff", color: "#000", border: "none", borderRadius: 8,
-                padding: "8px 16px", fontSize: 13, fontWeight: 600,
+                padding: "8px 16px", fontSize: 14, fontWeight: 600,
                 cursor: pending ? "not-allowed" : "pointer", opacity: pending ? 0.6 : 1,
               }}
             >

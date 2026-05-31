@@ -20,10 +20,10 @@ export function CommandsReference({ commands }: { commands: BotCommand[] }) {
         style={{ width: "100%", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Terminal size={13} style={{ color: "rgba(255,255,255,0.45)" }} />
-          <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.70)", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.70)", textTransform: "uppercase", letterSpacing: "0.07em" }}>
             Commandes Discord
           </span>
-          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", marginLeft: 2 }}>
+          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.25)", marginLeft: 2 }}>
             {commands.length} commande{commands.length !== 1 ? "s" : ""}
           </span>
         </div>
@@ -51,7 +51,7 @@ export function CommandsReference({ commands }: { commands: BotCommand[] }) {
                   {/* Name + admin badge */}
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7, flexWrap: "wrap" }}>
                     <code style={{
-                      fontSize: 12, fontFamily: "ui-monospace, monospace", fontWeight: 700,
+                      fontSize: 13, fontFamily: "ui-monospace, monospace", fontWeight: 700,
                       color: "#fff", background: "rgba(255,255,255,0.08)",
                       padding: "3px 8px", borderRadius: 4,
                     }}>
@@ -59,7 +59,7 @@ export function CommandsReference({ commands }: { commands: BotCommand[] }) {
                     </code>
                     {cmd.adminOnly && (
                       <span style={{
-                        fontSize: 10, fontWeight: 700, color: "#f59e0b",
+                        fontSize: 11, fontWeight: 700, color: "#f59e0b",
                         background: "rgba(245,158,11,0.10)", border: "1px solid rgba(245,158,11,0.18)",
                         padding: "2px 7px", borderRadius: 99,
                       }}>
@@ -69,7 +69,7 @@ export function CommandsReference({ commands }: { commands: BotCommand[] }) {
                   </div>
 
                   {/* Description */}
-                  <p style={{ fontSize: 12, color: "rgba(255,255,255,0.52)", lineHeight: 1.6 }}>
+                  <p style={{ fontSize: 13, color: "rgba(255,255,255,0.52)", lineHeight: 1.6 }}>
                     {cmd.description}
                   </p>
 
@@ -78,19 +78,19 @@ export function CommandsReference({ commands }: { commands: BotCommand[] }) {
                     <div style={{ marginTop: 10, paddingLeft: 12, borderLeft: "2px solid rgba(255,255,255,0.09)", display: "flex", flexDirection: "column", gap: 6 }}>
                       {cmd.params.map((p) => (
                         <div key={p.name} style={{ display: "flex", alignItems: "baseline", gap: 7, flexWrap: "wrap" }}>
-                          <code style={{ fontSize: 11, fontFamily: "ui-monospace, monospace", color: "#fff", flexShrink: 0, fontWeight: 600 }}>
+                          <code style={{ fontSize: 12, fontFamily: "ui-monospace, monospace", color: "#fff", flexShrink: 0, fontWeight: 600 }}>
                             {p.name}
                           </code>
-                          <span style={{ fontSize: 10, fontWeight: 600, flexShrink: 0, color: p.required ? "rgba(239,68,68,0.75)" : "rgba(255,255,255,0.22)" }}>
+                          <span style={{ fontSize: 11, fontWeight: 600, flexShrink: 0, color: p.required ? "rgba(239,68,68,0.75)" : "rgba(255,255,255,0.22)" }}>
                             {p.required ? "requis" : "optionnel"}
                           </span>
-                          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.42)", flex: 1, minWidth: 0, lineHeight: 1.5 }}>
+                          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.42)", flex: 1, minWidth: 0, lineHeight: 1.5 }}>
                             {p.description}
                           </span>
                           {p.choices && (
                             <span style={{ display: "flex", gap: 3, flexWrap: "wrap", flexShrink: 0 }}>
                               {p.choices.map((c) => (
-                                <code key={c} style={{ fontSize: 10, fontFamily: "ui-monospace, monospace", background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.45)", padding: "1px 5px", borderRadius: 4 }}>
+                                <code key={c} style={{ fontSize: 11, fontFamily: "ui-monospace, monospace", background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.45)", padding: "1px 5px", borderRadius: 4 }}>
                                   {c}
                                 </code>
                               ))}
@@ -103,7 +103,7 @@ export function CommandsReference({ commands }: { commands: BotCommand[] }) {
 
                   {/* Note */}
                   {cmd.note && (
-                    <p style={{ fontSize: 11, color: "rgba(255,255,255,0.30)", fontStyle: "italic", marginTop: 9, lineHeight: 1.5 }}>
+                    <p style={{ fontSize: 12, color: "rgba(255,255,255,0.30)", fontStyle: "italic", marginTop: 9, lineHeight: 1.5 }}>
                       {cmd.note}
                     </p>
                   )}

@@ -25,7 +25,7 @@ export function PageShell({
             {title}
           </h1>
           {description && (
-            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginTop: 8, lineHeight: 1, fontStyle: "italic", fontFamily: "var(--font-serif)" }}>
+            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.35)", marginTop: 8, lineHeight: 1, fontStyle: "italic", fontFamily: "var(--font-serif)" }}>
               {description}
             </p>
           )}
@@ -61,11 +61,11 @@ export function StatCard({
       <p style={{ fontSize: 34, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", letterSpacing: "0", lineHeight: 1 }}>
         {value}
       </p>
-      <p style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.55)", marginTop: 8 }}>
+      <p style={{ fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.55)", marginTop: 8 }}>
         {label}
       </p>
       {sub && (
-        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", marginTop: 3 }}>
+        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.25)", marginTop: 3 }}>
           {sub}
         </p>
       )}
@@ -97,10 +97,10 @@ export function SectionCard({
           borderBottom: BD,
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
-          <p style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{title}</p>
+          <p style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{title}</p>
           {badge !== undefined && (
             <span style={{
-              fontSize: 11, fontWeight: 600,
+              fontSize: 12, fontWeight: 600,
               color: "rgba(255,255,255,0.35)",
               background: "rgba(255,255,255,0.07)",
               padding: "3px 10px", borderRadius: 99,

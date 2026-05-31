@@ -39,18 +39,18 @@ const inputSt: React.CSSProperties = {
   width: "100%", height: 36,
   background: "rgba(255,255,255,0.05)", border: BDI,
   borderRadius: 8, padding: "0 12px",
-  fontSize: 13, color: "#fff", outline: "none",
+  fontSize: 14, color: "#fff", outline: "none",
 };
 
 const labelSt: React.CSSProperties = {
-  display: "block", fontSize: 11, fontWeight: 600,
+  display: "block", fontSize: 12, fontWeight: 600,
   color: "rgba(255,255,255,0.42)", marginBottom: 6,
 };
 
 function BtnCancel({ onClick }: { onClick: () => void }) {
   return (
     <button type="button" onClick={onClick}
-      style={{ padding: "7px 14px", borderRadius: 8, fontSize: 13, fontWeight: 500, border: BDI, background: "transparent", color: "rgba(255,255,255,0.55)", cursor: "pointer" }}>
+      style={{ padding: "7px 14px", borderRadius: 8, fontSize: 14, fontWeight: 500, border: BDI, background: "transparent", color: "rgba(255,255,255,0.55)", cursor: "pointer" }}>
       Annuler
     </button>
   );
@@ -59,7 +59,7 @@ function BtnCancel({ onClick }: { onClick: () => void }) {
 function BtnPrimary({ children, disabled }: { children: React.ReactNode; disabled?: boolean }) {
   return (
     <button type="submit" disabled={disabled}
-      style={{ padding: "7px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600, border: "none", background: "#fff", color: "#000", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.6 : 1 }}>
+      style={{ padding: "7px 14px", borderRadius: 8, fontSize: 14, fontWeight: 600, border: "none", background: "#fff", color: "#000", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.6 : 1 }}>
       {children}
     </button>
   );
@@ -68,7 +68,7 @@ function BtnPrimary({ children, disabled }: { children: React.ReactNode; disable
 function BtnDestructive({ children, disabled, onClick }: { children: React.ReactNode; disabled?: boolean; onClick: () => void }) {
   return (
     <button type="button" disabled={disabled} onClick={onClick}
-      style={{ padding: "7px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600, border: "1px solid rgba(239,68,68,0.30)", background: "rgba(239,68,68,0.10)", color: "#ef4444", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.6 : 1 }}>
+      style={{ padding: "7px 14px", borderRadius: 8, fontSize: 14, fontWeight: 600, border: "1px solid rgba(239,68,68,0.30)", background: "rgba(239,68,68,0.10)", color: "#ef4444", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.6 : 1 }}>
       {children}
     </button>
   );
@@ -119,7 +119,7 @@ function AddDialog({ defaultGuildId, open, onClose }: { defaultGuildId: string; 
             </select>
           </div>
 
-          {error && <p style={{ fontSize: 12, color: "#ef4444" }}>{error}</p>}
+          {error && <p style={{ fontSize: 13, color: "#ef4444" }}>{error}</p>}
 
           <DialogFooter style={{ marginTop: 4 }}>
             <BtnCancel onClick={onClose} />
@@ -153,7 +153,7 @@ function EditDialog({ account, open, onClose }: { account: Account; open: boolea
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Modifier le compte</DialogTitle>
-          <DialogDescription style={{ fontFamily: "ui-monospace, monospace", fontSize: 12 }}>
+          <DialogDescription style={{ fontFamily: "ui-monospace, monospace", fontSize: 13 }}>
             {account.discordUserId}
           </DialogDescription>
         </DialogHeader>
@@ -169,7 +169,7 @@ function EditDialog({ account, open, onClose }: { account: Account; open: boolea
               {REGIONS.map((r) => <option key={r} value={r}>{r.toUpperCase()}</option>)}
             </select>
           </div>
-          {error && <p style={{ fontSize: 12, color: "#ef4444" }}>{error}</p>}
+          {error && <p style={{ fontSize: 13, color: "#ef4444" }}>{error}</p>}
           <DialogFooter style={{ marginTop: 4 }}>
             <BtnCancel onClick={onClose} />
             <BtnPrimary disabled={pending}>{pending ? "Enregistrement…" : "Enregistrer"}</BtnPrimary>
@@ -206,7 +206,7 @@ function DeleteDialog({ account, open, onClose }: { account: Account; open: bool
             {" "}sera délié. Cette action est irréversible.
           </DialogDescription>
         </DialogHeader>
-        {error && <p style={{ fontSize: 12, color: "#ef4444", marginTop: 8 }}>{error}</p>}
+        {error && <p style={{ fontSize: 13, color: "#ef4444", marginTop: 8 }}>{error}</p>}
         <DialogFooter style={{ marginTop: 8 }}>
           <BtnCancel onClick={onClose} />
           <BtnDestructive disabled={pending} onClick={handleDelete}>
@@ -238,7 +238,7 @@ export function ValorantClient({ accounts, defaultGuildId }: { accounts: Account
           onClick={() => setDialog({ type: "add" })}
           style={{
             display: "flex", alignItems: "center", gap: 6,
-            padding: "7px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600,
+            padding: "7px 14px", borderRadius: 8, fontSize: 14, fontWeight: 600,
             background: "#fff", color: "#000", border: "none", cursor: "pointer",
             transition: "opacity 0.15s",
           }}
@@ -252,9 +252,9 @@ export function ValorantClient({ accounts, defaultGuildId }: { accounts: Account
 
       {/* Empty state */}
       {accounts.length === 0 && (
-        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.30)" }}>
+        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.30)" }}>
           Aucun compte Valorant lié. Utilisez le bouton "Ajouter" ou la commande{" "}
-          <code style={{ fontFamily: "ui-monospace, monospace", fontSize: 11, background: "rgba(255,255,255,0.08)", padding: "2px 6px", borderRadius: 4 }}>/valorant link</code>.
+          <code style={{ fontFamily: "ui-monospace, monospace", fontSize: 12, background: "rgba(255,255,255,0.08)", padding: "2px 6px", borderRadius: 4 }}>/valorant link</code>.
         </p>
       )}
 
@@ -282,10 +282,10 @@ export function ValorantClient({ accounts, defaultGuildId }: { accounts: Account
                   <Crosshair size={15} style={{ color: "rgba(255,255,255,0.45)" }} />
                 </div>
                 <div style={{ minWidth: 0 }}>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: "#fff", fontFamily: "ui-monospace, monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: "#fff", fontFamily: "ui-monospace, monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {account.riotId}
                   </p>
-                  <p style={{ fontSize: 11, color: "rgba(255,255,255,0.28)", marginTop: 2, fontFamily: "ui-monospace, monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <p style={{ fontSize: 12, color: "rgba(255,255,255,0.28)", marginTop: 2, fontFamily: "ui-monospace, monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {account.discordUserId}
                   </p>
                 </div>
@@ -295,14 +295,14 @@ export function ValorantClient({ accounts, defaultGuildId }: { accounts: Account
               <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
                 {rs && (
                   <span style={{
-                    fontSize: 10, fontWeight: 700, letterSpacing: "0.06em",
+                    fontSize: 11, fontWeight: 700, letterSpacing: "0.06em",
                     color: rs.color, background: rs.bg,
                     padding: "2px 8px", borderRadius: 99,
                   }}>
                     {account.region!.toUpperCase()}
                   </span>
                 )}
-                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.28)", whiteSpace: "nowrap" }}>
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.28)", whiteSpace: "nowrap" }}>
                   {new Date(account.linkedAt).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })}
                 </span>
                 <div style={{ display: "flex", alignItems: "center", gap: 2 }}>

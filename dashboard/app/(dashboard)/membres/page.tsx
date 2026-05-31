@@ -66,10 +66,10 @@ export default async function MembresPage() {
               <span style={{ fontSize: 36, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", lineHeight: 1 }}>
                 {value}
               </span>
-              <span style={{ fontSize: 11 }}>{icon}</span>
+              <span style={{ fontSize: 12 }}>{icon}</span>
             </div>
-            <p style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.55)", letterSpacing: "0.03em" }}>{label}</p>
-            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.22)", marginTop: 2 }}>{sub}</p>
+            <p style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.55)", letterSpacing: "0.03em" }}>{label}</p>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.22)", marginTop: 2 }}>{sub}</p>
           </div>
         ))}
       </div>
@@ -78,11 +78,11 @@ export default async function MembresPage() {
       <SectionCard title="Liste des membres" badge={`${members.length} membre${members.length !== 1 ? "s" : ""}`} noPadding>
         <div>
           {members.length === 0 ? (
-            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.30)", padding: "20px 0" }}>
+            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.30)", padding: "20px 0" }}>
               Impossible de récupérer les membres. Vérifie que{" "}
-              <code style={{ fontFamily: "monospace", fontSize: 11, background: "rgba(255,255,255,0.08)", padding: "2px 6px", borderRadius: 4 }}>DISCORD_GUILD_ID</code>
+              <code style={{ fontFamily: "monospace", fontSize: 12, background: "rgba(255,255,255,0.08)", padding: "2px 6px", borderRadius: 4 }}>DISCORD_GUILD_ID</code>
               {" "}et{" "}
-              <code style={{ fontFamily: "monospace", fontSize: 11, background: "rgba(255,255,255,0.08)", padding: "2px 6px", borderRadius: 4 }}>DISCORD_BOT_TOKEN</code>
+              <code style={{ fontFamily: "monospace", fontSize: 12, background: "rgba(255,255,255,0.08)", padding: "2px 6px", borderRadius: 4 }}>DISCORD_BOT_TOKEN</code>
               {" "}sont configurés.
             </p>
           ) : (

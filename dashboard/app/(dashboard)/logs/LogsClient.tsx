@@ -70,7 +70,7 @@ export function LogsClient({ logs }: { logs: Log[] }) {
               onClick={() => setActive(f.id)}
               className="anim-fade-up hover-glow"
               style={{
-                padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 500,
+                padding: "6px 14px", borderRadius: 8, fontSize: 13, fontWeight: 500,
                 border: "none", cursor: "pointer",
                 background: isActive ? "#fff" : "rgba(255,255,255,0.06)",
                 color: isActive ? "#000" : "rgba(255,255,255,0.50)",
@@ -79,11 +79,11 @@ export function LogsClient({ logs }: { logs: Log[] }) {
               }}
             >
               {f.label}
-              <span style={{ marginLeft: 6, fontSize: 10, opacity: 0.55 }}>{count}</span>
+              <span style={{ marginLeft: 6, fontSize: 11, opacity: 0.55 }}>{count}</span>
             </button>
           );
         })}
-        <span style={{ marginLeft: "auto", fontSize: 11, color: "rgba(255,255,255,0.28)" }}>
+        <span style={{ marginLeft: "auto", fontSize: 12, color: "rgba(255,255,255,0.28)" }}>
           {filtered.length} entrée{filtered.length !== 1 ? "s" : ""}
         </span>
       </div>
@@ -91,7 +91,7 @@ export function LogsClient({ logs }: { logs: Log[] }) {
       {/* Empty state */}
       {filtered.length === 0 && (
         <div className="anim-scale-in" style={{ background: "#202020", borderRadius: 12, border: LINE, padding: "32px 20px", textAlign: "center" }}>
-          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.30)" }}>Aucun événement pour ce filtre.</p>
+          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.30)" }}>Aucun événement pour ce filtre.</p>
         </div>
       )}
 
@@ -102,7 +102,7 @@ export function LogsClient({ logs }: { logs: Log[] }) {
           {/* Day separator */}
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <span style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.07)" }} />
-            <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.35)", textTransform: "capitalize" }}>{day}</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.35)", textTransform: "capitalize" }}>{day}</span>
             <span style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.07)" }} />
           </div>
 
@@ -110,7 +110,7 @@ export function LogsClient({ logs }: { logs: Log[] }) {
           <div style={{ background: "#202020", borderRadius: 12, border: LINE, overflow: "hidden" }}>
             {/* Card header */}
             <div style={{ padding: "11px 20px", borderBottom: LINE }}>
-              <p style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.50)" }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.50)" }}>
                 {entries.length} événement{entries.length > 1 ? "s" : ""}
               </p>
             </div>
@@ -140,16 +140,16 @@ export function LogsClient({ logs }: { logs: Log[] }) {
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 12, minWidth: 0 }}>
                       {/* Type badge */}
                       <span style={{
-                        fontSize: 10, fontWeight: 700, flexShrink: 0, marginTop: 2,
+                        fontSize: 11, fontWeight: 700, flexShrink: 0, marginTop: 2,
                         color: cfg.color, background: cfg.bg,
                         padding: "2px 8px", borderRadius: 99,
                       }}>
                         {cfg.label}
                       </span>
-                      <span style={{ fontSize: 13, color: "#fff", lineHeight: 1.5 }}>{log.description}</span>
+                      <span style={{ fontSize: 14, color: "#fff", lineHeight: 1.5 }}>{log.description}</span>
                     </div>
                     <span
-                      style={{ fontSize: 11, color: "rgba(255,255,255,0.28)", flexShrink: 0, marginTop: 2 }}
+                      style={{ fontSize: 12, color: "rgba(255,255,255,0.28)", flexShrink: 0, marginTop: 2 }}
                       title={formatFull(log.createdAt)}
                     >
                       {formatRelative(log.createdAt)}

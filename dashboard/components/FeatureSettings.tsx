@@ -63,7 +63,7 @@ function SelectDropdown({
           style={{
             height: 34, width: "100%", display: "flex", alignItems: "center", gap: 8,
             background: "rgba(255,255,255,0.05)", border: BDI, borderRadius: 8,
-            paddingLeft: 10, paddingRight: 8, fontSize: 13, cursor: "pointer",
+            paddingLeft: 10, paddingRight: 8, fontSize: 14, cursor: "pointer",
           }}
         >
           {selected ? (
@@ -73,7 +73,7 @@ function SelectDropdown({
               <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: selected.color ?? "#fff" }}>
                 {selected.label}
               </span>
-              {selected.sub && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.30)", flexShrink: 0 }}>· {selected.sub}</span>}
+              {selected.sub && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.30)", flexShrink: 0 }}>· {selected.sub}</span>}
             </span>
           ) : (
             <span style={{ flex: 1, textAlign: "left", color: "rgba(255,255,255,0.35)" }}>{placeholder}</span>
@@ -97,11 +97,11 @@ function SelectDropdown({
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === "Escape" && doClose()}
                 placeholder={searchPlaceholder}
-                style={{ flex: 1, background: "transparent", border: "none", outline: "none", fontSize: 12, color: "#fff" }}
+                style={{ flex: 1, background: "transparent", border: "none", outline: "none", fontSize: 13, color: "#fff" }}
               />
               {query && (
                 <button type="button" onClick={() => setQuery("")}
-                  style={{ color: "rgba(255,255,255,0.28)", background: "none", border: "none", cursor: "pointer", fontSize: 11, lineHeight: 1 }}>✕</button>
+                  style={{ color: "rgba(255,255,255,0.28)", background: "none", border: "none", cursor: "pointer", fontSize: 12, lineHeight: 1 }}>✕</button>
               )}
             </div>
 
@@ -109,26 +109,26 @@ function SelectDropdown({
             <div style={{ maxHeight: 200, overflowY: "auto", padding: "3px 0" }}>
               {!query && (
                 <button type="button" onClick={() => { onChange(""); doClose(); }}
-                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 7, padding: "7px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 12, color: "rgba(255,255,255,0.35)" }}>
+                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 7, padding: "7px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "rgba(255,255,255,0.35)" }}>
                   <span style={{ flex: 1, textAlign: "left" }}>— Aucun —</span>
                   {!value && <Check size={12} style={{ color: "#fff" }} />}
                 </button>
               )}
               {options.length === 0 ? (
-                <p style={{ padding: "7px 10px", fontSize: 11, color: "rgba(255,255,255,0.28)", fontStyle: "italic" }}>
+                <p style={{ padding: "7px 10px", fontSize: 12, color: "rgba(255,255,255,0.28)", fontStyle: "italic" }}>
                   Aucun élément — vérifie DISCORD_BOT_TOKEN et DISCORD_GUILD_ID.
                 </p>
               ) : filtered.length === 0 ? (
-                <p style={{ padding: "7px 10px", fontSize: 11, color: "rgba(255,255,255,0.28)", fontStyle: "italic" }}>
+                <p style={{ padding: "7px 10px", fontSize: 12, color: "rgba(255,255,255,0.28)", fontStyle: "italic" }}>
                   Aucun résultat pour « {query} »
                 </p>
               ) : filtered.map((o) => (
                 <button key={o.id} type="button" onClick={() => { onChange(o.id); doClose(); }}
-                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 7, padding: "7px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 12, textAlign: "left" }}>
+                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 7, padding: "7px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 13, textAlign: "left" }}>
                   {o.icon}
                   {o.color && <span style={{ width: 7, height: 7, borderRadius: "50%", background: o.color, flexShrink: 0 }} />}
                   <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: o.color ?? "#fff" }}>{o.label}</span>
-                  {o.sub && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.28)", flexShrink: 0 }}>{o.sub}</span>}
+                  {o.sub && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.28)", flexShrink: 0 }}>{o.sub}</span>}
                   {value === o.id && <Check size={12} style={{ color: "#fff", flexShrink: 0 }} />}
                 </button>
               ))}
@@ -202,7 +202,7 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
         style={{ width: "100%", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Settings size={13} style={{ color: "rgba(255,255,255,0.45)" }} />
-          <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.70)", textTransform: "uppercase", letterSpacing: "0.07em" }}>Configuration</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.70)", textTransform: "uppercase", letterSpacing: "0.07em" }}>Configuration</span>
         </div>
         <ChevronDown size={13} style={{ color: "rgba(255,255,255,0.35)", transform: panelOpen ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
       </button>
@@ -216,8 +216,8 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
                 {fields.map((f) => (
                   <div key={f.key} style={{ display: "grid", gridTemplateColumns: "1fr 260px", gap: 16, alignItems: "center" }}>
                     <div>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: "#fff", lineHeight: 1 }}>{f.label}</p>
-                      <p style={{ fontSize: 11, color: "rgba(255,255,255,0.38)", marginTop: 4, lineHeight: 1.4 }}>{f.description}</p>
+                      <p style={{ fontSize: 14, fontWeight: 600, color: "#fff", lineHeight: 1 }}>{f.label}</p>
+                      <p style={{ fontSize: 12, color: "rgba(255,255,255,0.38)", marginTop: 4, lineHeight: 1.4 }}>{f.description}</p>
                     </div>
                     <SelectDropdown
                       name={f.key}
@@ -230,7 +230,7 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
                 ))}
               </div>
               <div style={{ padding: "11px 20px", borderTop: BD, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ fontSize: 12 }}>
+                <div style={{ fontSize: 13 }}>
                   {error && <span style={{ color: "#ef4444" }}>{error}</span>}
                   {saved && <span style={{ color: "#4ade80" }}>✓ Enregistré</span>}
                 </div>
@@ -238,7 +238,7 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
                   style={{
                     display: "flex", alignItems: "center", gap: 6,
                     background: "#fff", color: "#000", border: "none", borderRadius: 8,
-                    padding: "7px 14px", fontSize: 12, fontWeight: 600,
+                    padding: "7px 14px", fontSize: 13, fontWeight: 600,
                     cursor: pending ? "not-allowed" : "pointer", opacity: pending ? 0.6 : 1,
                   }}
                 >

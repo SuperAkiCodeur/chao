@@ -82,7 +82,7 @@ export default function CommandesPage() {
             width: "100%", height: 38,
             background: "rgba(255,255,255,0.05)", border: BDI,
             borderRadius: 8, paddingLeft: 34, paddingRight: 12,
-            fontSize: 13, color: "#fff", outline: "none",
+            fontSize: 14, color: "#fff", outline: "none",
           }}
         />
       </div>
@@ -91,7 +91,7 @@ export default function CommandesPage() {
       <div className="anim-fade-up d-50" style={{ background: "#202020", borderRadius: 12, border: BD, overflow: "hidden" }}>
 
         {filtered.length === 0 ? (
-          <p style={{ padding: "24px 20px", fontSize: 13, color: "rgba(255,255,255,0.28)", textAlign: "center" }}>
+          <p style={{ padding: "24px 20px", fontSize: 14, color: "rgba(255,255,255,0.28)", textAlign: "center" }}>
             Aucune commande pour «&nbsp;{query}&nbsp;»
           </p>
         ) : filtered.map((cmd, i) => (
@@ -108,26 +108,26 @@ export default function CommandesPage() {
             {/* Name + badges */}
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
               <code style={{
-                fontSize: 13, fontFamily: "ui-monospace, monospace", fontWeight: 700,
+                fontSize: 14, fontFamily: "ui-monospace, monospace", fontWeight: 700,
                 color: "#fff", background: "rgba(255,255,255,0.08)",
                 padding: "3px 9px", borderRadius: 4,
               }}>
                 {cmd.name}
               </code>
               {cmd.adminOnly && (
-                <span style={{ fontSize: 10, fontWeight: 700, color: "#f59e0b", background: "rgba(245,158,11,0.10)", border: "1px solid rgba(245,158,11,0.18)", padding: "2px 8px", borderRadius: 99 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#f59e0b", background: "rgba(245,158,11,0.10)", border: "1px solid rgba(245,158,11,0.18)", padding: "2px 8px", borderRadius: 99 }}>
                   Admin
                 </span>
               )}
               {cmd.auto && (
-                <span style={{ fontSize: 10, fontWeight: 700, color: "#60a5fa", background: "rgba(96,165,250,0.10)", border: "1px solid rgba(96,165,250,0.18)", padding: "2px 8px", borderRadius: 99 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#60a5fa", background: "rgba(96,165,250,0.10)", border: "1px solid rgba(96,165,250,0.18)", padding: "2px 8px", borderRadius: 99 }}>
                   Automatique
                 </span>
               )}
             </div>
 
             {/* Description */}
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.52)", lineHeight: 1.6, marginBottom: (cmd.params || cmd.note) ? 10 : 0 }}>
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.52)", lineHeight: 1.6, marginBottom: (cmd.params || cmd.note) ? 10 : 0 }}>
               {cmd.description}
             </p>
 
@@ -136,13 +136,13 @@ export default function CommandesPage() {
               <div style={{ paddingLeft: 12, borderLeft: "2px solid rgba(255,255,255,0.09)", display: "flex", flexDirection: "column", gap: 7, marginBottom: cmd.note ? 10 : 0 }}>
                 {cmd.params.map((p) => (
                   <div key={p.name} style={{ display: "flex", alignItems: "baseline", gap: 7, flexWrap: "wrap" }}>
-                    <code style={{ fontSize: 11, fontFamily: "ui-monospace, monospace", color: "#fff", flexShrink: 0, fontWeight: 600 }}>
+                    <code style={{ fontSize: 12, fontFamily: "ui-monospace, monospace", color: "#fff", flexShrink: 0, fontWeight: 600 }}>
                       {p.name}
                     </code>
-                    <span style={{ fontSize: 10, fontWeight: 600, flexShrink: 0, color: p.required ? "rgba(239,68,68,0.75)" : "rgba(255,255,255,0.22)" }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, flexShrink: 0, color: p.required ? "rgba(239,68,68,0.75)" : "rgba(255,255,255,0.22)" }}>
                       {p.required ? "requis" : "optionnel"}
                     </span>
-                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.42)", flex: 1, minWidth: 0, lineHeight: 1.5 }}>
+                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.42)", flex: 1, minWidth: 0, lineHeight: 1.5 }}>
                       {p.description}
                     </span>
                   </div>
@@ -152,7 +152,7 @@ export default function CommandesPage() {
 
             {/* Note */}
             {cmd.note && (
-              <p style={{ fontSize: 11, color: "rgba(255,255,255,0.28)", fontStyle: "italic", lineHeight: 1.5 }}>
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.28)", fontStyle: "italic", lineHeight: 1.5 }}>
                 {cmd.note}
               </p>
             )}

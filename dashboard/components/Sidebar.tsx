@@ -62,7 +62,7 @@ export function Sidebar() {
               style={{
                 display: "flex", alignItems: "center", gap: 12,
                 padding: "10px 12px", borderRadius: 10, marginBottom: 2,
-                textDecoration: "none", fontSize: 14, fontWeight: 500,
+                textDecoration: "none", fontSize: 15, fontWeight: 500,
                 color: active ? "#fff" : "rgba(255,255,255,0.38)",
                 background: active ? "#2A2A2A" : "transparent",
                 transition: "background 0.15s, color 0.15s, transform 0.18s cubic-bezier(0.16,1,0.3,1)",
@@ -100,7 +100,7 @@ export function Sidebar() {
             width: "100%",
             background: "transparent", color: "rgba(255,255,255,0.30)",
             border: "none", borderRadius: 10, padding: "10px 12px",
-            fontSize: 13, fontWeight: 500, cursor: "pointer",
+            fontSize: 14, fontWeight: 500, cursor: "pointer",
             display: "flex", alignItems: "center", gap: 10,
             transition: "color 0.15s, background 0.15s, transform 0.18s cubic-bezier(0.16,1,0.3,1)",
           }}

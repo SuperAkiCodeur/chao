@@ -50,7 +50,7 @@ function SelectDropdown({
           style={{
             height: 36, width: "100%", display: "flex", alignItems: "center", gap: 8,
             background: "rgba(255,255,255,0.06)", border: LINE2, borderRadius: 8,
-            paddingLeft: 12, paddingRight: 10, fontSize: 13, cursor: "pointer",
+            paddingLeft: 12, paddingRight: 10, fontSize: 14, cursor: "pointer",
           }}
         >
           {selected ? (
@@ -60,7 +60,7 @@ function SelectDropdown({
               <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: selected.color ?? "#fff" }}>
                 {selected.label}
               </span>
-              {selected.sub && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.30)", flexShrink: 0 }}>· {selected.sub}</span>}
+              {selected.sub && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.30)", flexShrink: 0 }}>· {selected.sub}</span>}
             </span>
           ) : (
             <span style={{ flex: 1, textAlign: "left", color: "rgba(255,255,255,0.35)" }}>{placeholder}</span>
@@ -80,17 +80,17 @@ function SelectDropdown({
           >
             <div style={{ maxHeight: 220, overflowY: "auto", padding: "4px 0" }}>
               <button type="button" onClick={() => { onChange(""); doClose(); }}
-                style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "rgba(255,255,255,0.35)" }}>
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "rgba(255,255,255,0.35)" }}>
                 <span style={{ flex: 1, textAlign: "left" }}>— Aucun —</span>
                 {!value && <Check size={13} style={{ color: "#fff" }} />}
               </button>
               {options.map((o) => (
                 <button key={o.id} type="button" onClick={() => { onChange(o.id); doClose(); }}
-                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 13 }}>
+                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 14 }}>
                   {o.icon}
                   {o.color && <span style={{ width: 8, height: 8, borderRadius: "50%", background: o.color, flexShrink: 0 }} />}
                   <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: o.color ?? "#fff" }}>{o.label}</span>
-                  {o.sub && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.30)", flexShrink: 0 }}>{o.sub}</span>}
+                  {o.sub && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.30)", flexShrink: 0 }}>{o.sub}</span>}
                   {value === o.id && <Check size={13} style={{ color: "#fff", flexShrink: 0 }} />}
                 </button>
               ))}
@@ -128,8 +128,8 @@ function Section({
     <div className="anim-fade-up" style={{ background: "#202020", borderRadius: 12, border: LINE, animationDelay: `${delay}ms` }}>
       {/* Header */}
       <div style={{ padding: "14px 20px", borderBottom: LINE }}>
-        <p style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{title}</p>
-        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.40)", marginTop: 3 }}>{description}</p>
+        <p style={{ fontSize: 15, fontWeight: 700, color: "#fff" }}>{title}</p>
+        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.40)", marginTop: 3 }}>{description}</p>
       </div>
       {/* Fields */}
       <form onSubmit={handleSubmit}>
@@ -138,7 +138,7 @@ function Section({
         </div>
         {/* Footer */}
         <div style={{ padding: "12px 20px", borderTop: LINE, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ fontSize: 12 }}>
+          <div style={{ fontSize: 13 }}>
             {error && <span style={{ color: "#ef4444" }}>{error}</span>}
             {saved && <span style={{ color: "#4ade80" }}>✓ Enregistré</span>}
           </div>
@@ -148,7 +148,7 @@ function Section({
             style={{
               display: "flex", alignItems: "center", gap: 6,
               background: "#fff", color: "#000", border: "none", borderRadius: 8,
-              padding: "8px 16px", fontSize: 13, fontWeight: 600,
+              padding: "8px 16px", fontSize: 14, fontWeight: 600,
               cursor: pending ? "not-allowed" : "pointer", opacity: pending ? 0.6 : 1,
             }}
           >
@@ -165,8 +165,8 @@ function Field({ label, description, children }: { label: string; description?: 
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 260px", gap: 16, alignItems: "center" }}>
       <div>
-        <p style={{ fontSize: 13, fontWeight: 600, color: "#fff", lineHeight: 1 }}>{label}</p>
-        {description && <p style={{ fontSize: 11, color: "rgba(255,255,255,0.40)", marginTop: 4, lineHeight: 1.4 }}>{description}</p>}
+        <p style={{ fontSize: 14, fontWeight: 600, color: "#fff", lineHeight: 1 }}>{label}</p>
+        {description && <p style={{ fontSize: 12, color: "rgba(255,255,255,0.40)", marginTop: 4, lineHeight: 1.4 }}>{description}</p>}
       </div>
       <div>{children}</div>
     </div>
