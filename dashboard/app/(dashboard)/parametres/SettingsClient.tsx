@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useRef, useEffect } from "react";
-import { Check, ChevronDown, Save, Hash, Volume2 } from "lucide-react";
+import { Check, CaretDown, FloppyDisk, Hash, SpeakerHigh } from "@phosphor-icons/react";
 import { saveSection } from "./actions";
 import type { ActionResult } from "./actions";
 
@@ -65,7 +65,7 @@ function SelectDropdown({
           ) : (
             <span style={{ flex: 1, textAlign: "left", color: "rgba(255,255,255,0.35)" }}>{placeholder}</span>
           )}
-          <ChevronDown size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0, transform: isVisible ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
+          <CaretDown size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0, transform: isVisible ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
         </button>
 
         {open && (
@@ -152,7 +152,7 @@ function Section({
               cursor: pending ? "not-allowed" : "pointer", opacity: pending ? 0.6 : 1,
             }}
           >
-            <Save size={13} />
+            <FloppyDisk size={13} />
             {pending ? "Enregistrement…" : "Enregistrer"}
           </button>
         </div>
@@ -191,7 +191,7 @@ export function SettingsClient({ channels, roles, settings }: {
       id: c.id, label: c.name,
       sub: c.parent_id ? (categoryMap.get(c.parent_id) ?? undefined) : undefined,
       icon: c.type === 2 || c.type === 13
-        ? <Volume2 size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />
+        ? <SpeakerHigh size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />
         : <Hash    size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />,
     }));
 

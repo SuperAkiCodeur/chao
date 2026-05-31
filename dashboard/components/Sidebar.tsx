@@ -5,10 +5,10 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { signOut } from "next-auth/react";
 import {
-  LayoutDashboard, Users, Popcorn,
-  ScrollText, Swords, Gamepad2, Settings, LogOut,
-  BookOpen, Layers, ChevronDown,
-} from "lucide-react";
+  SquaresFour, Users, Popcorn,
+  Scroll, Sword, GameController, GearSix, SignOut,
+  BookOpen, Stack, CaretDown,
+} from "@phosphor-icons/react";
 
 function WatermelonIcon({ size = 17, style }: { size?: number; strokeWidth?: number; style?: React.CSSProperties }) {
   return (
@@ -20,22 +20,22 @@ function WatermelonIcon({ size = 17, style }: { size?: number; strokeWidth?: num
 
 const FEATURES = [
   { href: "/cinema",    label: "Cinéma",    Icon: Popcorn        },
-  { href: "/valorant",  label: "Valorant",  Icon: Swords         },
-  { href: "/steam",     label: "Steam",     Icon: Gamepad2       },
+  { href: "/valorant",  label: "Valorant",  Icon: Sword          },
+  { href: "/steam",     label: "Steam",     Icon: GameController },
   { href: "/palestine", label: "Palestine", Icon: WatermelonIcon },
 ];
 
 const FEATURE_HREFS = new Set(FEATURES.map((f) => f.href));
 
 const NAV_TOP = [
-  { href: "/",          label: "Dashboard",  Icon: LayoutDashboard },
-  { href: "/membres",   label: "Membres",    Icon: Users           },
+  { href: "/",          label: "Dashboard",  Icon: SquaresFour },
+  { href: "/membres",   label: "Membres",    Icon: Users       },
 ];
 
 const NAV_BOTTOM = [
-  { href: "/commandes",  label: "Commandes",  Icon: BookOpen  },
-  { href: "/logs",       label: "Logs",       Icon: ScrollText },
-  { href: "/parametres", label: "Paramètres", Icon: Settings  },
+  { href: "/commandes",  label: "Commandes",  Icon: BookOpen },
+  { href: "/logs",       label: "Logs",       Icon: Scroll   },
+  { href: "/parametres", label: "Paramètres", Icon: GearSix  },
 ];
 
 const linkBase: React.CSSProperties = {
@@ -142,10 +142,10 @@ export function Sidebar() {
             }}
           >
             <span style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <Layers size={17} strokeWidth={onFeature ? 2.2 : 1.7} />
+              <Stack size={17} weight={onFeature ? "bold" : "regular"} />
               Fonctionnalités
             </span>
-            <ChevronDown
+            <CaretDown
               size={13}
               style={{
                 color: "rgba(255,255,255,0.30)",
@@ -190,7 +190,7 @@ export function Sidebar() {
                         }
                       }}
                     >
-                      <Icon size={15} strokeWidth={active ? 2.2 : 1.7} />
+                      <Icon size={15} weight={active ? "bold" : "regular"} />
                       {label}
                     </Link>
                   );
@@ -241,7 +241,7 @@ export function Sidebar() {
             e.currentTarget.style.transform = "none";
           }}
         >
-          <LogOut size={15} />
+          <SignOut size={15} />
           Déconnexion
         </button>
       </div>
@@ -254,7 +254,7 @@ export function Sidebar() {
 
 function NavLink({ href, label, Icon, active, delay }: {
   href: string; label: string;
-  Icon: React.ComponentType<{ size?: number; strokeWidth?: number; style?: React.CSSProperties }>;
+  Icon: React.ComponentType<{ size?: number; weight?: string; strokeWidth?: number; style?: React.CSSProperties }>;
   active: boolean; delay: number;
 }) {
   return (
@@ -280,7 +280,7 @@ function NavLink({ href, label, Icon, active, delay }: {
         }
       }}
     >
-      <Icon size={17} strokeWidth={active ? 2.2 : 1.7} />
+      <Icon size={17} weight={active ? "bold" : "regular"} />
       {label}
     </Link>
   );

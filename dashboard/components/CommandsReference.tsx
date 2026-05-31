@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, Terminal } from "lucide-react";
+import { CaretDown, Terminal } from "@phosphor-icons/react";
 
 export type CommandParam = { name: string; description: string; required: boolean; choices?: string[] };
 export type BotCommand   = { name: string; description: string; params?: CommandParam[]; note?: string; adminOnly?: boolean };
@@ -27,7 +27,7 @@ export function CommandsReference({ commands }: { commands: BotCommand[] }) {
             {commands.length} commande{commands.length !== 1 ? "s" : ""}
           </span>
         </div>
-        <ChevronDown size={13} style={{ color: "rgba(255,255,255,0.35)", transform: panelOpen ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
+        <CaretDown size={13} style={{ color: "rgba(255,255,255,0.35)", transform: panelOpen ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
       </button>
 
       {/* Body — CSS Grid slide animation */}

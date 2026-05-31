@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useRef, useEffect } from "react";
-import { Check, CheckCircle, XCircle, ChevronDown, Save, Hash, Volume2, Settings, Search } from "lucide-react";
+import { Check, CheckCircle, XCircle, CaretDown, FloppyDisk, Hash, SpeakerHigh, GearSix, MagnifyingGlass } from "@phosphor-icons/react";
 import { saveSection } from "@/app/(dashboard)/parametres/actions";
 import type { ActionResult } from "@/app/(dashboard)/parametres/actions";
 
@@ -79,7 +79,7 @@ function SelectDropdown({
           ) : (
             <span style={{ flex: 1, textAlign: "left", color: "rgba(255,255,255,0.35)" }}>{placeholder}</span>
           )}
-          <ChevronDown size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0, transform: isVisible ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
+          <CaretDown size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0, transform: isVisible ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
         </button>
 
         {/* Dropdown panel */}
@@ -93,7 +93,7 @@ function SelectDropdown({
           >
             {/* Search */}
             <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 10px", borderBottom: BD }}>
-              <Search size={12} style={{ color: "rgba(255,255,255,0.28)", flexShrink: 0 }} />
+              <MagnifyingGlass size={12} style={{ color: "rgba(255,255,255,0.28)", flexShrink: 0 }} />
               <input ref={searchRef} type="text" value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === "Escape" && doClose()}
@@ -188,7 +188,7 @@ export function FeatureSettings({ fields, channels, roles, settings, noCollapse 
     .map((c) => ({
       id: c.id, label: c.name,
       icon: c.type === 2 || c.type === 13
-        ? <Volume2 size={12} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />
+        ? <SpeakerHigh size={12} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />
         : <Hash    size={12} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />,
     }));
 
@@ -252,7 +252,7 @@ export function FeatureSettings({ fields, channels, roles, settings, noCollapse 
         cursor: pending ? "not-allowed" : "pointer", opacity: pending ? 0.6 : 1,
       }}
     >
-      <Save size={14} />
+      <FloppyDisk size={14} />
       {pending ? "Enregistrement…" : "Enregistrer"}
     </button>
   );
@@ -307,10 +307,10 @@ export function FeatureSettings({ fields, channels, roles, settings, noCollapse 
       <button type="button" onClick={togglePanel}
         style={{ width: "100%", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Settings size={13} style={{ color: "rgba(255,255,255,0.45)" }} />
+          <GearSix size={13} style={{ color: "rgba(255,255,255,0.45)" }} />
           <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.70)", textTransform: "uppercase", letterSpacing: "0.07em" }}>Configuration</span>
         </div>
-        <ChevronDown size={13} style={{ color: "rgba(255,255,255,0.35)", transform: panelOpen ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
+        <CaretDown size={13} style={{ color: "rgba(255,255,255,0.35)", transform: panelOpen ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
       </button>
 
       {/* Collapsible body */}

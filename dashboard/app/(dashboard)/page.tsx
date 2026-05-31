@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { cinemaParties, valorantLinks } from "@/lib/schema";
 import { eq, count } from "drizzle-orm";
-import { Search } from "lucide-react";
+import { Search } from "@phosphor-icons/react";
 
 export const dynamic = "force-dynamic";
 

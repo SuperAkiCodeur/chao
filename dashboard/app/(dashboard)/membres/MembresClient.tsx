@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useMemo, useRef, useEffect, useCallback } from "react";
-import { Shield, Clock, UserX, UserMinus, Search, ChevronRight, ChevronDown, Check } from "lucide-react";
+import { Shield, Clock, UserCircleMinus, UserMinus, MagnifyingGlass, CaretRight, CaretDown, Check } from "@phosphor-icons/react";
 import {
   Dialog,
   DialogContent,
@@ -236,7 +236,7 @@ function DetailDialog({
             {[
               { label: "Sourdine", icon: <Clock size={13} />, color: "#fbbf24", bg: "rgba(251,191,36,0.10)", border: "rgba(251,191,36,0.28)", action: "timeout" as const },
               { label: "Expulser", icon: <UserMinus size={13} />, color: "#f97316", bg: "rgba(249,115,22,0.10)", border: "rgba(249,115,22,0.28)", action: "kick" as const },
-              { label: "Bannir",   icon: <UserX size={13} />,    color: "#ef4444", bg: "rgba(239,68,68,0.10)",  border: "rgba(239,68,68,0.28)",  action: "ban" as const },
+              { label: "Bannir",   icon: <UserCircleMinus size={13} />,    color: "#ef4444", bg: "rgba(239,68,68,0.10)",  border: "rgba(239,68,68,0.28)",  action: "ban" as const },
             ].map(({ label, icon, color, bg, border, action }) => (
               <button
                 key={action}
@@ -480,7 +480,7 @@ function RoleDropdown({ roles, value, onChange }: { roles: DiscordRole[]; value:
         ) : (
           <span style={{ color: "rgba(255,255,255,0.50)" }}>Tous les rôles</span>
         )}
-        <ChevronDown size={14} style={{ color: "rgba(255,255,255,0.45)", marginLeft: 2, transform: visible && animClass !== "animate-expand-up" ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
+        <CaretDown size={14} style={{ color: "rgba(255,255,255,0.45)", marginLeft: 2, transform: visible && animClass !== "animate-expand-up" ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
       </button>
 
       {visible && (
@@ -549,7 +549,7 @@ export function MembresClient({ members, roles }: { members: DiscordMember[]; ro
       {/* Search + role filter */}
       <div style={{ padding: "14px 20px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", gap: 8 }}>
         <div style={{ position: "relative", flex: 1 }}>
-          <Search style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", width: 14, height: 14, color: "rgba(255,255,255,0.38)", pointerEvents: "none" }} />
+          <MagnifyingGlass style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", width: 14, height: 14, color: "rgba(255,255,255,0.38)", pointerEvents: "none" }} />
           <input
             style={{ width: "100%", height: 36, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, paddingLeft: 36, paddingRight: 12, fontSize: 14, color: "#fff", outline: "none" }}
             placeholder="Rechercher un membre…"
@@ -628,8 +628,8 @@ export function MembresClient({ members, roles }: { members: DiscordMember[]; ro
                     title="Bannir"
                     onMouseEnter={(e) => { e.currentTarget.style.color = "#ef4444"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.28)"; }}
-                  ><UserX size={14} /></button>
-                  <ChevronRight size={14} style={{ color: "rgba(255,255,255,0.18)", marginLeft: 2 }} />
+                  ><UserCircleMinus size={14} /></button>
+                  <CaretRight size={14} style={{ color: "rgba(255,255,255,0.18)", marginLeft: 2 }} />
                 </div>
               </div>
             </div>

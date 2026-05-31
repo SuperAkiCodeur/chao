@@ -1,7 +1,7 @@
 import { PageShell, SectionCard } from "@/components/PageShell";
 import { FeatureSettings, type DiscordChannel, type DiscordRole } from "@/components/FeatureSettings";
 import { TodayArticlesClient, type TodayArticle } from "./TodayArticlesClient";
-import { ExternalLink, Clock } from "lucide-react";
+import { ArrowSquareOut, Clock } from "@phosphor-icons/react";
 import { getAllSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
@@ -231,7 +231,7 @@ export default async function PalestinePage() {
           }}
         >
           {AMP_AUTHOR}
-          <ExternalLink size={10} />
+          <ArrowSquareOut size={10} />
         </a>
       </div>
 
@@ -273,7 +273,7 @@ export default async function PalestinePage() {
                         }}
                       >
                         {post.title}
-                        <ExternalLink size={11} style={{ flexShrink: 0, opacity: 0.4 }} />
+                        <ArrowSquareOut size={11} style={{ flexShrink: 0, opacity: 0.4 }} />
                       </a>
                       {excerpt && (
                         <p style={{ fontSize: 12, color: "rgba(255,255,255,0.38)", marginTop: 5, lineHeight: 1.6 }}>

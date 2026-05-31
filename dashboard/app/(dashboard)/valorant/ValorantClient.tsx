@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Crosshair, Plus, Pencil, Trash2 } from "lucide-react";
+import { Crosshair, Plus, PencilSimple, Trash } from "@phosphor-icons/react";
 import { SectionCard } from "@/components/PageShell";
 import {
   Dialog,
@@ -312,7 +312,7 @@ export function ValorantClient({ accounts, defaultGuildId }: { accounts: Account
                     onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.28)"; e.currentTarget.style.background = "none"; }}
                   >
-                    <Pencil size={13} />
+                    <PencilSimple size={13} />
                   </button>
                   <button
                     onClick={() => setDialog({ type: "delete", account })}
@@ -321,7 +321,7 @@ export function ValorantClient({ accounts, defaultGuildId }: { accounts: Account
                     onMouseEnter={(e) => { e.currentTarget.style.color = "#ef4444"; e.currentTarget.style.background = "rgba(239,68,68,0.10)"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.28)"; e.currentTarget.style.background = "none"; }}
                   >
-                    <Trash2 size={13} />
+                    <Trash size={13} />
                   </button>
                 </div>
               </div>

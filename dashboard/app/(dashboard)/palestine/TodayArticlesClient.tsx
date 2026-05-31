@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ExternalLink, Send, Check, AlertCircle } from "lucide-react";
+import { ArrowSquareOut, PaperPlaneTilt, Check, WarningCircle } from "@phosphor-icons/react";
 import { SectionCard } from "@/components/PageShell";
 import { postArticleNow } from "./actions";
 
@@ -75,7 +75,7 @@ export function TodayArticlesClient({ articles }: { articles: TodayArticle[] }) 
                       }}
                     >
                       {article.title}
-                      <ExternalLink size={11} style={{ flexShrink: 0, opacity: 0.4 }} />
+                      <ArrowSquareOut size={11} style={{ flexShrink: 0, opacity: 0.4 }} />
                     </a>
                     {excerpt && (
                       <p style={{ fontSize: 12, color: "rgba(255,255,255,0.38)", marginTop: 4, lineHeight: 1.55 }}>
@@ -116,7 +116,7 @@ export function TodayArticlesClient({ articles }: { articles: TodayArticle[] }) 
                           cursor: "pointer",
                         }}
                       >
-                        <AlertCircle size={12} />
+                        <WarningCircle size={12} />
                         Réessayer
                       </button>
                     ) : (
@@ -134,7 +134,7 @@ export function TodayArticlesClient({ articles }: { articles: TodayArticle[] }) 
                           transition: "opacity 0.15s",
                         }}
                       >
-                        <Send size={11} />
+                        <PaperPlaneTilt size={11} />
                         {status === "pending" ? "Envoi…" : "Poster"}
                       </button>
                     )}

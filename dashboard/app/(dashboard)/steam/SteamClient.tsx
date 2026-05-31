@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useRef, useEffect } from "react";
-import { Trash2, ChevronDown, Search, Check, Settings, Save, Hash, Volume2 } from "lucide-react";
+import { Trash, CaretDown, MagnifyingGlass, Check, GearSix, FloppyDisk, Hash, SpeakerHigh } from "@phosphor-icons/react";
 import { saveSteamConfig, removeSteamGame } from "./actions";
 import type { DiscordChannel, DiscordRole } from "@/components/FeatureSettings";
 
@@ -87,7 +87,7 @@ function SelectDropdown({
           ) : (
             <span style={{ flex: 1, textAlign: "left", color: "rgba(255,255,255,0.35)" }}>{placeholder}</span>
           )}
-          <ChevronDown size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0, transform: isVisible ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
+          <CaretDown size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0, transform: isVisible ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
         </button>
 
         {open && (
@@ -101,7 +101,7 @@ function SelectDropdown({
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderBottom: LINE }}>
-              <Search size={13} style={{ color: "rgba(255,255,255,0.30)", flexShrink: 0 }} />
+              <MagnifyingGlass size={13} style={{ color: "rgba(255,255,255,0.30)", flexShrink: 0 }} />
               <input
                 ref={searchRef}
                 type="text"
@@ -223,7 +223,7 @@ function GamesList({ games }: { games: SteamGame[] }) {
               onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.30)")}
               title="Retirer"
             >
-              <Trash2 size={14} />
+              <Trash size={14} />
             </button>
           </div>
         );
@@ -251,7 +251,7 @@ function SteamConfig({ config, channels, roles }: {
       id: c.id, label: c.name,
       sub: c.parent_id ? (categoryMap.get(c.parent_id) ?? undefined) : undefined,
       icon: c.type === 2 || c.type === 13
-        ? <Volume2 size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />
+        ? <SpeakerHigh size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />
         : <Hash    size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />,
     }));
 
@@ -279,10 +279,10 @@ function SteamConfig({ config, channels, roles }: {
         style={{ width: "100%", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px" }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Settings size={13} style={{ color: "rgba(255,255,255,0.45)" }} />
+          <GearSix size={13} style={{ color: "rgba(255,255,255,0.45)" }} />
           <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.70)", textTransform: "uppercase", letterSpacing: "0.07em" }}>Configuration</span>
         </div>
-        <ChevronDown size={13} style={{ color: "rgba(255,255,255,0.35)", transform: open ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
+        <CaretDown size={13} style={{ color: "rgba(255,255,255,0.35)", transform: open ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
       </button>
 
       {open && (
@@ -322,7 +322,7 @@ function SteamConfig({ config, channels, roles }: {
                 cursor: pending ? "not-allowed" : "pointer", opacity: pending ? 0.6 : 1,
               }}
             >
-              <Save size={13} />
+              <FloppyDisk size={13} />
               {pending ? "Enregistrement…" : "Enregistrer"}
             </button>
           </div>

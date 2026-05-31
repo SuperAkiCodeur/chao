@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search } from "lucide-react";
+import { MagnifyingGlass } from "@phosphor-icons/react";
 import { PageShell } from "@/components/PageShell";
 
 const BD  = "1px solid rgba(255,255,255,0.08)";
@@ -73,7 +73,7 @@ export default function CommandesPage() {
 
       {/* Search */}
       <div className="anim-fade-in" style={{ position: "relative", maxWidth: 400 }}>
-        <Search size={13} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.30)", pointerEvents: "none" }} />
+        <MagnifyingGlass size={13} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.30)", pointerEvents: "none" }} />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}

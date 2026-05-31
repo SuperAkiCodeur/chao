@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Clapperboard, CheckCircle, XCircle, Calendar, Users, Star } from "lucide-react";
+import { Plus, FilmSlate, CheckCircle, XCircle, CalendarBlank, Users, Star } from "@phosphor-icons/react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
@@ -73,7 +73,7 @@ function Poster({ url, title, width = 48 }: { url: string | null; title: string;
   }
   return (
     <div style={{ width, borderRadius: 6, background: "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center", aspectRatio: "2/3", flexShrink: 0 }}>
-      <Clapperboard size={Math.round(width * 0.35)} style={{ color: "rgba(255,255,255,0.18)" }} />
+      <FilmSlate size={Math.round(width * 0.35)} style={{ color: "rgba(255,255,255,0.18)" }} />
     </div>
   );
 }
@@ -350,7 +350,7 @@ export function CinemaClient({ partiesWithMeta }: { partiesWithMeta: PartyWithMe
                   )}
                   <div style={{ marginTop: "auto", paddingTop: 14, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
                     <p style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.55)", display: "flex", alignItems: "center", gap: 6 }}>
-                      <Calendar size={12} style={{ flexShrink: 0 }} />
+                      <CalendarBlank size={12} style={{ flexShrink: 0 }} />
                       {date.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} à {date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
                     </p>
                     <div style={{ display: "flex", gap: 8 }}>
