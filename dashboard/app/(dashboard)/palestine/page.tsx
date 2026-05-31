@@ -101,9 +101,8 @@ export default async function PalestinePage() {
                   <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <a href={post.link} target="_blank" rel="noreferrer"
+                        className="hover-slide"
                         style={{ fontSize: 14, fontWeight: 600, color: "#fff", textDecoration: "none", display: "flex", alignItems: "center", gap: 6 }}
-                        onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.70)")}
-                        onMouseLeave={e => (e.currentTarget.style.color = "#fff")}
                       >
                         {title}
                         <ExternalLink size={11} style={{ flexShrink: 0, opacity: 0.4 }} />
