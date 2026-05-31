@@ -21,7 +21,7 @@ export function PageShell({
         borderBottom: BD,
       }}>
         <div>
-          <h1 className="anim-blur-in" style={{ fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", letterSpacing: "-0.01em", lineHeight: 1 }}>
+          <h1 style={{ fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", letterSpacing: "-0.01em", lineHeight: 1 }}>
             {title}
           </h1>
           {description && (
@@ -34,7 +34,7 @@ export function PageShell({
 
       {/* Contenu scrollable */}
       {/* scroll container séparé du layout — flex-shrink ne peut pas écraser les enfants */}
-      <div className="anim-fade-up d-50" style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
+      <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
         <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 10 }}>
           {children}
         </div>
