@@ -197,12 +197,12 @@ export function FeatureSettings({ fields, channels, roles, settings, noCollapse 
 
   const formBody = (
     <form onSubmit={handleSubmit} style={noCollapse ? undefined : { borderTop: BD }}>
-      <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ padding: "20px 20px 8px", display: "flex", flexDirection: "column", gap: 24 }}>
         {fields.map((f) => (
           <div key={f.key} style={{ display: "grid", gridTemplateColumns: "1fr 260px", gap: 16, alignItems: "center" }}>
             <div>
               <p style={{ fontSize: 14, fontWeight: 600, color: "#fff", lineHeight: 1 }}>{f.label}</p>
-              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.38)", marginTop: 4, lineHeight: 1.4 }}>{f.description}</p>
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.38)", marginTop: 5, lineHeight: 1.4 }}>{f.description}</p>
             </div>
             <SelectDropdown
               name={f.key}
@@ -214,7 +214,7 @@ export function FeatureSettings({ fields, channels, roles, settings, noCollapse 
           </div>
         ))}
       </div>
-      <div style={{ padding: "11px 20px", borderTop: BD, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div style={{ padding: "16px 20px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ fontSize: 13 }}>
           {error && <span style={{ color: "#ef4444" }}>{error}</span>}
           {saved && <span style={{ color: "#4ade80" }}>✓ Enregistré</span>}
