@@ -239,9 +239,9 @@ function DetailDialog({
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between px-3 py-2">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-xs font-medium text-foreground">{value}</span>
+    <div className="flex items-center justify-between gap-4 px-3 py-2">
+      <span className="text-xs text-muted-foreground shrink-0">{label}</span>
+      <span className="text-xs font-medium text-foreground text-right truncate max-w-[58%]">{value}</span>
     </div>
   );
 }

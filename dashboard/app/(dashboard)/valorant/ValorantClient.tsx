@@ -2,9 +2,6 @@
 
 import { useState, useTransition } from "react";
 import { Crosshair, Plus, Pencil, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +9,6 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogClose,
 } from "@/components/ui/dialog";
 import { addValorantAccount, editValorantAccount, deleteValorantAccount } from "./actions";
 import type { ActionResult } from "./actions";
@@ -26,277 +22,324 @@ type Account = {
   linkedAt: string;
 };
 
-const REGION_COLORS: Record<string, string> = {
-  eu: "text-blue-600",
-  na: "text-red-600",
-  ap: "text-amber-600",
-  kr: "text-rose-600",
-  br: "text-green-700",
-  latam: "text-orange-600",
+const BD  = "1px solid rgba(255,255,255,0.08)";
+const BDI = "1px solid rgba(255,255,255,0.12)";
+const REGIONS = ["eu", "na", "ap", "kr", "br", "latam"];
+
+const REGION_STYLE: Record<string, { color: string; bg: string }> = {
+  eu:    { color: "#60a5fa", bg: "rgba(96,165,250,0.13)"  },
+  na:    { color: "#f87171", bg: "rgba(248,113,113,0.13)" },
+  ap:    { color: "#fbbf24", bg: "rgba(251,191,36,0.13)"  },
+  kr:    { color: "#fb7185", bg: "rgba(251,113,133,0.13)" },
+  br:    { color: "#4ade80", bg: "rgba(74,222,128,0.13)"  },
+  latam: { color: "#f97316", bg: "rgba(249,115,22,0.13)"  },
 };
 
-const REGIONS = ["eu", "na", "ap", "kr", "br", "latam"];
+const inputSt: React.CSSProperties = {
+  width: "100%", height: 36,
+  background: "rgba(255,255,255,0.05)", border: BDI,
+  borderRadius: 8, padding: "0 12px",
+  fontSize: 13, color: "#fff", outline: "none",
+};
+
+const labelSt: React.CSSProperties = {
+  display: "block", fontSize: 11, fontWeight: 600,
+  color: "rgba(255,255,255,0.42)", marginBottom: 6,
+};
+
+function BtnCancel({ onClick }: { onClick: () => void }) {
+  return (
+    <button type="button" onClick={onClick}
+      style={{ padding: "7px 14px", borderRadius: 8, fontSize: 13, fontWeight: 500, border: BDI, background: "transparent", color: "rgba(255,255,255,0.55)", cursor: "pointer" }}>
+      Annuler
+    </button>
+  );
+}
+
+function BtnPrimary({ children, disabled }: { children: React.ReactNode; disabled?: boolean }) {
+  return (
+    <button type="submit" disabled={disabled}
+      style={{ padding: "7px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600, border: "none", background: "#fff", color: "#000", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.6 : 1 }}>
+      {children}
+    </button>
+  );
+}
+
+function BtnDestructive({ children, disabled, onClick }: { children: React.ReactNode; disabled?: boolean; onClick: () => void }) {
+  return (
+    <button type="button" disabled={disabled} onClick={onClick}
+      style={{ padding: "7px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600, border: "1px solid rgba(239,68,68,0.30)", background: "rgba(239,68,68,0.10)", color: "#ef4444", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.6 : 1 }}>
+      {children}
+    </button>
+  );
+}
 
 // ── Add dialog ────────────────────────────────────────────────────────────────
 
-function AddDialog({ defaultGuildId }: { defaultGuildId: string }) {
-  const [open, setOpen] = useState(false);
+function AddDialog({ defaultGuildId, open, onClose }: { defaultGuildId: string; open: boolean; onClose: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  function handleSubmit(formData: FormData) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setError(null);
+    const fd = new FormData(e.currentTarget);
     startTransition(async () => {
-      const result: ActionResult = await addValorantAccount(formData);
-      if (result.success) {
-        setOpen(false);
-      } else {
-        setError(result.error);
-      }
+      const result: ActionResult = await addValorantAccount(fd);
+      if (result.success) { onClose(); }
+      else { setError(result.error); }
     });
   }
 
   return (
-    <>
-      <Button size="sm" onClick={() => setOpen(true)}>
-        <Plus className="h-3.5 w-3.5" />
-        Ajouter
-      </Button>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Ajouter un compte Valorant</DialogTitle>
-            <DialogDescription>Lie un compte Riot à un membre Discord.</DialogDescription>
-          </DialogHeader>
-          <form action={handleSubmit} className="space-y-3">
-            <input type="hidden" name="guildId" value={defaultGuildId} />
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Discord User ID</label>
-              <Input name="discordUserId" placeholder="878583852728189020" required />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Riot ID</label>
-              <Input name="riotId" placeholder="Pseudo#TAG" required />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Région</label>
-              <select
-                name="region"
-                className="flex h-9 w-full rounded-lg border border-border bg-muted/40 px-3 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-              >
-                <option value="">— Sélectionner —</option>
-                {REGIONS.map((r) => (
-                  <option key={r} value={r}>{r.toUpperCase()}</option>
-                ))}
-              </select>
-            </div>
-            {error && <p className="text-xs text-destructive">{error}</p>}
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button type="button" variant="ghost" size="sm">Annuler</Button>
-              </DialogClose>
-              <Button type="submit" size="sm" disabled={pending}>
-                {pending ? "Ajout…" : "Ajouter"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </>
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Ajouter un compte Valorant</DialogTitle>
+          <DialogDescription>Lie un compte Riot à un membre Discord.</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 4 }}>
+          <input type="hidden" name="guildId" value={defaultGuildId} />
+
+          <div>
+            <label style={labelSt}>Discord User ID</label>
+            <input name="discordUserId" placeholder="878583852728189020" required style={inputSt} />
+          </div>
+
+          <div>
+            <label style={labelSt}>Riot ID</label>
+            <input name="riotId" placeholder="Pseudo#TAG" required style={inputSt} />
+          </div>
+
+          <div>
+            <label style={labelSt}>Région</label>
+            <select name="region" style={{ ...inputSt, appearance: "none", cursor: "pointer" }}>
+              <option value="">— Sélectionner —</option>
+              {REGIONS.map((r) => <option key={r} value={r}>{r.toUpperCase()}</option>)}
+            </select>
+          </div>
+
+          {error && <p style={{ fontSize: 12, color: "#ef4444" }}>{error}</p>}
+
+          <DialogFooter style={{ marginTop: 4 }}>
+            <BtnCancel onClick={onClose} />
+            <BtnPrimary disabled={pending}>{pending ? "Ajout…" : "Ajouter"}</BtnPrimary>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 
 // ── Edit dialog ───────────────────────────────────────────────────────────────
 
-function EditDialog({ account, onClose }: { account: Account; onClose: () => void }) {
+function EditDialog({ account, open, onClose }: { account: Account; open: boolean; onClose: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  function handleSubmit(formData: FormData) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setError(null);
+    const fd = new FormData(e.currentTarget);
     startTransition(async () => {
-      const result: ActionResult = await editValorantAccount(
-        account.discordUserId,
-        account.guildId,
-        formData,
-      );
-      if (result.success) {
-        onClose();
-      } else {
-        setError(result.error);
-      }
+      const result: ActionResult = await editValorantAccount(account.discordUserId, account.guildId, fd);
+      if (result.success) { onClose(); }
+      else { setError(result.error); }
     });
   }
 
   return (
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>Modifier le compte</DialogTitle>
-        <DialogDescription>Discord ID : {account.discordUserId}</DialogDescription>
-      </DialogHeader>
-      <form action={handleSubmit} className="space-y-3">
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">Riot ID</label>
-          <Input name="riotId" defaultValue={account.riotId} required />
-        </div>
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">Région</label>
-          <select
-            name="region"
-            defaultValue={account.region ?? ""}
-            className="flex h-9 w-full rounded-lg border border-border bg-muted/40 px-3 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-          >
-            <option value="">— Sélectionner —</option>
-            {REGIONS.map((r) => (
-              <option key={r} value={r}>{r.toUpperCase()}</option>
-            ))}
-          </select>
-        </div>
-        {error && <p className="text-xs text-destructive">{error}</p>}
-        <DialogFooter>
-          <Button type="button" variant="ghost" size="sm" onClick={onClose}>Annuler</Button>
-          <Button type="submit" size="sm" disabled={pending}>
-            {pending ? "Enregistrement…" : "Enregistrer"}
-          </Button>
-        </DialogFooter>
-      </form>
-    </DialogContent>
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Modifier le compte</DialogTitle>
+          <DialogDescription style={{ fontFamily: "ui-monospace, monospace", fontSize: 12 }}>
+            {account.discordUserId}
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 4 }}>
+          <div>
+            <label style={labelSt}>Riot ID</label>
+            <input name="riotId" defaultValue={account.riotId} required style={inputSt} />
+          </div>
+          <div>
+            <label style={labelSt}>Région</label>
+            <select name="region" defaultValue={account.region ?? ""} style={{ ...inputSt, appearance: "none", cursor: "pointer" }}>
+              <option value="">— Sélectionner —</option>
+              {REGIONS.map((r) => <option key={r} value={r}>{r.toUpperCase()}</option>)}
+            </select>
+          </div>
+          {error && <p style={{ fontSize: 12, color: "#ef4444" }}>{error}</p>}
+          <DialogFooter style={{ marginTop: 4 }}>
+            <BtnCancel onClick={onClose} />
+            <BtnPrimary disabled={pending}>{pending ? "Enregistrement…" : "Enregistrer"}</BtnPrimary>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 
 // ── Delete dialog ─────────────────────────────────────────────────────────────
 
-function DeleteDialog({ account, onClose }: { account: Account; onClose: () => void }) {
+function DeleteDialog({ account, open, onClose }: { account: Account; open: boolean; onClose: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function handleDelete() {
     setError(null);
     startTransition(async () => {
-      const result: ActionResult = await deleteValorantAccount(
-        account.discordUserId,
-        account.guildId,
-      );
-      if (result.success) {
-        onClose();
-      } else {
-        setError(result.error);
-      }
+      const result: ActionResult = await deleteValorantAccount(account.discordUserId, account.guildId);
+      if (result.success) { onClose(); }
+      else { setError(result.error); }
     });
   }
 
   return (
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>Supprimer le compte</DialogTitle>
-        <DialogDescription>
-          Cette action est irréversible. Le compte{" "}
-          <span className="font-mono font-semibold text-foreground">{account.riotId}</span>{" "}
-          sera délié.
-        </DialogDescription>
-      </DialogHeader>
-      {error && <p className="text-xs text-destructive mt-2">{error}</p>}
-      <DialogFooter>
-        <Button type="button" variant="ghost" size="sm" onClick={onClose}>Annuler</Button>
-        <Button
-          type="button"
-          variant="destructive"
-          size="sm"
-          disabled={pending}
-          onClick={handleDelete}
-        >
-          {pending ? "Suppression…" : "Supprimer"}
-        </Button>
-      </DialogFooter>
-    </DialogContent>
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Supprimer le compte</DialogTitle>
+          <DialogDescription>
+            Le compte{" "}
+            <span style={{ fontFamily: "ui-monospace, monospace", fontWeight: 600, color: "#fff" }}>{account.riotId}</span>
+            {" "}sera délié. Cette action est irréversible.
+          </DialogDescription>
+        </DialogHeader>
+        {error && <p style={{ fontSize: 12, color: "#ef4444", marginTop: 8 }}>{error}</p>}
+        <DialogFooter style={{ marginTop: 8 }}>
+          <BtnCancel onClick={onClose} />
+          <BtnDestructive disabled={pending} onClick={handleDelete}>
+            {pending ? "Suppression…" : "Supprimer"}
+          </BtnDestructive>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
-// ── Main table ────────────────────────────────────────────────────────────────
+// ── Main ──────────────────────────────────────────────────────────────────────
 
 type DialogState =
   | { type: "none" }
-  | { type: "edit"; account: Account }
+  | { type: "add" }
+  | { type: "edit";   account: Account }
   | { type: "delete"; account: Account };
 
 export function ValorantClient({ accounts, defaultGuildId }: { accounts: Account[]; defaultGuildId: string }) {
   const [dialog, setDialog] = useState<DialogState>({ type: "none" });
+  const close = () => setDialog({ type: "none" });
 
   return (
     <>
-      {/* Add button */}
-      <AddDialog defaultGuildId={defaultGuildId} />
+      {/* Toolbar */}
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: accounts.length > 0 ? 12 : 0 }}>
+        <button
+          onClick={() => setDialog({ type: "add" })}
+          style={{
+            display: "flex", alignItems: "center", gap: 6,
+            padding: "7px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600,
+            background: "#fff", color: "#000", border: "none", cursor: "pointer",
+            transition: "opacity 0.15s",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+        >
+          <Plus size={14} />
+          Ajouter
+        </button>
+      </div>
+
+      {/* Empty state */}
+      {accounts.length === 0 && (
+        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.30)" }}>
+          Aucun compte Valorant lié. Utilisez le bouton "Ajouter" ou la commande{" "}
+          <code style={{ fontFamily: "ui-monospace, monospace", fontSize: 11, background: "rgba(255,255,255,0.08)", padding: "2px 6px", borderRadius: 4 }}>/valorant link</code>.
+        </p>
+      )}
 
       {/* Accounts list */}
-      <div className="space-y-1 mt-2">
-        {accounts.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-2">
-            Aucun compte Valorant lié. Utilisez le bouton "Ajouter" ou la commande{" "}
-            <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono text-foreground">/valorant link</code>.
-          </p>
-        ) : (
-          accounts.map((account) => (
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        {accounts.map((account, i) => {
+          const rs = account.region ? (REGION_STYLE[account.region.toLowerCase()] ?? null) : null;
+          return (
             <div
               key={`${account.discordUserId}-${account.guildId}`}
-              className="flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-muted/40 transition-colors group"
+              className="anim-fade-up"
+              style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                gap: 12, padding: "11px 0",
+                borderTop: i > 0 ? BD : undefined,
+                transition: "background 0.12s, transform 0.18s cubic-bezier(0.16,1,0.3,1)",
+                animationDelay: `${i * 50}ms`,
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateX(3px)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}
             >
-              <div className="flex items-center gap-2.5">
-                <Crosshair className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                <span className="font-mono text-sm font-medium text-foreground">{account.riotId}</span>
-                <span className="text-xs text-muted-foreground hidden sm:block font-mono">
-                  {account.discordUserId}
-                </span>
+              {/* Left: icon + riot id + discord id */}
+              <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+                <div style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Crosshair size={15} style={{ color: "rgba(255,255,255,0.45)" }} />
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: "#fff", fontFamily: "ui-monospace, monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {account.riotId}
+                  </p>
+                  <p style={{ fontSize: 11, color: "rgba(255,255,255,0.28)", marginTop: 2, fontFamily: "ui-monospace, monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {account.discordUserId}
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center gap-2.5">
-                {account.region && (
-                  <span className={`text-xs font-semibold uppercase ${REGION_COLORS[account.region.toLowerCase()] ?? "text-muted-foreground"}`}>
-                    {account.region.toUpperCase()}
+
+              {/* Right: region badge + date + actions */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                {rs && (
+                  <span style={{
+                    fontSize: 10, fontWeight: 700, letterSpacing: "0.06em",
+                    color: rs.color, background: rs.bg,
+                    padding: "2px 8px", borderRadius: 99,
+                  }}>
+                    {account.region!.toUpperCase()}
                   </span>
                 )}
-                <span className="text-xs text-muted-foreground">
+                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.28)", whiteSpace: "nowrap" }}>
                   {new Date(account.linkedAt).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })}
                 </span>
-                {/* Action buttons — visible on hover */}
-                <div className="flex items-center gap-1">
+                <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
                   <button
                     onClick={() => setDialog({ type: "edit", account })}
-                    className="rounded-md p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                     title="Modifier"
+                    style={{ padding: 6, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.28)", borderRadius: 6, display: "flex", transition: "color 0.12s, background 0.12s" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.28)"; e.currentTarget.style.background = "none"; }}
                   >
-                    <Pencil className="h-3.5 w-3.5" />
+                    <Pencil size={13} />
                   </button>
                   <button
                     onClick={() => setDialog({ type: "delete", account })}
-                    className="rounded-md p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                     title="Supprimer"
+                    style={{ padding: 6, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.28)", borderRadius: 6, display: "flex", transition: "color 0.12s, background 0.12s" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = "#ef4444"; e.currentTarget.style.background = "rgba(239,68,68,0.10)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.28)"; e.currentTarget.style.background = "none"; }}
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 size={13} />
                   </button>
                 </div>
               </div>
             </div>
-          ))
-        )}
+          );
+        })}
       </div>
 
-      {/* Edit / Delete dialogs */}
-      <Dialog
-        open={dialog.type === "edit"}
-        onOpenChange={(open) => !open && setDialog({ type: "none" })}
-      >
-        {dialog.type === "edit" && (
-          <EditDialog account={dialog.account} onClose={() => setDialog({ type: "none" })} />
-        )}
-      </Dialog>
+      {/* Dialogs */}
+      <AddDialog defaultGuildId={defaultGuildId} open={dialog.type === "add"} onClose={close} />
 
-      <Dialog
-        open={dialog.type === "delete"}
-        onOpenChange={(open) => !open && setDialog({ type: "none" })}
-      >
-        {dialog.type === "delete" && (
-          <DeleteDialog account={dialog.account} onClose={() => setDialog({ type: "none" })} />
-        )}
-      </Dialog>
+      {dialog.type === "edit" && (
+        <EditDialog account={dialog.account} open onClose={close} />
+      )}
+      {dialog.type === "delete" && (
+        <DeleteDialog account={dialog.account} open onClose={close} />
+      )}
     </>
   );
 }
