@@ -67,14 +67,14 @@ export default async function DealsPage() {
       ) : (
         [...data.entries()].map(([channelId, { games, notifChannelId }]) => {
           const channel = channels.find((c) => c.id === channelId);
-          const notifChannel = notifChannelId ? channels.find((c) => c.id === notifChannelId) : null;
           return (
             <DealsClient
               key={channelId}
               channelId={channelId}
               channelName={channel?.name ?? channelId}
-              notifChannelName={notifChannel?.name ?? null}
+              notifChannelId={notifChannelId}
               games={games}
+              channels={channels}
             />
           );
         })

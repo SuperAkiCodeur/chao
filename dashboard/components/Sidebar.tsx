@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { signOut } from "next-auth/react";
 import {
   SquaresFour, Users, Popcorn,
-  Scroll, Sword, GameController, GearSix, SignOut,
+  Scroll, Sword, Fire, GearSix, SignOut,
   BookOpen, Stack, CaretDown, type IconWeight,
 } from "@phosphor-icons/react";
 
@@ -55,7 +55,7 @@ function WatermelonIcon({ size = 17, weight = "regular", style }: { size?: numbe
 const FEATURES = [
   { href: "/cinema",    label: "Cinéma",    Icon: Popcorn        },
   { href: "/valorant",  label: "Valorant",  Icon: Sword          },
-  { href: "/deals",     label: "Deals",     Icon: GameController },
+  { href: "/deals",     label: "Deals",     Icon: Fire           },
   { href: "/palestine", label: "Palestine", Icon: WatermelonIcon },
 ];
 

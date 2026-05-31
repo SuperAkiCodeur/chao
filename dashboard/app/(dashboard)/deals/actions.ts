@@ -1,2 +1,44 @@
 "use server";
-// Actions réservées au bot via l'API Discord — configuration gérée directement via /deals dans Discord.
+
+import { revalidatePath } from "next/cache";
+import { db } from "@/lib/db";
+import { dealsConfig, dealsGames } from "@/lib/schema";
+import { and, eq } from "drizzle-orm";
+
+const GUILD_ID = process.env.DISCORD_GUILD_ID!;
+
+export type ActionResult = { success: true } | { success: false; error: string };
+
+export async function saveDealsNotifChannel(channelId: string, notifChannelId: string): Promise<ActionResult> {
+  try {
+    const existing = await db.select().from(dealsConfig)
+      .where(and(eq(dealsConfig.guildId, GUILD_ID), eq(dealsConfig.channelId, channelId)));
+
+    if (existing.length > 0) {
+      await db.update(dealsConfig)
+        .set({ notifChannelId: notifChannelId || null })
+        .where(and(eq(dealsConfig.guildId, GUILD_ID), eq(dealsConfig.channelId, channelId)));
+    } else {
+      await db.insert(dealsConfig).values({
+        guildId: GUILD_ID,
+        channelId,
+        notifChannelId: notifChannelId || null,
+      });
+    }
+    revalidatePath("/deals");
+    return { success: true };
+  } catch {
+    return { success: false, error: "Erreur lors de la sauvegarde." };
+  }
+}
+
+export async function removeDealsGame(id: number): Promise<ActionResult> {
+  try {
+    await db.delete(dealsGames)
+      .where(and(eq(dealsGames.id, id), eq(dealsGames.guildId, GUILD_ID)));
+    revalidatePath("/deals");
+    return { success: true };
+  } catch {
+    return { success: false, error: "Erreur lors de la suppression." };
+  }
+}

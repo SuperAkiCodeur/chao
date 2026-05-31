@@ -71,7 +71,7 @@ async function buildMainMenu(guildId: string, channelId: string) {
   const config = await getConfig(guildId, channelId);
   const onSale = games.filter((g) => g.isOnSale === 1).length;
 
-  let header = `🎮 **Deals** — ${games.length} jeu${games.length !== 1 ? "x" : ""} tracké${games.length !== 1 ? "s" : ""}`;
+  let header = `🔥 **Deals** — ${games.length} jeu${games.length !== 1 ? "x" : ""} tracké${games.length !== 1 ? "s" : ""}`;
   if (onSale > 0) header += ` · 🔥 ${onSale} en promo`;
   if (config?.notifChannelId) header += `\n📢 Notifs : <#${config.notifChannelId}>`;
 
