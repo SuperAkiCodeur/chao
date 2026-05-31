@@ -3,7 +3,7 @@ import { MembresClient, type DiscordMember, type DiscordRole } from "./MembresCl
 import { FeatureSettings } from "@/components/FeatureSettings";
 import { CommandsReference } from "@/components/CommandsReference";
 import { getAllSettings } from "@/lib/settings";
-import { PageShell, StatCard, SectionCard } from "@/components/PageShell";
+import { PageShell, SectionCard } from "@/components/PageShell";
 
 export const dynamic = "force-dynamic";
 
@@ -50,10 +50,30 @@ export default async function MembresPage() {
   return (
     <PageShell title="Membres" description="Gestion et modération des membres du serveur">
 
-      {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 12 }}>
-        <StatCard value={members.length} label="Membres" sub="affichés (max 100)" />
-        <StatCard value={onlineCount} label="Connectés" sub="en ligne actuellement" />
+      {/* Stats — bloc compact, largeur par le contenu */}
+      <div className="anim-scale-in" style={{
+        display: "flex", alignSelf: "flex-start",
+        background: "#242424", border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: 14, overflow: "hidden",
+      }}>
+        {[
+          { value: members.length, label: "Membres",   sub: "affichés · max 100",   icon: "👥" },
+          { value: onlineCount,    label: "Connectés", sub: "en ligne actuellement", icon: "🟢" },
+        ].map(({ value, label, sub, icon }, i) => (
+          <div key={label} style={{
+            padding: "18px 28px",
+            borderLeft: i > 0 ? "1px solid rgba(255,255,255,0.08)" : undefined,
+          }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 6 }}>
+              <span style={{ fontSize: 36, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", lineHeight: 1 }}>
+                {value}
+              </span>
+              <span style={{ fontSize: 11 }}>{icon}</span>
+            </div>
+            <p style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.55)", letterSpacing: "0.03em" }}>{label}</p>
+            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.22)", marginTop: 2 }}>{sub}</p>
+          </div>
+        ))}
       </div>
 
       {/* List */}
