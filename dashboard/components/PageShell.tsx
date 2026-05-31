@@ -78,7 +78,7 @@ export function SectionCard({
   title, badge, children, noPadding = false, delay = 0,
 }: {
   title?: string;
-  badge?: string | number;
+  badge?: React.ReactNode;
   children: React.ReactNode;
   noPadding?: boolean;
   delay?: number;

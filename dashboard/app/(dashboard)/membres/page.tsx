@@ -48,30 +48,23 @@ export default async function MembresPage() {
   return (
     <PageShell title="Membres" description="Gestion et modération des membres du serveur">
 
-      {/* Stats — pill discret */}
-      <div className="anim-scale-in" style={{
-        display: "flex", alignSelf: "flex-start", alignItems: "center", gap: 0,
-        background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)",
-        borderRadius: 8, overflow: "hidden",
-      }}>
-        {[
-          { value: members.length, label: "membres",  icon: "👥" },
-          { value: onlineCount,    label: "connectés", icon: "🟢" },
-        ].map(({ value, label, icon }, i) => (
-          <div key={label} style={{
-            display: "flex", alignItems: "center", gap: 6,
-            padding: "7px 14px",
-            borderLeft: i > 0 ? "1px solid rgba(255,255,255,0.07)" : undefined,
-          }}>
-            <span style={{ fontSize: 11 }}>{icon}</span>
-            <span style={{ fontSize: 14, fontWeight: 600, color: "#fff", fontFamily: "var(--font-serif)" }}>{value}</span>
-            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.38)", fontWeight: 500 }}>{label}</span>
-          </div>
-        ))}
-      </div>
-
       {/* List */}
-      <SectionCard title="Liste des membres" badge={`${members.length} membre${members.length !== 1 ? "s" : ""}`} noPadding>
+      <SectionCard
+        title="Liste des membres"
+        badge={
+          <span style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.35)" }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <span style={{ fontSize: 11 }}>👥</span>
+              {members.length} membres
+            </span>
+            <span style={{ opacity: 0.3 }}>·</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <span style={{ fontSize: 11 }}>🟢</span>
+              {onlineCount} connectés
+            </span>
+          </span>
+        }
+        noPadding
         <div>
           {members.length === 0 ? (
             <p style={{ fontSize: 14, color: "rgba(255,255,255,0.30)", padding: "20px 0" }}>
