@@ -123,17 +123,14 @@ async function fetchTodayArticles(rssUrl: string): Promise<TodayArticle[]> {
     const xml   = await res.text();
     const items = parseRss(xml);
 
-    // Start of today in Paris time
-    const now   = new Date();
-    const paris = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Paris" }));
-    const start = new Date(paris);
-    start.setHours(0, 0, 0, 0);
+    // Dernières 24h
+    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     return items
       .filter((item) => {
         if (!item.pubDate) return false;
         const d = new Date(item.pubDate);
-        return !isNaN(d.getTime()) && d >= start;
+        return !isNaN(d.getTime()) && d >= cutoff;
       })
       .map((item, idx) => ({
         id:          idx,
