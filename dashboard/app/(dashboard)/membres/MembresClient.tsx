@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useMemo, useRef, useEffect } from "react";
+import { useState, useTransition, useMemo, useRef, useEffect, useCallback } from "react";
 import { Shield, Clock, UserX, UserMinus, Search, ChevronRight, ChevronDown, Check } from "lucide-react";
 import {
   Dialog,
@@ -518,6 +518,11 @@ export function MembresClient({ members, roles }: { members: DiscordMember[]; ro
   const [roleFilter, setRoleFilter] = useState("");
   const [dialog, setDialog] = useState<DialogState>({ type: "none" });
 
+  // Garde le dernier membre en mémoire pour que DetailDialog reste monté
+  // pendant l'animation de fermeture (Radix attend animationend avant de démonter)
+  const lastDetailMember = useRef<DiscordMember | null>(null);
+  if (dialog.type === "detail") lastDetailMember.current = dialog.member;
+
   const assignedRoles = useMemo(() => {
     const memberRoleIds = new Set(members.flatMap((m) => m.roles));
     return roles
@@ -633,8 +638,16 @@ export function MembresClient({ members, roles }: { members: DiscordMember[]; ro
       </div>
 
       {/* Dialogs */}
+      {/* lastDetailMember reste non-null après fermeture → DetailDialog reste monté → animation de sortie jouée */}
       <Dialog open={dialog.type === "detail"} onOpenChange={(o) => !o && close()}>
-        {dialog.type === "detail" && <DetailDialog member={dialog.member} roles={roles} onClose={close} onAction={(type) => setDialog({ type, member: dialog.member })} />}
+        {lastDetailMember.current && (
+          <DetailDialog
+            member={lastDetailMember.current}
+            roles={roles}
+            onClose={close}
+            onAction={(type) => setDialog({ type, member: lastDetailMember.current! })}
+          />
+        )}
       </Dialog>
       <Dialog open={dialog.type === "roles"} onOpenChange={(o) => !o && close()}>
         {dialog.type === "roles" && <RolesDialog member={dialog.member} roles={roles} onClose={close} />}

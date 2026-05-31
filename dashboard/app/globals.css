@@ -133,6 +133,23 @@ button { cursor: pointer; }
 .d-500 { animation-delay: 500ms; }
 .d-600 { animation-delay: 600ms; }
 
+/* ── Dialog open / close animations ── */
+@keyframes dialog-in {
+  from { opacity: 0; scale: 0.93; }
+  to   { opacity: 1; scale: 1;    }
+}
+@keyframes dialog-out {
+  from { opacity: 1; scale: 1;    }
+  to   { opacity: 0; scale: 0.95; }
+}
+@keyframes overlay-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes overlay-out { from { opacity: 1; } to { opacity: 0; } }
+
+.dialog-content[data-state="open"]   { animation: dialog-in   0.24s cubic-bezier(0.16,1,0.3,1) both; }
+.dialog-content[data-state="closed"] { animation: dialog-out  0.16s ease-in both; }
+.dialog-overlay[data-state="open"]   { animation: overlay-in  0.20s ease-out both; }
+.dialog-overlay[data-state="closed"] { animation: overlay-out 0.14s ease-in both; }
+
 /* ── Hover lift (server-component cards) ── */
 .hover-lift {
   transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s;
