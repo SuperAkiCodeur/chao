@@ -75,10 +75,11 @@ export function StatCard({
 
 /* ── Section card ── */
 export function SectionCard({
-  title, badge, children, noPadding = false, delay = 0,
+  title, badge, action, children, noPadding = false, delay = 0,
 }: {
   title?: string;
   badge?: React.ReactNode;
+  action?: React.ReactNode;
   children: React.ReactNode;
   noPadding?: boolean;
   delay?: number;
@@ -98,16 +99,19 @@ export function SectionCard({
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
           <p style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{title}</p>
-          {badge !== undefined && (
-            <span style={{
-              fontSize: 12, fontWeight: 600,
-              color: "rgba(255,255,255,0.35)",
-              background: "rgba(255,255,255,0.07)",
-              padding: "3px 10px", borderRadius: 99,
-            }}>
-              {badge}
-            </span>
-          )}
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {badge !== undefined && (
+              <span style={{
+                fontSize: 12, fontWeight: 600,
+                color: "rgba(255,255,255,0.35)",
+                background: "rgba(255,255,255,0.07)",
+                padding: "3px 10px", borderRadius: 99,
+              }}>
+                {badge}
+              </span>
+            )}
+            {action}
+          </div>
         </div>
       )}
       <div style={noPadding ? undefined : { padding: "16px 20px" }}>

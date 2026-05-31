@@ -307,20 +307,22 @@ export function CinemaClient({ partiesWithMeta }: { partiesWithMeta: PartyWithMe
 
   return (
     <>
-      {/* Bouton nouvelle séance */}
-      <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <button onClick={() => setDialog({ type: "launch" })} style={{
-          display: "flex", alignItems: "center", gap: 8,
-          background: "rgba(255,255,255,0.10)", color: "#fff", border: "1px solid rgba(255,255,255,0.16)", borderRadius: 8,
-          padding: "9px 18px", fontSize: 14, fontWeight: 600, cursor: "pointer",
-        }}>
-          <Plus size={15} />
-          Nouvelle séance
-        </button>
-      </div>
-
       {/* Séances prévues — grandes cartes */}
-      <SectionCard title="Séances prévues" badge={upcoming.length > 0 ? upcoming.length : undefined} noPadding>
+      <SectionCard
+        title="Séances prévues"
+        badge={upcoming.length > 0 ? upcoming.length : undefined}
+        action={
+          <button onClick={() => setDialog({ type: "launch" })} style={{
+            display: "flex", alignItems: "center", gap: 7,
+            background: "rgba(255,255,255,0.10)", color: "#fff",
+            border: "1px solid rgba(255,255,255,0.16)", borderRadius: 7,
+            padding: "5px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer",
+          }}>
+            <Plus size={12} />
+            Nouvelle séance
+          </button>
+        }
+        noPadding>
       {upcoming.length === 0 ? (
         <p style={{ fontSize: 14, color: "rgba(255,255,255,0.28)", fontStyle: "italic", textAlign: "center", padding: "20px" }}>
           Aucune séance prévue
