@@ -95,7 +95,7 @@ export default async function CinemaPage() {
 
       {/* All sessions */}
       <SectionCard title="Séances">
-        <div style={{ padding: "0 20px 16px" }}>
+        <div>
           <CinemaClient parties={parties} />
         </div>
       </SectionCard>

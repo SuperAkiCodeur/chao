@@ -42,7 +42,7 @@ export default async function SteamPage() {
       </div>
 
       <SectionCard title="Jeux trackés">
-        <div style={{ padding: "0 20px 16px" }}>
+        <div>
           <SteamClient games={games} config={config} channels={channels} roles={roles} />
         </div>
       </SectionCard>

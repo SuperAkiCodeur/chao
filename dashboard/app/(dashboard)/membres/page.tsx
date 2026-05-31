@@ -58,7 +58,7 @@ export default async function MembresPage() {
 
       {/* List */}
       <SectionCard title="Liste des membres" badge={`${members.length} membre${members.length !== 1 ? "s" : ""}`}>
-        <div style={{ padding: "0 20px 16px" }}>
+        <div>
           {members.length === 0 ? (
             <p style={{ fontSize: 13, color: "rgba(255,255,255,0.30)", padding: "20px 0" }}>
               Impossible de récupérer les membres. Vérifie que{" "}

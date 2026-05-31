@@ -22,29 +22,38 @@ export function Sidebar() {
   const path = usePathname();
 
   return (
-    <aside style={{ width: "100%", height: "100%", background: "#1C1C1C", display: "flex", flexDirection: "column" }}>
+    <aside style={{
+      width: "100%", height: "100%",
+      background: "#1C1C1C",
+      display: "flex", flexDirection: "column",
+    }}>
 
-      {/* Logo */}
-      <div style={{ padding: "32px 28px 24px" }}>
-        <span style={{ fontSize: 28, fontWeight: 800, color: "#ffffff", letterSpacing: "-0.05em" }}>
+      {/* Logo — hauteur fixe 60px, aligne avec le top-bar */}
+      <div style={{
+        height: 60, flexShrink: 0,
+        display: "flex", alignItems: "center",
+        padding: "0 20px",
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
+      }}>
+        <span style={{ fontSize: 24, fontWeight: 800, color: "#fff", letterSpacing: "-0.05em" }}>
           chao
         </span>
       </div>
 
       {/* Nav */}
-      <nav style={{ flex: 1, padding: "0 14px", display: "flex", flexDirection: "column", gap: 4 }}>
+      <nav style={{ flex: 1, overflowY: "auto", padding: "8px 10px 0" }}>
         {NAV.map(({ href, label, Icon }) => {
           const active = path === href;
           return (
             <Link key={href} href={href} style={{
-              display: "flex", alignItems: "center", gap: 14,
-              padding: "11px 14px", borderRadius: 12,
+              display: "flex", alignItems: "center", gap: 12,
+              padding: "10px 12px", borderRadius: 10, marginBottom: 2,
               textDecoration: "none", fontSize: 14, fontWeight: 500,
               color: active ? "#fff" : "rgba(255,255,255,0.38)",
               background: active ? "#2A2A2A" : "transparent",
               transition: "background 0.15s, color 0.15s",
             }}>
-              <Icon size={18} strokeWidth={active ? 2.2 : 1.7} />
+              <Icon size={17} strokeWidth={active ? 2.2 : 1.7} />
               {label}
             </Link>
           );
@@ -52,18 +61,24 @@ export function Sidebar() {
       </nav>
 
       {/* Logout */}
-      <div style={{ padding: "16px 14px 20px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+      <div style={{
+        padding: "10px 10px 12px",
+        borderTop: "1px solid rgba(255,255,255,0.06)",
+        flexShrink: 0,
+      }}>
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
           style={{
-            width: "100%", background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.50)",
-            border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, padding: "10px 14px",
-            fontSize: 13, fontWeight: 600, cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "space-between",
+            width: "100%",
+            background: "transparent", color: "rgba(255,255,255,0.35)",
+            border: "none", borderRadius: 10, padding: "10px 12px",
+            fontSize: 13, fontWeight: 500, cursor: "pointer",
+            display: "flex", alignItems: "center", gap: 10,
+            transition: "color 0.15s",
           }}
         >
-          <span>Déconnexion</span>
-          <LogOut size={14} />
+          <LogOut size={15} />
+          Déconnexion
         </button>
       </div>
 

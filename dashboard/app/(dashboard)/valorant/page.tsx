@@ -35,7 +35,7 @@ export default async function ValorantPage() {
       </div>
 
       <SectionCard title="Comptes liés" badge={`${accounts.length} compte${accounts.length !== 1 ? "s" : ""}`}>
-        <div style={{ padding: "0 20px 16px" }}>
+        <div>
           <ValorantClient accounts={accounts} defaultGuildId={DEFAULT_GUILD_ID} />
         </div>
       </SectionCard>

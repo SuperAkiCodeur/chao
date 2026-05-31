@@ -1,5 +1,6 @@
-const DIV = "1px solid rgba(255,255,255,0.06)";
+const LINE = "1px solid rgba(255,255,255,0.06)";
 
+/* ── Page wrapper ── */
 export function PageShell({
   title,
   description,
@@ -11,27 +12,40 @@ export function PageShell({
 }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      {/* Header */}
-      <div style={{ padding: "22px 28px", borderBottom: DIV, flexShrink: 0 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
-          {title}
-        </h1>
-        {description && (
-          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.38)", marginTop: 5 }}>
-            {description}
-          </p>
-        )}
+
+      {/* Header — même hauteur 60px que le logo sidebar */}
+      <div style={{
+        height: 60, flexShrink: 0,
+        display: "flex", alignItems: "center",
+        padding: "0 24px",
+        borderBottom: LINE,
+      }}>
+        <div>
+          <h1 style={{ fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em", lineHeight: 1 }}>
+            {title}
+          </h1>
+          {description && (
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 3 }}>
+              {description}
+            </p>
+          )}
+        </div>
       </div>
 
-      {/* Scrollable content */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "24px 28px", display: "flex", flexDirection: "column", gap: 16 }}>
+      {/* Contenu scrollable */}
+      <div style={{
+        flex: 1, overflowY: "auto",
+        padding: "20px 24px",
+        display: "flex", flexDirection: "column", gap: 16,
+      }}>
         {children}
       </div>
+
     </div>
   );
 }
 
-/* ── Stat card (réutilisable dans toutes les pages) ── */
+/* ── Stat card ── */
 export function StatCard({
   value,
   label,
@@ -42,37 +56,68 @@ export function StatCard({
   sub?: string;
 }) {
   return (
-    <div style={{ background: "#242424", borderRadius: 14, padding: "18px 20px", border: "1px solid rgba(255,255,255,0.06)" }}>
-      <p style={{ fontSize: 30, fontWeight: 800, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1 }}>{value}</p>
-      <p style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.60)", marginTop: 8 }}>{label}</p>
-      {sub && <p style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", marginTop: 3 }}>{sub}</p>}
+    <div style={{
+      background: "#242424",
+      borderRadius: 12,
+      padding: "18px 20px",
+      border: LINE,
+    }}>
+      <p style={{ fontSize: 32, fontWeight: 800, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1 }}>
+        {value}
+      </p>
+      <p style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.55)", marginTop: 8 }}>
+        {label}
+      </p>
+      {sub && (
+        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.22)", marginTop: 3 }}>
+          {sub}
+        </p>
+      )}
     </div>
   );
 }
 
-/* ── Section card wrapper ── */
+/* ── Section card ── */
 export function SectionCard({
   title,
   badge,
   children,
+  noPadding = false,
 }: {
   title?: string;
   badge?: string | number;
   children: React.ReactNode;
+  noPadding?: boolean;
 }) {
   return (
-    <div style={{ background: "#202020", borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
+    <div style={{
+      background: "#202020",
+      borderRadius: 12,
+      border: LINE,
+      overflow: "hidden",
+    }}>
       {title && (
-        <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{
+          padding: "14px 20px",
+          borderBottom: LINE,
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+        }}>
           <p style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{title}</p>
           {badge !== undefined && (
-            <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.35)", background: "rgba(255,255,255,0.07)", padding: "3px 10px", borderRadius: 99 }}>
+            <span style={{
+              fontSize: 11, fontWeight: 600,
+              color: "rgba(255,255,255,0.35)",
+              background: "rgba(255,255,255,0.07)",
+              padding: "3px 10px", borderRadius: 99,
+            }}>
               {badge}
             </span>
           )}
         </div>
       )}
-      <div style={{ padding: "0" }}>{children}</div>
+      <div style={noPadding ? undefined : { padding: "16px 20px" }}>
+        {children}
+      </div>
     </div>
   );
 }
