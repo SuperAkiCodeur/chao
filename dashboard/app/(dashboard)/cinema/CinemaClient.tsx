@@ -302,8 +302,8 @@ export function CinemaClient({ partiesWithMeta }: { partiesWithMeta: PartyWithMe
   function close() { setDialog({ type: "none" }); }
 
   const now      = new Date();
-  const upcoming = partiesWithMeta.filter(p => p.status === "active" && new Date(p.viewingAt) > now);
-  const history  = partiesWithMeta.filter(p => p.status !== "active" || new Date(p.viewingAt) <= now);
+  const upcoming = partiesWithMeta.filter(p => p.status === "active");
+  const history  = partiesWithMeta.filter(p => p.status !== "active");
 
   return (
     <>
@@ -319,41 +319,53 @@ export function CinemaClient({ partiesWithMeta }: { partiesWithMeta: PartyWithMe
         </button>
       </div>
 
-      {/* Séances prévues */}
-      {upcoming.length > 0 && (
-        <SectionCard title="Séances prévues" badge={upcoming.length} noPadding>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            {upcoming.map((p, i) => {
-              const date   = new Date(p.viewingAt);
-              const isPast = date <= now;
-              return (
-                <div key={p.messageId} style={{ display: "flex", gap: 14, padding: "14px 20px", borderTop: i > 0 ? BD : undefined, alignItems: "center" }}>
-                  <Poster url={p.meta.posterUrl} title={p.title} width={52} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.title}</p>
-                    {p.meta.genres.length > 0 && (
-                      <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 3 }}>{p.meta.genres.join(", ")}</p>
-                    )}
-                    <p style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.55)", marginTop: 6, display: "flex", alignItems: "center", gap: 5 }}>
-                      <Calendar size={11} style={{ flexShrink: 0 }} />
+      {/* Séances prévues — grandes cartes */}
+      {upcoming.length === 0 ? (
+        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.28)", fontStyle: "italic", textAlign: "center", padding: "8px 0" }}>
+          Aucune séance prévue
+        </p>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {upcoming.map((p) => {
+            const date   = new Date(p.viewingAt);
+            const isPast = date <= now;
+            return (
+              <div key={p.messageId} style={{
+                display: "flex", gap: 20,
+                background: "#202020", borderRadius: 12, border: BD, padding: 20,
+              }}>
+                <Poster url={p.meta.posterUrl} title={p.title} width={96} />
+                <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>{p.title}</p>
+                  {p.meta.genres.length > 0 && (
+                    <p style={{ fontSize: 12, color: "rgba(255,255,255,0.40)", marginTop: 5 }}>{p.meta.genres.join(", ")}</p>
+                  )}
+                  {p.meta.overview && (
+                    <p style={{ fontSize: 12, color: "rgba(255,255,255,0.30)", marginTop: 10, lineHeight: 1.6, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical" }}>
+                      {p.meta.overview}
+                    </p>
+                  )}
+                  <div style={{ marginTop: "auto", paddingTop: 14, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.55)", display: "flex", alignItems: "center", gap: 6 }}>
+                      <Calendar size={12} style={{ flexShrink: 0 }} />
                       {date.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} à {date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
                     </p>
-                  </div>
-                  <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                    {isPast && (
-                      <button style={btnSuccess} onClick={() => setDialog({ type: "end", party: p })}>
-                        <CheckCircle size={12} /> Terminer
+                    <div style={{ display: "flex", gap: 8 }}>
+                      {isPast && (
+                        <button style={btnSuccess} onClick={() => setDialog({ type: "end", party: p })}>
+                          <CheckCircle size={12} /> Terminer
+                        </button>
+                      )}
+                      <button style={btnDanger} onClick={() => setDialog({ type: "cancel", party: p })}>
+                        <XCircle size={12} /> Annuler
                       </button>
-                    )}
-                    <button style={btnDanger} onClick={() => setDialog({ type: "cancel", party: p })}>
-                      <XCircle size={12} /> Annuler
-                    </button>
+                    </div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        </SectionCard>
+              </div>
+            );
+          })}
+        </div>
       )}
 
       {/* Historique */}
