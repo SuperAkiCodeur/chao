@@ -50,12 +50,12 @@ function DialogHeader({ className, style, ...props }: React.HTMLAttributes<HTMLD
   return <div className={className} style={{ marginBottom: 24, display: "flex", flexDirection: "column", gap: 6, ...style }} {...props} />;
 }
 
-function DialogTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
-  return <h2 className={cn("text-sm font-semibold text-foreground", className)} {...props} />;
+function DialogTitle({ className, style, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
+  return <h2 className={className} style={{ fontSize: 15, fontWeight: 700, color: "#fff", ...style }} {...props} />;
 }
 
-function DialogDescription({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
-  return <p className={cn("text-xs text-muted-foreground", className)} {...props} />;
+function DialogDescription({ className, style, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
+  return <p className={className} style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 4, ...style }} {...props} />;
 }
 
 function DialogFooter({ className, style, ...props }: React.HTMLAttributes<HTMLDivElement>) {
