@@ -48,28 +48,24 @@ export default async function MembresPage() {
   return (
     <PageShell title="Membres" description="Gestion et modération des membres du serveur">
 
-      {/* Stats — bloc compact, largeur par le contenu */}
+      {/* Stats — pill discret */}
       <div className="anim-scale-in" style={{
-        display: "flex", alignSelf: "flex-start",
-        background: "#242424", border: "1px solid rgba(255,255,255,0.08)",
-        borderRadius: 12, overflow: "hidden",
+        display: "flex", alignSelf: "flex-start", alignItems: "center", gap: 0,
+        background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)",
+        borderRadius: 8, overflow: "hidden",
       }}>
         {[
-          { value: members.length, label: "Membres",   sub: "affichés · max 100",   icon: "👥" },
-          { value: onlineCount,    label: "Connectés", sub: "en ligne actuellement", icon: "🟢" },
-        ].map(({ value, label, sub, icon }, i) => (
+          { value: members.length, label: "membres",  icon: "👥" },
+          { value: onlineCount,    label: "connectés", icon: "🟢" },
+        ].map(({ value, label, icon }, i) => (
           <div key={label} style={{
-            padding: "18px 28px",
-            borderLeft: i > 0 ? "1px solid rgba(255,255,255,0.08)" : undefined,
+            display: "flex", alignItems: "center", gap: 6,
+            padding: "7px 14px",
+            borderLeft: i > 0 ? "1px solid rgba(255,255,255,0.07)" : undefined,
           }}>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 6 }}>
-              <span style={{ fontSize: 36, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", lineHeight: 1 }}>
-                {value}
-              </span>
-              <span style={{ fontSize: 12 }}>{icon}</span>
-            </div>
-            <p style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.55)", letterSpacing: "0.03em" }}>{label}</p>
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.22)", marginTop: 2 }}>{sub}</p>
+            <span style={{ fontSize: 11 }}>{icon}</span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: "#fff", fontFamily: "var(--font-serif)" }}>{value}</span>
+            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.38)", fontWeight: 500 }}>{label}</span>
           </div>
         ))}
       </div>
