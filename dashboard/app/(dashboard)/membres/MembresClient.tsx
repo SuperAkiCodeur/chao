@@ -2,9 +2,6 @@
 
 import { useState, useTransition, useMemo, useRef, useEffect } from "react";
 import { Shield, Clock, UserX, UserMinus, Search, ChevronRight, ChevronDown, Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -40,11 +37,14 @@ type DialogState =
   | { type: "roles"; member: DiscordMember };
 
 const TIMEOUT_OPTIONS = [
-  { label: "1 heure", value: 3600 },
-  { label: "24 heures", value: 86400 },
-  { label: "7 jours", value: 604800 },
-  { label: "28 jours", value: 2419200 },
+  { label: "1 heure",   value: 3600    },
+  { label: "24 heures", value: 86400   },
+  { label: "7 jours",   value: 604800  },
+  { label: "28 jours",  value: 2419200 },
 ];
+
+const BD  = "1px solid rgba(255,255,255,0.08)";
+const BDI = "1px solid rgba(255,255,255,0.12)";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -68,8 +68,49 @@ function snowflakeToDate(id: string): Date {
 }
 
 function roleColor(color: number): string {
-  if (color === 0) return "#4e5058"; // Discord default grey
+  if (color === 0) return "#4e5058";
   return `#${color.toString(16).padStart(6, "0")}`;
+}
+
+// ── Shared dialog button styles ───────────────────────────────────────────────
+
+const btnBase: React.CSSProperties = {
+  display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+  padding: "7px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600,
+  cursor: "pointer", transition: "opacity 0.15s",
+};
+function BtnCancel({ onClick }: { onClick: () => void }) {
+  return <button type="button" onClick={onClick} style={{ ...btnBase, background: "rgba(255,255,255,0.06)", border: BDI, color: "rgba(255,255,255,0.60)" }}>Annuler</button>;
+}
+function BtnPrimary({ children, disabled, onClick }: { children: React.ReactNode; disabled?: boolean; onClick?: () => void }) {
+  return <button type={onClick ? "button" : "submit"} disabled={disabled} onClick={onClick} style={{ ...btnBase, background: "#fff", color: "#000", border: "none", opacity: disabled ? 0.6 : 1, cursor: disabled ? "not-allowed" : "pointer" }}>{children}</button>;
+}
+function BtnDestructive({ children, disabled, onClick }: { children: React.ReactNode; disabled?: boolean; onClick: () => void }) {
+  return <button type="button" disabled={disabled} onClick={onClick} style={{ ...btnBase, background: "rgba(239,68,68,0.10)", border: "1px solid rgba(239,68,68,0.25)", color: "#ef4444", opacity: disabled ? 0.6 : 1, cursor: disabled ? "not-allowed" : "pointer" }}>{children}</button>;
+}
+
+const inputSt: React.CSSProperties = {
+  width: "100%", height: 36,
+  background: "rgba(255,255,255,0.05)", border: BDI,
+  borderRadius: 8, padding: "0 12px",
+  fontSize: 13, color: "#fff", outline: "none",
+};
+const labelSt: React.CSSProperties = {
+  display: "block", fontSize: 11, fontWeight: 600,
+  color: "rgba(255,255,255,0.42)", marginBottom: 6,
+};
+
+// ── InfoRow ───────────────────────────────────────────────────────────────────
+
+function InfoRow({ label, value, color }: { label: string; value: string; color?: string }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, padding: "9px 14px", borderTop: BD }}>
+      <span style={{ fontSize: 12, color: "rgba(255,255,255,0.40)", flexShrink: 0 }}>{label}</span>
+      <span style={{ fontSize: 12, fontWeight: 500, color: color ?? "#fff", fontFamily: label === "Discord ID" ? "ui-monospace, monospace" : undefined, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right", maxWidth: "62%" }}>
+        {value}
+      </span>
+    </div>
+  );
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -84,26 +125,16 @@ function RolePills({ roleIds, roles, max = 3 }: { roleIds: string[]; roles: Disc
 
   if (memberRoles.length === 0) return null;
   return (
-    <div className="flex items-center gap-1">
-      {memberRoles.map((r) => (
-        <span
-          key={r.id}
-          className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium"
-          style={{ backgroundColor: `${roleColor(r.color)}20`, color: roleColor(r.color) }}
-        >
-          <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: roleColor(r.color) }} />
-          {r.name}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function ReasonInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  return (
-    <div className="space-y-1.5">
-      <label className="text-xs font-medium text-muted-foreground">Raison (optionnelle)</label>
-      <Input value={value} onChange={(e) => onChange(e.target.value)} placeholder="Raison…" />
+    <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
+      {memberRoles.map((r) => {
+        const c = roleColor(r.color);
+        return (
+          <span key={r.id} style={{ display: "inline-flex", alignItems: "center", gap: 4, borderRadius: 4, padding: "2px 7px", fontSize: 10, fontWeight: 600, backgroundColor: `${c}22`, color: c }}>
+            <span style={{ width: 5, height: 5, borderRadius: "50%", backgroundColor: c, flexShrink: 0 }} />
+            {r.name}
+          </span>
+        );
+      })}
     </div>
   );
 }
@@ -111,10 +142,7 @@ function ReasonInput({ value, onChange }: { value: string; onChange: (v: string)
 // ── Detail dialog ─────────────────────────────────────────────────────────────
 
 function DetailDialog({
-  member,
-  roles,
-  onClose,
-  onAction,
+  member, roles, onClose, onAction,
 }: {
   member: DiscordMember;
   roles: DiscordRole[];
@@ -133,120 +161,108 @@ function DetailDialog({
   return (
     <DialogContent className="max-w-sm">
       <DialogHeader>
-        <div className="flex items-center gap-3 mb-1">
+        {/* Avatar + name */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 4 }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={avatarUrl(member)}
-            alt=""
-            className="h-12 w-12 rounded-full bg-muted shrink-0"
+            src={avatarUrl(member)} alt=""
+            style={{ width: 48, height: 48, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.08)", objectFit: "cover" }}
             onError={(e) => { (e.target as HTMLImageElement).src = "https://cdn.discordapp.com/embed/avatars/0.png"; }}
           />
-          <div>
-            <DialogTitle className="text-base">{displayName(member)}</DialogTitle>
-            <DialogDescription className="text-xs">@{member.user.username}</DialogDescription>
+          <div style={{ minWidth: 0 }}>
+            <DialogTitle style={{ fontSize: 16, fontWeight: 700 }}>{displayName(member)}</DialogTitle>
+            <DialogDescription style={{ fontSize: 12, marginTop: 2 }}>@{member.user.username}</DialogDescription>
           </div>
         </div>
       </DialogHeader>
 
-      <div className="space-y-3">
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+
         {/* Info rows */}
-        <div className="rounded-lg bg-muted/40 divide-y divide-border overflow-hidden">
-          <Row label="Discord ID" value={<span className="font-mono text-xs">{member.user.id}</span>} />
-          <Row
-            label="A rejoint le"
-            value={new Date(member.joined_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
-          />
-          <Row
-            label="Compte créé le"
-            value={createdAt.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
-          />
+        <div style={{ borderRadius: 10, border: BD, overflow: "hidden" }}>
+          <InfoRow label="Discord ID" value={member.user.id} />
+          <InfoRow label="A rejoint le" value={new Date(member.joined_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })} />
+          <InfoRow label="Compte créé le" value={createdAt.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })} />
           {timedOut && (
-            <Row
+            <InfoRow
               label="Sourdine jusqu'au"
-              value={
-                <span className="text-amber-600">
-                  {new Date(member.communication_disabled_until!).toLocaleString("fr-FR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
-                </span>
-              }
+              value={new Date(member.communication_disabled_until!).toLocaleString("fr-FR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+              color="#fbbf24"
             />
           )}
         </div>
 
         {/* Roles */}
         {memberRoles.length > 0 && (
-          <div className="space-y-1.5">
-            <p className="text-xs font-medium text-muted-foreground">Rôles ({memberRoles.length})</p>
-            <div className="flex flex-wrap gap-1.5">
-              {memberRoles.map((r) => (
-                <span
-                  key={r.id}
-                  className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-medium"
-                  style={{ backgroundColor: `${roleColor(r.color)}20`, color: roleColor(r.color) }}
-                >
-                  <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: roleColor(r.color) }} />
-                  {r.name}
-                </span>
-              ))}
+          <div>
+            <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.40)", marginBottom: 8 }}>
+              Rôles ({memberRoles.length})
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {memberRoles.map((r) => {
+                const c = roleColor(r.color);
+                return (
+                  <span key={r.id} style={{ display: "inline-flex", alignItems: "center", gap: 5, borderRadius: 5, padding: "3px 9px", fontSize: 11, fontWeight: 600, backgroundColor: `${c}22`, color: c }}>
+                    <span style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: c, flexShrink: 0 }} />
+                    {r.name}
+                  </span>
+                );
+              })}
             </div>
           </div>
         )}
 
-        {/* Action buttons */}
-        <div className="space-y-2 pt-1">
-          <Button
-            size="sm"
-            variant="outline"
-            className="w-full border-primary/30 text-primary hover:bg-primary/10 hover:text-primary"
+        {/* Actions */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {/* Gérer les rôles */}
+          <button
             onClick={() => { onClose(); onAction("roles"); }}
+            style={{ ...btnBase, width: "100%", background: "rgba(255,255,255,0.08)", border: BD, color: "#fff", fontSize: 13 }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.14)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}
           >
-            <Shield className="h-3.5 w-3.5" />
+            <Shield size={14} />
             Gérer les rôles
-          </Button>
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              className="flex-1 border-amber-600/30 text-amber-600 hover:bg-amber-600/10 hover:text-amber-600"
-              onClick={() => { onClose(); onAction("timeout"); }}
-            >
-              <Clock className="h-3.5 w-3.5" />
-              Sourdine
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="flex-1 border-orange-600/30 text-orange-600 hover:bg-orange-600/10 hover:text-orange-600"
-              onClick={() => { onClose(); onAction("kick"); }}
-            >
-              <UserMinus className="h-3.5 w-3.5" />
-              Expulser
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="flex-1 border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => { onClose(); onAction("ban"); }}
-            >
-              <UserX className="h-3.5 w-3.5" />
-              Bannir
-            </Button>
+          </button>
+
+          {/* Moderation row */}
+          <div style={{ display: "flex", gap: 8 }}>
+            {[
+              { label: "Sourdine", icon: <Clock size={13} />, color: "#fbbf24", bg: "rgba(251,191,36,0.10)", border: "rgba(251,191,36,0.28)", action: "timeout" as const },
+              { label: "Expulser", icon: <UserMinus size={13} />, color: "#f97316", bg: "rgba(249,115,22,0.10)", border: "rgba(249,115,22,0.28)", action: "kick" as const },
+              { label: "Bannir",   icon: <UserX size={13} />,    color: "#ef4444", bg: "rgba(239,68,68,0.10)",  border: "rgba(239,68,68,0.28)",  action: "ban" as const },
+            ].map(({ label, icon, color, bg, border, action }) => (
+              <button
+                key={action}
+                onClick={() => { onClose(); onAction(action); }}
+                style={{ ...btnBase, flex: 1, background: bg, border: `1px solid ${border}`, color, fontSize: 12 }}
+                onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.80"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
+              >
+                {icon} {label}
+              </button>
+            ))}
           </div>
         </div>
+
       </div>
     </DialogContent>
   );
 }
 
-function Row({ label, value }: { label: string; value: React.ReactNode }) {
+// ── Moderation dialogs ────────────────────────────────────────────────────────
+
+function ReasonField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <div className="flex items-center justify-between gap-4 px-3 py-2">
-      <span className="text-xs text-muted-foreground shrink-0">{label}</span>
-      <span className="text-xs font-medium text-foreground text-right truncate max-w-[58%]">{value}</span>
+    <div>
+      <label style={labelSt}>Raison (optionnelle)</label>
+      <input
+        value={value} onChange={(e) => onChange(e.target.value)}
+        placeholder="Raison…" style={inputSt}
+      />
     </div>
   );
 }
-
-// ── Moderation dialogs ────────────────────────────────────────────────────────
 
 function KickDialog({ member, onClose }: { member: DiscordMember; onClose: () => void }) {
   const [reason, setReason] = useState("");
@@ -265,15 +281,13 @@ function KickDialog({ member, onClose }: { member: DiscordMember; onClose: () =>
         <DialogTitle>Expulser {displayName(member)}</DialogTitle>
         <DialogDescription>Le membre pourra rejoindre à nouveau avec une invitation.</DialogDescription>
       </DialogHeader>
-      <div className="space-y-3 mt-2">
-        <ReasonInput value={reason} onChange={setReason} />
-        {error && <p className="text-xs text-destructive">{error}</p>}
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 8 }}>
+        <ReasonField value={reason} onChange={setReason} />
+        {error && <p style={{ fontSize: 12, color: "#ef4444" }}>{error}</p>}
       </div>
-      <DialogFooter>
-        <Button variant="ghost" size="sm" onClick={onClose}>Annuler</Button>
-        <Button variant="destructive" size="sm" disabled={pending} onClick={handle}>
-          {pending ? "Expulsion…" : "Expulser"}
-        </Button>
+      <DialogFooter style={{ marginTop: 4 }}>
+        <BtnCancel onClick={onClose} />
+        <BtnDestructive disabled={pending} onClick={handle}>{pending ? "Expulsion…" : "Expulser"}</BtnDestructive>
       </DialogFooter>
     </DialogContent>
   );
@@ -296,15 +310,13 @@ function BanDialog({ member, onClose }: { member: DiscordMember; onClose: () => 
         <DialogTitle>Bannir {displayName(member)}</DialogTitle>
         <DialogDescription>Le membre ne pourra plus rejoindre le serveur.</DialogDescription>
       </DialogHeader>
-      <div className="space-y-3 mt-2">
-        <ReasonInput value={reason} onChange={setReason} />
-        {error && <p className="text-xs text-destructive">{error}</p>}
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 8 }}>
+        <ReasonField value={reason} onChange={setReason} />
+        {error && <p style={{ fontSize: 12, color: "#ef4444" }}>{error}</p>}
       </div>
-      <DialogFooter>
-        <Button variant="ghost" size="sm" onClick={onClose}>Annuler</Button>
-        <Button variant="destructive" size="sm" disabled={pending} onClick={handle}>
-          {pending ? "Bannissement…" : "Bannir"}
-        </Button>
+      <DialogFooter style={{ marginTop: 4 }}>
+        <BtnCancel onClick={onClose} />
+        <BtnDestructive disabled={pending} onClick={handle}>{pending ? "Bannissement…" : "Bannir"}</BtnDestructive>
       </DialogFooter>
     </DialogContent>
   );
@@ -328,27 +340,25 @@ function TimeoutDialog({ member, onClose }: { member: DiscordMember; onClose: ()
         <DialogTitle>Mettre en sourdine {displayName(member)}</DialogTitle>
         <DialogDescription>Le membre ne pourra pas écrire pendant la durée choisie.</DialogDescription>
       </DialogHeader>
-      <div className="space-y-3 mt-2">
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">Durée</label>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 8 }}>
+        <div>
+          <label style={labelSt}>Durée</label>
           <select
             value={duration}
             onChange={(e) => setDuration(Number(e.target.value))}
-            className="flex h-9 w-full rounded-lg border border-border bg-muted/40 px-3 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+            style={{ ...inputSt, appearance: "none", cursor: "pointer" }}
           >
             {TIMEOUT_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>
             ))}
           </select>
         </div>
-        <ReasonInput value={reason} onChange={setReason} />
-        {error && <p className="text-xs text-destructive">{error}</p>}
+        <ReasonField value={reason} onChange={setReason} />
+        {error && <p style={{ fontSize: 12, color: "#ef4444" }}>{error}</p>}
       </div>
-      <DialogFooter>
-        <Button variant="ghost" size="sm" onClick={onClose}>Annuler</Button>
-        <Button size="sm" disabled={pending} onClick={handle}>
-          {pending ? "Application…" : "Appliquer"}
-        </Button>
+      <DialogFooter style={{ marginTop: 4 }}>
+        <BtnCancel onClick={onClose} />
+        <BtnPrimary disabled={pending} onClick={handle}>{pending ? "Application…" : "Appliquer"}</BtnPrimary>
       </DialogFooter>
     </DialogContent>
   );
@@ -356,15 +366,7 @@ function TimeoutDialog({ member, onClose }: { member: DiscordMember; onClose: ()
 
 // ── Roles editor dialog ───────────────────────────────────────────────────────
 
-function RolesDialog({
-  member,
-  roles,
-  onClose,
-}: {
-  member: DiscordMember;
-  roles: DiscordRole[];
-  onClose: () => void;
-}) {
+function RolesDialog({ member, roles, onClose }: { member: DiscordMember; roles: DiscordRole[]; onClose: () => void }) {
   const [selected, setSelected] = useState<Set<string>>(new Set(member.roles));
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -396,7 +398,7 @@ function RolesDialog({
         <DialogDescription>Cochez ou décochez les rôles à attribuer.</DialogDescription>
       </DialogHeader>
 
-      <div className="max-h-72 overflow-y-auto space-y-0.5 py-1">
+      <div style={{ maxHeight: 280, overflowY: "auto", margin: "4px 0" }}>
         {manageable.map((r) => {
           const color = roleColor(r.color);
           const checked = selected.has(r.id);
@@ -405,18 +407,18 @@ function RolesDialog({
               key={r.id}
               type="button"
               onClick={() => toggle(r.id)}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 hover:bg-muted/40 transition-colors text-left"
+              style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "9px 4px", background: "none", border: "none", cursor: "pointer", borderRadius: 8, transition: "background 0.12s", textAlign: "left" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "none"; }}
             >
               {/* Checkbox */}
-              <div className={`h-4 w-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
-                checked ? "border-primary bg-primary" : "border-border bg-transparent"
-              }`}>
-                {checked && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
+              <div style={{ width: 16, height: 16, borderRadius: 4, border: checked ? "none" : "2px solid rgba(255,255,255,0.22)", background: checked ? "#fff" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s, border 0.15s" }}>
+                {checked && <Check size={10} style={{ color: "#000" }} />}
               </div>
-              {/* Color dot */}
-              <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+              {/* Dot */}
+              <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: color, flexShrink: 0 }} />
               {/* Name */}
-              <span className="text-sm flex-1 truncate" style={{ color: r.color !== 0 ? color : undefined }}>
+              <span style={{ fontSize: 13, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: r.color !== 0 ? color : "rgba(255,255,255,0.80)" }}>
                 {r.name}
               </span>
             </button>
@@ -424,13 +426,11 @@ function RolesDialog({
         })}
       </div>
 
-      {error && <p className="text-xs text-destructive">{error}</p>}
+      {error && <p style={{ fontSize: 12, color: "#ef4444" }}>{error}</p>}
 
       <DialogFooter>
-        <Button variant="ghost" size="sm" onClick={onClose}>Annuler</Button>
-        <Button size="sm" disabled={pending} onClick={handle}>
-          {pending ? "Enregistrement…" : "Enregistrer"}
-        </Button>
+        <BtnCancel onClick={onClose} />
+        <BtnPrimary disabled={pending} onClick={handle}>{pending ? "Enregistrement…" : "Enregistrer"}</BtnPrimary>
       </DialogFooter>
     </DialogContent>
   );
@@ -438,21 +438,13 @@ function RolesDialog({
 
 // ── Role dropdown ─────────────────────────────────────────────────────────────
 
-function RoleDropdown({
-  roles,
-  value,
-  onChange,
-}: {
-  roles: DiscordRole[];
-  value: string;
-  onChange: (v: string) => void;
-}) {
+function RoleDropdown({ roles, value, onChange }: { roles: DiscordRole[]; value: string; onChange: (v: string) => void }) {
   const [visible, setVisible] = useState(false);
   const [animClass, setAnimClass] = useState("");
   const ref = useRef<HTMLDivElement>(null);
   const selected = roles.find((r) => r.id === value);
 
-  function doOpen() { setVisible(true); setAnimClass("animate-expand-down"); }
+  function doOpen()  { setVisible(true);  setAnimClass("animate-expand-down"); }
   function doClose() { if (visible) setAnimClass("animate-expand-up"); }
   function handleAnimEnd() {
     if (animClass === "animate-expand-up") setVisible(false);
@@ -468,7 +460,7 @@ function RoleDropdown({
   }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div ref={ref} className="relative shrink-0">
+    <div ref={ref} style={{ position: "relative", flexShrink: 0 }}>
       <button
         type="button"
         onClick={() => visible ? doClose() : doOpen()}
@@ -476,7 +468,7 @@ function RoleDropdown({
       >
         {selected ? (
           <>
-            <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: roleColor(selected.color) }} />
+            <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: roleColor(selected.color), flexShrink: 0 }} />
             <span style={{ color: roleColor(selected.color) }}>{selected.name}</span>
           </>
         ) : (
@@ -487,31 +479,24 @@ function RoleDropdown({
 
       {visible && (
         <div
-          className={`absolute right-0 top-full mt-1 z-50 min-w-[180px] rounded-lg border border-border bg-card shadow-xl py-1 ${animClass}`}
+          className={animClass}
           onAnimationEnd={handleAnimEnd}
+          style={{ position: "absolute", right: 0, top: "calc(100% + 6px)", zIndex: 50, minWidth: 180, borderRadius: 10, border: BDI, background: "#2a2a2a", boxShadow: "0 12px 36px rgba(0,0,0,0.40)", padding: "4px 0" }}
         >
-          <button
-            type="button"
-            onClick={() => { onChange(""); doClose(); }}
-            className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 hover:translate-x-0.5 transition-all duration-150"
+          <button type="button" onClick={() => { onChange(""); doClose(); }}
+            style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "rgba(255,255,255,0.45)" }}
           >
-            <span className="h-2 w-2 rounded-full bg-muted-foreground/40 shrink-0" />
-            <span className="text-muted-foreground flex-1 text-left">Tous les rôles</span>
-            {!value && <Check className="h-3.5 w-3.5 text-primary" />}
+            <span style={{ flex: 1, textAlign: "left" }}>Tous les rôles</span>
+            {!value && <Check size={12} style={{ color: "#fff" }} />}
           </button>
-
-          {roles.length > 0 && <div className="my-1 border-t border-border" />}
-
+          <div style={{ margin: "2px 0", height: 1, background: "rgba(255,255,255,0.07)" }} />
           {roles.map((r) => (
-            <button
-              key={r.id}
-              type="button"
-              onClick={() => { onChange(r.id); doClose(); }}
-              className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 hover:translate-x-0.5 transition-all duration-150"
+            <button key={r.id} type="button" onClick={() => { onChange(r.id); doClose(); }}
+              style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 13 }}
             >
-              <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: roleColor(r.color) }} />
-              <span className="flex-1 text-left text-foreground">{r.name}</span>
-              {value === r.id && <Check className="h-3.5 w-3.5 text-primary" />}
+              <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: roleColor(r.color), flexShrink: 0 }} />
+              <span style={{ flex: 1, textAlign: "left", color: roleColor(r.color) }}>{r.name}</span>
+              {value === r.id && <Check size={12} style={{ color: "#fff" }} />}
             </button>
           ))}
         </div>
@@ -527,7 +512,6 @@ export function MembresClient({ members, roles }: { members: DiscordMember[]; ro
   const [roleFilter, setRoleFilter] = useState("");
   const [dialog, setDialog] = useState<DialogState>({ type: "none" });
 
-  // Build list of roles that at least one member has (excluding @everyone)
   const assignedRoles = useMemo(() => {
     const memberRoleIds = new Set(members.flatMap((m) => m.roles));
     return roles
@@ -554,7 +538,7 @@ export function MembresClient({ members, roles }: { members: DiscordMember[]; ro
       {/* Search + role filter */}
       <div style={{ padding: "14px 20px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", gap: 8 }}>
         <div style={{ position: "relative", flex: 1 }}>
-          <Search style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", width: 14, height: 14, color: "rgba(255,255,255,0.38)", pointerEvents: "none", flexShrink: 0 }} />
+          <Search style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", width: 14, height: 14, color: "rgba(255,255,255,0.38)", pointerEvents: "none" }} />
           <input
             style={{ width: "100%", height: 36, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, paddingLeft: 36, paddingRight: 12, fontSize: 13, color: "#fff", outline: "none" }}
             placeholder="Rechercher un membre…"
@@ -562,20 +546,14 @@ export function MembresClient({ members, roles }: { members: DiscordMember[]; ro
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
-        <RoleDropdown
-          roles={assignedRoles}
-          value={roleFilter}
-          onChange={setRoleFilter}
-        />
+        <RoleDropdown roles={assignedRoles} value={roleFilter} onChange={setRoleFilter} />
       </div>
 
       {/* Active filter indicator */}
       {roleFilter && selectedRole && (
         <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px 0" }}>
           <span style={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>Filtré par :</span>
-          <span
-            style={{ display: "inline-flex", alignItems: "center", gap: 4, borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 500, backgroundColor: `${roleColor(selectedRole.color)}20`, color: roleColor(selectedRole.color) }}
-          >
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 500, backgroundColor: `${roleColor(selectedRole.color)}22`, color: roleColor(selectedRole.color) }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: roleColor(selectedRole.color) }} />
             {selectedRole.name}
           </span>
@@ -603,70 +581,58 @@ export function MembresClient({ members, roles }: { members: DiscordMember[]; ro
               <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={avatarUrl(m)}
-                  alt=""
+                  src={avatarUrl(m)} alt=""
                   style={{ width: 34, height: 34, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.08)", objectFit: "cover" }}
                   onError={(e) => { (e.target as HTMLImageElement).src = "https://cdn.discordapp.com/embed/avatars/0.png"; }}
                 />
                 <div style={{ minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <p style={{ fontSize: 13, fontWeight: 600, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1 }}>{displayName(m)}</p>
-                    {timedOut && <Badge variant="warning" className="text-[10px] px-1.5 py-0">sourdine</Badge>}
+                    {timedOut && (
+                      <span style={{ fontSize: 10, fontWeight: 700, color: "#fbbf24", background: "rgba(251,191,36,0.12)", padding: "1px 6px", borderRadius: 99, flexShrink: 0 }}>sourdine</span>
+                    )}
                   </div>
                   <p style={{ fontSize: 11, color: "rgba(255,255,255,0.40)", marginTop: 3 }}>@{m.user.username}</p>
                 </div>
               </div>
 
-              {/* Right: action buttons */}
-              <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0, marginLeft: 12 }} onClick={(e) => e.stopPropagation()}>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setDialog({ type: "timeout", member: m }); }}
-                  style={{ padding: 6, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.30)", borderRadius: 6, display: "flex" }}
-                  title="Mettre en sourdine"
-                >
-                  <Clock size={14} />
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setDialog({ type: "kick", member: m }); }}
-                  style={{ padding: 6, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.30)", borderRadius: 6, display: "flex" }}
-                  title="Expulser"
-                >
-                  <UserMinus size={14} />
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setDialog({ type: "ban", member: m }); }}
-                  style={{ padding: 6, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.30)", borderRadius: 6, display: "flex" }}
-                  title="Bannir"
-                >
-                  <UserX size={14} />
-                </button>
-                <ChevronRight size={14} style={{ color: "rgba(255,255,255,0.18)", marginLeft: 4 }} />
+              {/* Right: role pills + actions */}
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, marginLeft: 12 }}>
+                <RolePills roleIds={m.roles} roles={roles} max={2} />
+                <div style={{ display: "flex", alignItems: "center", gap: 2 }} onClick={(e) => e.stopPropagation()}>
+                  <button onClick={(e) => { e.stopPropagation(); setDialog({ type: "timeout", member: m }); }}
+                    style={{ padding: 6, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.28)", borderRadius: 6, display: "flex", transition: "color 0.12s" }}
+                    title="Mettre en sourdine"
+                    onMouseEnter={(e) => { e.currentTarget.style.color = "#fbbf24"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.28)"; }}
+                  ><Clock size={14} /></button>
+                  <button onClick={(e) => { e.stopPropagation(); setDialog({ type: "kick", member: m }); }}
+                    style={{ padding: 6, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.28)", borderRadius: 6, display: "flex", transition: "color 0.12s" }}
+                    title="Expulser"
+                    onMouseEnter={(e) => { e.currentTarget.style.color = "#f97316"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.28)"; }}
+                  ><UserMinus size={14} /></button>
+                  <button onClick={(e) => { e.stopPropagation(); setDialog({ type: "ban", member: m }); }}
+                    style={{ padding: 6, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.28)", borderRadius: 6, display: "flex", transition: "color 0.12s" }}
+                    title="Bannir"
+                    onMouseEnter={(e) => { e.currentTarget.style.color = "#ef4444"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.28)"; }}
+                  ><UserX size={14} /></button>
+                  <ChevronRight size={14} style={{ color: "rgba(255,255,255,0.18)", marginLeft: 2 }} />
+                </div>
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Detail dialog */}
+      {/* Dialogs */}
       <Dialog open={dialog.type === "detail"} onOpenChange={(o) => !o && close()}>
-        {dialog.type === "detail" && (
-          <DetailDialog
-            member={dialog.member}
-            roles={roles}
-            onClose={close}
-            onAction={(type) => setDialog({ type, member: dialog.member })}
-          />
-        )}
+        {dialog.type === "detail" && <DetailDialog member={dialog.member} roles={roles} onClose={close} onAction={(type) => setDialog({ type, member: dialog.member })} />}
       </Dialog>
-
-      {/* Roles dialog */}
       <Dialog open={dialog.type === "roles"} onOpenChange={(o) => !o && close()}>
-        {dialog.type === "roles" && (
-          <RolesDialog member={dialog.member} roles={roles} onClose={close} />
-        )}
+        {dialog.type === "roles" && <RolesDialog member={dialog.member} roles={roles} onClose={close} />}
       </Dialog>
-
-      {/* Moderation dialogs */}
       <Dialog open={dialog.type === "kick"} onOpenChange={(o) => !o && close()}>
         {dialog.type === "kick" && <KickDialog member={dialog.member} onClose={close} />}
       </Dialog>
