@@ -12,6 +12,7 @@ export type ActionResult = { success: true } | { success: false; error: string }
 export async function createDealsList(data: {
   channelId: string; name: string; notifChannelId?: string;
 }): Promise<ActionResult> {
+  if (!data.channelId) return { success: false, error: "Salon invalide." };
   try {
     const existing = await db.select().from(dealsConfig)
       .where(and(eq(dealsConfig.guildId, GUILD_ID), eq(dealsConfig.channelId, data.channelId)));
@@ -30,6 +31,7 @@ export async function createDealsList(data: {
 }
 
 export async function saveDealsNotifChannel(channelId: string, notifChannelId: string): Promise<ActionResult> {
+  if (!channelId) return { success: false, error: "Salon invalide." };
   try {
     const existing = await db.select().from(dealsConfig)
       .where(and(eq(dealsConfig.guildId, GUILD_ID), eq(dealsConfig.channelId, channelId)));
@@ -53,6 +55,7 @@ export async function saveDealsNotifChannel(channelId: string, notifChannelId: s
 }
 
 export async function renameDeals(channelId: string, name: string): Promise<ActionResult> {
+  if (!channelId) return { success: false, error: "Salon invalide." };
   try {
     const existing = await db.select().from(dealsConfig)
       .where(and(eq(dealsConfig.guildId, GUILD_ID), eq(dealsConfig.channelId, channelId)));

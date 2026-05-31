@@ -136,7 +136,7 @@ export function DealsClient({ channelId, channelName, notifChannelId, listName, 
   }
 
   return (
-    <div className="card-glow anim-fade-up" style={{ background: "#202020", borderRadius: 12, border: BD }}>
+    <div className="card-glow anim-fade-up" style={{ background: "#202020", borderRadius: 12, border: BD, position: "relative", zIndex: 1 }}>
 
       {/* ── Ligne principale ── */}
       <div style={{
