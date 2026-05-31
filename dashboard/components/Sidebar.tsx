@@ -10,11 +10,45 @@ import {
   BookOpen, Stack, CaretDown, type IconWeight,
 } from "@phosphor-icons/react";
 
-function WatermelonIcon({ size = 17, style }: { size?: number; strokeWidth?: number; style?: React.CSSProperties }) {
+const SW: Record<string, number> = { thin: 8, light: 12, regular: 16, bold: 24, fill: 16, duotone: 16 };
+
+function WatermelonIcon({ size = 17, weight = "regular", style }: { size?: number; weight?: IconWeight; strokeWidth?: number; style?: React.CSSProperties }) {
+  const sw = SW[weight] ?? 16;
+  const seed = sw * 0.55;
   return (
-    <span aria-hidden style={{ fontSize: Math.round(size * 0.88), lineHeight: 1, display: "inline-block", userSelect: "none", ...style }}>
-      🍉
-    </span>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 256 256"
+      aria-hidden="true"
+      style={style}
+    >
+      {/* Half-circle slice */}
+      <path
+        d="M232,128A104,104,0,0,0,24,128Z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={sw}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {/* Flat bottom edge */}
+      <line x1="24" y1="128" x2="232" y2="128" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" />
+      {/* Rind band */}
+      <path
+        d="M52,128A76,76,0,0,1,204,128"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={sw * 0.55}
+        strokeLinecap="round"
+        opacity="0.45"
+      />
+      {/* Seeds */}
+      <circle cx="94"  cy="106" r={seed} fill="currentColor" />
+      <circle cx="128" cy="90"  r={seed} fill="currentColor" />
+      <circle cx="162" cy="106" r={seed} fill="currentColor" />
+    </svg>
   );
 }
 
