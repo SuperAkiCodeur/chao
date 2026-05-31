@@ -429,7 +429,7 @@ export async function handleDealsPriceSelect(interaction: StringSelectMenuIntera
 // ── Renommer (modal) ──────────────────────────────────────────────────────────
 
 export async function handleDealsRenameModal(interaction: ModalSubmitInteraction): Promise<void> {
-  if (!interaction.guildId) return;
+  if (!interaction.guildId || !interaction.channelId) return;
   const name = interaction.fields.getTextInputValue(DEALS_RENAME_INPUT).trim();
   if (!name) { await interaction.reply({ content: "❌ Nom invalide.", flags: MessageFlags.Ephemeral }); return; }
 
