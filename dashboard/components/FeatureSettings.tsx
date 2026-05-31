@@ -218,13 +218,13 @@ export function FeatureSettings({ fields, channels, roles, settings, noCollapse 
   const saveButton = (
     <button type="submit" disabled={pending}
       style={{
-        display: "flex", alignItems: "center", gap: 6,
+        display: "flex", alignItems: "center", gap: 8,
         background: "#fff", color: "#000", border: "none", borderRadius: 8,
-        padding: "7px 14px", fontSize: 12, fontWeight: 600,
+        padding: "10px 20px", fontSize: 14, fontWeight: 600,
         cursor: pending ? "not-allowed" : "pointer", opacity: pending ? 0.6 : 1,
       }}
     >
-      <Save size={12} />
+      <Save size={14} />
       {pending ? "Enregistrement…" : "Enregistrer"}
     </button>
   );
