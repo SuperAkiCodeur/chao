@@ -106,7 +106,7 @@ export function DealsCreator({ channels, usedChannelIds }: {
   }
 
   return (
-    <div className="anim-fade-up" style={{ background: "#202020", borderRadius: 12, border: BD, overflow: "hidden" }}>
+    <div className="anim-soft-up" style={{ background: "#202020", borderRadius: 12, border: BD, overflow: "hidden" }}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -125,7 +125,7 @@ export function DealsCreator({ channels, usedChannelIds }: {
       </button>
 
       {open && (
-        <div style={{ borderTop: BD, padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
+        <div className="anim-soft-up" style={{ borderTop: BD, padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
           {/* Nom */}
           <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 12, alignItems: "center" }}>
             <label style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", fontWeight: 600 }}>Nom</label>
