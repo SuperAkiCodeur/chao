@@ -14,9 +14,9 @@ function ChannelSelect({ value, onChange, channels, placeholder = "Choisir un sa
   value: string; onChange: (v: string) => void;
   channels: DiscordChannel[]; placeholder?: string;
 }) {
-  const [open, setOpen]   = useState(false);
-  const ref               = useRef<HTMLDivElement>(null);
-  const selected          = channels.find((c) => c.id === value);
+  const [open, setOpen] = useState(false);
+  const ref             = useRef<HTMLDivElement>(null);
+  const selected        = channels.find((c) => c.id === value);
 
   useEffect(() => {
     const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
@@ -47,16 +47,15 @@ function ChannelSelect({ value, onChange, channels, placeholder = "Choisir un sa
         ) : (
           <span style={{ flex: 1, textAlign: "left", color: "rgba(255,255,255,0.35)" }}>{placeholder}</span>
         )}
-        <CaretDown size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0, transform: open ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
+        <CaretDown size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0, transform: open ? "rotate(180deg)" : undefined }} />
       </button>
 
       {open && (
-        <div className="animate-expand-down" style={{
+        <div style={{
           position: "absolute", left: 0, top: "calc(100% + 4px)", zIndex: 100,
           width: "100%", borderRadius: 10, border: BDI,
           background: "#2a2a2a", boxShadow: "0 12px 36px rgba(0,0,0,0.55)",
           maxHeight: 220, overflowY: "auto", padding: "4px 0",
-          transformOrigin: "top",
         }}>
           <button type="button" onClick={() => { onChange(""); setOpen(false); }}
             style={{ width: "100%", display: "flex", alignItems: "center", gap: 7, padding: "7px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "rgba(255,255,255,0.35)" }}>
@@ -86,37 +85,24 @@ export function DealsCreator({ channels, usedChannelIds }: {
   channels: DiscordChannel[];
   usedChannelIds: string[];
 }) {
-  const [open, setOpen]         = useState(false);
+  const [open, setOpen]           = useState(false);
   const [name, setName]           = useState("");
   const [channelId, setChannelId] = useState("");
-  const [notifId, setNotifId]     = useState("");
-  const [notifManual, setNotifManual] = useState(false); // true si l'user a choisi manuellement
-  const [error, setError]       = useState<string | null>(null);
-  const [pending, start]        = useTransition();
+  const [error, setError]         = useState<string | null>(null);
+  const [pending, start]          = useTransition();
 
-  const textChannels = channels.filter((c) => c.type !== 4).sort((a, b) => a.position - b.position);
-  const availableChannels = textChannels.filter((c) => !usedChannelIds.includes(c.id));
-
-  function handleSetChannel(id: string) {
-    setChannelId(id);
-    // Pré-remplit notif avec le salon source sauf si l'user a déjà choisi manuellement
-    if (!notifManual) setNotifId(id);
-  }
-
-  function handleSetNotif(id: string) {
-    setNotifId(id);
-    setNotifManual(true); // l'user a fait un choix explicite
-  }
+  const availableChannels = channels
+    .filter((c) => c.type !== 4 && !usedChannelIds.includes(c.id))
+    .sort((a, b) => a.position - b.position);
 
   function handleCreate() {
-    if (!channelId) { setError("Choisis un salon source."); return; }
+    if (!channelId) { setError("Choisis un salon."); return; }
     setError(null);
     start(async () => {
-      // Si notifId vide (Aucun sélectionné manuellement), on passe null ; sinon notifId ou channelId par défaut
-      const notifChannelId = notifManual && !notifId ? undefined : (notifId || channelId);
-      const res = await createDealsList({ channelId, name, notifChannelId });
-      if (res.success) { setOpen(false); setName(""); setChannelId(""); setNotifId(""); setNotifManual(false); }
-      else setError(res.error);
+      // Le salon sélectionné sert à la fois de salon source et de salon notif par défaut
+      const res = await createDealsList({ channelId, name, notifChannelId: channelId });
+      if (res.success) { setOpen(false); setName(""); setChannelId(""); }
+      else setError(res.error ?? "Erreur.");
     });
   }
 
@@ -136,13 +122,14 @@ export function DealsCreator({ channels, usedChannelIds }: {
         <span style={{ fontSize: 15, fontWeight: 500, color: "rgba(255,255,255,0.55)" }}>
           Créer une liste
         </span>
-        <CaretDown size={12} style={{ color: "rgba(255,255,255,0.25)", marginLeft: "auto", transform: open ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
+        <CaretDown size={12} style={{ color: "rgba(255,255,255,0.25)", marginLeft: "auto", transform: open ? "rotate(180deg)" : undefined }} />
       </button>
 
       {open && (
         <div className="anim-fade-in" style={{ borderTop: BD, padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
+
           {/* Nom */}
-          <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 12, alignItems: "center" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "90px 1fr", gap: 12, alignItems: "center" }}>
             <label style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", fontWeight: 600 }}>Nom</label>
             <input
               value={name}
@@ -156,32 +143,21 @@ export function DealsCreator({ channels, usedChannelIds }: {
             />
           </div>
 
-          {/* Salon source */}
-          <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 12, alignItems: "center" }}>
-            <label style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", fontWeight: 600 }}>Salon source</label>
+          {/* Salon */}
+          <div style={{ display: "grid", gridTemplateColumns: "90px 1fr", gap: 12, alignItems: "center" }}>
+            <label style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", fontWeight: 600 }}>Salon</label>
             <ChannelSelect
               value={channelId}
-              onChange={handleSetChannel}
+              onChange={setChannelId}
               channels={availableChannels}
               placeholder="Salon où /deals sera utilisé…"
-            />
-          </div>
-
-          {/* Salon de notifs */}
-          <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 12, alignItems: "center" }}>
-            <label style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", fontWeight: 600 }}>Notifs <span style={{ fontWeight: 400, opacity: 0.5 }}>(optionnel)</span></label>
-            <ChannelSelect
-              value={notifId}
-              onChange={handleSetNotif}
-              channels={textChannels}
-              placeholder="Salon des alertes promo…"
             />
           </div>
 
           {error && <p style={{ fontSize: 12, color: "#ef4444", margin: 0 }}>{error}</p>}
 
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-            <button type="button" onClick={() => setOpen(false)}
+            <button type="button" onClick={() => { setOpen(false); setError(null); }}
               style={{ height: 34, padding: "0 16px", background: "none", border: BD, borderRadius: 8, fontSize: 13, color: "rgba(255,255,255,0.45)", cursor: "pointer" }}>
               Annuler
             </button>
@@ -196,6 +172,7 @@ export function DealsCreator({ channels, usedChannelIds }: {
               {pending ? "Création…" : "Créer"}
             </button>
           </div>
+
         </div>
       )}
     </div>
