@@ -2,12 +2,11 @@
 
 import { useState, useTransition, useRef, useEffect } from "react";
 import { Check, ChevronDown, Save, Hash, Volume2, Settings, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { saveSection } from "@/app/(dashboard)/parametres/actions";
 import type { ActionResult } from "@/app/(dashboard)/parametres/actions";
 
 export type DiscordChannel = { id: string; name: string; type: number; position: number; parent_id: string | null };
-export type DiscordRole = { id: string; name: string; color: number; position: number };
+export type DiscordRole    = { id: string; name: string; color: number; position: number };
 
 export type SettingField = {
   key: string;
@@ -17,88 +16,98 @@ export type SettingField = {
 };
 
 function roleColor(color: number) {
-  return color === 0 ? "#4e5058" : `#${color.toString(16).padStart(6, "0")}`;
+  return color === 0 ? "#6b7280" : `#${color.toString(16).padStart(6, "0")}`;
 }
 
-// ── Select dropdown ───────────────────────────────────────────────────────────
+// ── Tokens ───────────────────────────────────────────────────────────────────
+const LINE  = "1px solid rgba(255,255,255,0.08)";
+const LINE2 = "1px solid rgba(255,255,255,0.12)";
 
+// ── Types ────────────────────────────────────────────────────────────────────
 type Option = { id: string; label: string; sub?: string; color?: string; icon?: React.ReactNode };
 
-function SelectDropdown({ name, options, value, onChange, placeholder = "Sélectionner…", searchPlaceholder = "Rechercher…" }: {
-  name: string; options: Option[]; value: string; onChange: (v: string) => void; placeholder?: string; searchPlaceholder?: string;
+// ── SelectDropdown ────────────────────────────────────────────────────────────
+function SelectDropdown({
+  name,
+  options,
+  value,
+  onChange,
+  placeholder = "Sélectionner…",
+  searchPlaceholder = "Rechercher…",
+}: {
+  name: string;
+  options: Option[];
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  searchPlaceholder?: string;
 }) {
-  const [visible, setVisible] = useState(false);
+  const [open, setOpen] = useState(false);
   const [animClass, setAnimClass] = useState("");
   const [query, setQuery] = useState("");
   const ref = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const selected = options.find((o) => o.id === value);
-  const isOpening = animClass === "animate-expand-down";
+  const isVisible = open && animClass !== "animate-expand-up";
 
   const filtered = query.trim()
     ? options.filter((o) => o.label.toLowerCase().includes(query.toLowerCase()))
     : options;
 
-  function doOpen() {
-    setVisible(true);
-    setAnimClass("animate-expand-down");
-    setTimeout(() => searchRef.current?.focus(), 10);
-  }
-
-  function doClose() {
-    if (!visible) return;
-    setAnimClass("animate-expand-up");
-  }
-
-  function handleAnimEnd() {
-    if (animClass === "animate-expand-up") {
-      setVisible(false);
-      setQuery("");
-    }
-    setAnimClass("");
-  }
-
-  function handleToggle() {
-    if (visible) doClose(); else doOpen();
-  }
+  function doOpen()  { setOpen(true); setAnimClass("animate-expand-down"); setTimeout(() => searchRef.current?.focus(), 10); }
+  function doClose() { if (!open) return; setAnimClass("animate-expand-up"); }
+  function onAnimEnd() { if (animClass === "animate-expand-up") { setOpen(false); setQuery(""); } setAnimClass(""); }
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) doClose();
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) doClose(); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>
       <input type="hidden" name={name} value={value} />
-      <div ref={ref} className="relative">
+      <div ref={ref} style={{ position: "relative" }}>
+
+        {/* Trigger */}
         <button
           type="button"
-          onClick={handleToggle}
-          style={{ height: 36, width: "100%", display: "flex", alignItems: "center", gap: 8, borderRadius: 8, border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.06)", paddingLeft: 12, paddingRight: 10, fontSize: 14, color: "#fff", cursor: "pointer", transition: "border-color 0.15s" }}
+          onClick={() => open ? doClose() : doOpen()}
+          style={{
+            height: 36, width: "100%", display: "flex", alignItems: "center", gap: 8,
+            background: "rgba(255,255,255,0.06)", border: LINE2, borderRadius: 8,
+            paddingLeft: 12, paddingRight: 10, fontSize: 13, cursor: "pointer",
+          }}
         >
           {selected ? (
-            <span className="flex items-center gap-2 flex-1 min-w-0">
+            <span style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0 }}>
               {selected.icon}
-              {selected.color && <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: selected.color }} />}
-              <span className="truncate text-foreground" style={selected.color ? { color: selected.color } : {}}>{selected.label}</span>
-              {selected.sub && <span className="text-muted-foreground/60 text-xs shrink-0">· {selected.sub}</span>}
+              {selected.color && <span style={{ width: 8, height: 8, borderRadius: "50%", background: selected.color, flexShrink: 0 }} />}
+              <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: selected.color ?? "#fff" }}>
+                {selected.label}
+              </span>
+              {selected.sub && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.30)", flexShrink: 0 }}>· {selected.sub}</span>}
             </span>
           ) : (
-            <span className="text-muted-foreground flex-1 text-left">{placeholder}</span>
+            <span style={{ flex: 1, textAlign: "left", color: "rgba(255,255,255,0.35)" }}>{placeholder}</span>
           )}
-          <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground shrink-0 ml-1 transition-transform duration-200 ${visible && isOpening || (visible && !animClass) ? "rotate-180" : ""}`} />
+          <ChevronDown size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0, transform: isVisible ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
         </button>
 
-        {visible && (
+        {/* Dropdown */}
+        {open && (
           <div
-            className={`absolute left-0 top-full mt-1 z-50 w-full min-w-[200px] rounded-lg border border-border bg-card shadow-xl ${animClass}`}
-            onAnimationEnd={handleAnimEnd}
+            className={animClass}
+            onAnimationEnd={onAnimEnd}
+            style={{
+              position: "absolute", left: 0, top: "calc(100% + 4px)", zIndex: 50,
+              width: "100%", minWidth: 200, borderRadius: 10,
+              border: LINE2, background: "#2c2c2c", boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
+            }}
           >
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
-              <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            {/* Search */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderBottom: LINE }}>
+              <Search size={13} style={{ color: "rgba(255,255,255,0.30)", flexShrink: 0 }} />
               <input
                 ref={searchRef}
                 type="text"
@@ -106,39 +115,41 @@ function SelectDropdown({ name, options, value, onChange, placeholder = "Sélect
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === "Escape" && doClose()}
                 placeholder={searchPlaceholder}
-                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 outline-none"
+                style={{ flex: 1, background: "transparent", border: "none", outline: "none", fontSize: 13, color: "#fff" }}
               />
               {query && (
-                <button type="button" onClick={() => setQuery("")} className="text-muted-foreground/60 hover:text-foreground transition-colors text-xs">✕</button>
+                <button type="button" onClick={() => setQuery("")}
+                  style={{ color: "rgba(255,255,255,0.30)", background: "none", border: "none", cursor: "pointer", fontSize: 12, lineHeight: 1 }}>✕</button>
               )}
             </div>
 
-            <div className="py-1 max-h-52 overflow-y-auto">
+            {/* Options */}
+            <div style={{ maxHeight: 210, overflowY: "auto", padding: "4px 0" }}>
               {!query && (
                 <button type="button" onClick={() => { onChange(""); doClose(); }}
-                  className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 transition-colors">
-                  <span className="text-muted-foreground flex-1 text-left">— Aucun —</span>
-                  {!value && <Check className="h-3.5 w-3.5 text-primary" />}
+                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "rgba(255,255,255,0.35)" }}>
+                  <span style={{ flex: 1, textAlign: "left" }}>— Aucun —</span>
+                  {!value && <Check size={13} style={{ color: "#fff" }} />}
                 </button>
               )}
               {options.length === 0 ? (
-                <p className="px-3 py-2 text-xs text-muted-foreground/60 italic">
-                  Aucun élément trouvé — vérifie que DISCORD_BOT_TOKEN et DISCORD_GUILD_ID sont configurés.
+                <p style={{ padding: "8px 12px", fontSize: 11, color: "rgba(255,255,255,0.30)", fontStyle: "italic" }}>
+                  Aucun élément — vérifie DISCORD_BOT_TOKEN et DISCORD_GUILD_ID.
                 </p>
               ) : filtered.length === 0 ? (
-                <p className="px-3 py-2 text-xs text-muted-foreground/60 italic">Aucun résultat pour « {query} »</p>
-              ) : (
-                filtered.map((o) => (
-                  <button key={o.id} type="button" onClick={() => { onChange(o.id); doClose(); }}
-                    className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 transition-colors">
-                    {o.icon}
-                    {o.color && <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: o.color }} />}
-                    <span className="flex-1 text-left truncate text-foreground" style={o.color ? { color: o.color } : {}}>{o.label}</span>
-                    {o.sub && <span className="text-muted-foreground/50 text-xs shrink-0">{o.sub}</span>}
-                    {value === o.id && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
-                  </button>
-                ))
-              )}
+                <p style={{ padding: "8px 12px", fontSize: 11, color: "rgba(255,255,255,0.30)", fontStyle: "italic" }}>
+                  Aucun résultat pour « {query} »
+                </p>
+              ) : filtered.map((o) => (
+                <button key={o.id} type="button" onClick={() => { onChange(o.id); doClose(); }}
+                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 13, textAlign: "left" }}>
+                  {o.icon}
+                  {o.color && <span style={{ width: 8, height: 8, borderRadius: "50%", background: o.color, flexShrink: 0 }} />}
+                  <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: o.color ?? "#fff" }}>{o.label}</span>
+                  {o.sub && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.30)", flexShrink: 0 }}>{o.sub}</span>}
+                  {value === o.id && <Check size={13} style={{ color: "#fff", flexShrink: 0 }} />}
+                </button>
+              ))}
             </div>
           </div>
         )}
@@ -147,8 +158,7 @@ function SelectDropdown({ name, options, value, onChange, placeholder = "Sélect
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
-
+// ── FeatureSettings ───────────────────────────────────────────────────────────
 export function FeatureSettings({ fields, channels, roles, settings }: {
   fields: SettingField[];
   channels: DiscordChannel[];
@@ -165,24 +175,15 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
   const panelOpen = panelVisible && panelAnimClass !== "animate-accordion-up";
 
   function togglePanel() {
-    if (panelVisible) {
-      setPanelAnimClass("animate-accordion-up");
-    } else {
-      setPanelVisible(true);
-      setPanelAnimClass("animate-accordion-down");
-    }
+    if (panelVisible) { setPanelAnimClass("animate-accordion-up"); }
+    else { setPanelVisible(true); setPanelAnimClass("animate-accordion-down"); }
   }
-
-  function handlePanelAnimEnd() {
-    if (panelAnimClass === "animate-accordion-up") {
-      setPanelVisible(false);
-    }
+  function onPanelAnimEnd() {
+    if (panelAnimClass === "animate-accordion-up") setPanelVisible(false);
     setPanelAnimClass("");
   }
 
-  const categoryMap = new Map(
-    channels.filter((c) => c.type === 4).map((c) => [c.id, c.name]),
-  );
+  const categoryMap = new Map(channels.filter((c) => c.type === 4).map((c) => [c.id, c.name]));
 
   const textChannels: Option[] = channels
     .filter((c) => c.type !== 4)
@@ -192,8 +193,8 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
       label: c.name,
       sub: c.parent_id ? (categoryMap.get(c.parent_id) ?? undefined) : undefined,
       icon: c.type === 2 || c.type === 13
-        ? <Volume2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-        : <Hash className="h-3.5 w-3.5 text-muted-foreground shrink-0" />,
+        ? <Volume2 size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />
+        : <Hash    size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />,
     }));
 
   const roleOptions: Option[] = roles
@@ -213,33 +214,31 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
   }
 
   return (
-    <div style={{ background: "#222", borderRadius: 12, border: "1px solid rgba(255,255,255,0.12)", overflow: "hidden" }}>
-      <button
-        type="button"
-        onClick={togglePanel}
-        style={{ width: "100%", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px" }}
-      >
+    <div style={{ background: "#222", borderRadius: 12, border: LINE2, overflow: "hidden" }}>
+
+      {/* Header */}
+      <button type="button" onClick={togglePanel}
+        style={{ width: "100%", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Settings size={14} style={{ color: "rgba(255,255,255,0.55)" }} />
+          <Settings size={14} style={{ color: "rgba(255,255,255,0.50)" }} />
           <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.75)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Configuration</span>
         </div>
-        <ChevronDown size={14} style={{ color: "rgba(255,255,255,0.45)", transform: panelOpen ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
+        <ChevronDown size={14} style={{ color: "rgba(255,255,255,0.40)", transform: panelOpen ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
       </button>
 
+      {/* Body */}
       {panelVisible && (
-        /* Wrapper de l'animation : grid-template-rows 0fr→1fr change la hauteur physique.
-           overflow:hidden + display:grid sont dans la classe @utility et disparaissent
-           après onAnimationEnd → les dropdowns internes ne sont plus clippés. */
-        <div className={panelAnimClass} onAnimationEnd={handlePanelAnimEnd}>
-          {/* min-h-0 requis : permet au grid item de se réduire à 0 hauteur */}
+        <div className={panelAnimClass} onAnimationEnd={onPanelAnimEnd}>
           <div className="min-h-0">
-            <form onSubmit={handleSubmit} className="border-t border-border">
-              <div className="p-5 space-y-4">
+            <form onSubmit={handleSubmit} style={{ borderTop: LINE }}>
+
+              {/* Fields */}
+              <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
                 {fields.map((f) => (
-                  <div key={f.key} className="grid grid-cols-2 gap-4 items-start">
+                  <div key={f.key} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, alignItems: "center" }}>
                     <div>
-                      <p className="text-xs font-medium text-foreground">{f.label}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{f.description}</p>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: "#fff", lineHeight: 1 }}>{f.label}</p>
+                      <p style={{ fontSize: 11, color: "rgba(255,255,255,0.40)", marginTop: 4, lineHeight: 1.4 }}>{f.description}</p>
                     </div>
                     <SelectDropdown
                       name={f.key}
@@ -251,20 +250,33 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
                   </div>
                 ))}
               </div>
-              <div className="px-5 pb-4 flex items-center justify-between border-t border-border pt-3">
-                <div>
-                  {error && <p className="text-xs text-destructive">{error}</p>}
-                  {saved && <p className="text-xs" style={{ color: "#4ade80" }}>✓ Enregistré</p>}
+
+              {/* Footer */}
+              <div style={{ padding: "12px 20px", borderTop: LINE, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ fontSize: 12 }}>
+                  {error && <span style={{ color: "#ef4444" }}>{error}</span>}
+                  {saved && <span style={{ color: "#4ade80" }}>✓ Enregistré</span>}
                 </div>
-                <Button type="submit" size="sm" disabled={pending}>
-                  <Save className="h-3.5 w-3.5" />
+                <button
+                  type="submit"
+                  disabled={pending}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 6,
+                    background: "#fff", color: "#000", border: "none", borderRadius: 8,
+                    padding: "8px 16px", fontSize: 13, fontWeight: 600,
+                    cursor: pending ? "not-allowed" : "pointer", opacity: pending ? 0.6 : 1,
+                  }}
+                >
+                  <Save size={13} />
                   {pending ? "Enregistrement…" : "Enregistrer"}
-                </Button>
+                </button>
               </div>
+
             </form>
           </div>
         </div>
       )}
+
     </div>
   );
 }
