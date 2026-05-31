@@ -7,7 +7,7 @@ import { signOut } from "next-auth/react";
 import {
   SquaresFour, Users, Popcorn,
   Scroll, Sword, GameController, GearSix, SignOut,
-  BookOpen, Stack, CaretDown,
+  BookOpen, Stack, CaretDown, type IconWeight,
 } from "@phosphor-icons/react";
 
 function WatermelonIcon({ size = 17, style }: { size?: number; strokeWidth?: number; style?: React.CSSProperties }) {
@@ -254,7 +254,7 @@ export function Sidebar() {
 
 function NavLink({ href, label, Icon, active, delay }: {
   href: string; label: string;
-  Icon: React.ComponentType<{ size?: number; weight?: string; strokeWidth?: number; style?: React.CSSProperties }>;
+  Icon: React.ComponentType<{ size?: number; weight?: IconWeight; strokeWidth?: number; style?: React.CSSProperties }>;
   active: boolean; delay: number;
 }) {
   return (
