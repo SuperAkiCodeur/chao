@@ -5,7 +5,7 @@ import { ValorantClient } from "./ValorantClient";
 import { FeatureSettings, type DiscordChannel, type DiscordRole } from "@/components/FeatureSettings";
 import { ApiAttribution } from "@/components/ApiAttribution";
 import { getAllSettings } from "@/lib/settings";
-import { PageShell, StatCard, SectionCard } from "@/components/PageShell";
+import { PageShell, SectionCard } from "@/components/PageShell";
 
 export const dynamic = "force-dynamic";
 
@@ -29,17 +29,13 @@ export default async function ValorantPage() {
   return (
     <PageShell title="Valorant" description="Comptes Riot liés aux membres Discord">
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 12 }}>
-        <StatCard value={accounts.length} label="Comptes liés" sub="joueurs enregistrés" />
-      </div>
-
       <SectionCard title="Comptes liés" badge={`${accounts.length} compte${accounts.length !== 1 ? "s" : ""}`}>
         <div>
           <ValorantClient accounts={accounts} defaultGuildId={DEFAULT_GUILD_ID} />
         </div>
       </SectionCard>
 
-      <FeatureSettings channels={channels} roles={[] as DiscordRole[]} settings={settings} fields={[
+      <FeatureSettings channels={channels} roles={[] as DiscordRole[]} settings={settings} noCollapse fields={[
         { key: "valorant_channel_id", label: "Salon Valorant", description: "Salon où le bot poste les résultats", kind: "channel" },
       ]} />
 
