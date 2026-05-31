@@ -217,7 +217,7 @@ export default async function PalestinePage() {
             fontSize: 19, color: "#4ade80",
             fontFamily: "var(--font-serif)",
           }}>
-            dans {countdownLabel}
+            {countdownLabel}
           </span>
         </div>
         <a
