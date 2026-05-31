@@ -98,7 +98,7 @@ export function SectionCard({
           borderBottom: BD,
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
-          <p style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{title}</p>
+          <p style={{ fontSize: 16, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)" }}>{title}</p>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             {badge !== undefined && (
               <span style={{

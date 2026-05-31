@@ -187,7 +187,6 @@ export function FeatureSettings({ fields, channels, roles, settings, noCollapse 
     .sort((a, b) => a.position - b.position)
     .map((c) => ({
       id: c.id, label: c.name,
-      sub: c.parent_id ? (categoryMap.get(c.parent_id) ?? undefined) : undefined,
       icon: c.type === 2 || c.type === 13
         ? <Volume2 size={12} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />
         : <Hash    size={12} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />,

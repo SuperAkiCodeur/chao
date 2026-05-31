@@ -202,28 +202,32 @@ export default async function PalestinePage() {
   return (
     <PageShell title="Palestine" description="Articles postés quotidiennement par le bot à 9h (Paris)">
 
-      {/* Countdown — compact single line */}
+      {/* Countdown — compact full-width bar */}
       <div style={{
-        display: "flex", alignItems: "center", gap: 10,
-        alignSelf: "flex-start",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        gap: 12,
         background: "rgba(0,151,54,0.07)",
         border: "1px solid rgba(0,151,54,0.16)",
-        borderRadius: 8, padding: "7px 14px",
+        borderRadius: 8, padding: "9px 16px",
       }}>
-        <Clock size={12} style={{ color: "#4ade80", flexShrink: 0 }} />
-        <span style={{ fontSize: 13, color: "rgba(255,255,255,0.42)" }}>
-          Prochain article{" "}
-          <span style={{ fontWeight: 700, color: "#4ade80" }}>dans {countdownLabel}</span>
-        </span>
-        <span style={{ color: "rgba(255,255,255,0.15)", fontSize: 12 }}>·</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <Clock size={12} style={{ color: "#4ade80", flexShrink: 0 }} />
+          <span style={{ fontSize: 13, color: "rgba(255,255,255,0.42)" }}>Prochain article</span>
+          <span style={{
+            fontSize: 15, color: "#4ade80",
+            fontFamily: "var(--font-serif)",
+          }}>
+            dans {countdownLabel}
+          </span>
+        </div>
         <a
           href={sourceDomain}
           target="_blank"
           rel="noreferrer"
           style={{
             display: "flex", alignItems: "center", gap: 4,
-            fontSize: 12, color: "rgba(255,255,255,0.30)",
-            textDecoration: "none",
+            fontSize: 12, color: "rgba(255,255,255,0.28)",
+            textDecoration: "none", flexShrink: 0,
           }}
         >
           {AMP_AUTHOR}
@@ -262,7 +266,8 @@ export default async function PalestinePage() {
                         rel="noreferrer"
                         className="hover-slide"
                         style={{
-                          fontSize: 14, fontWeight: 600, color: "#fff",
+                          fontSize: 15, fontWeight: 400, color: "#fff",
+                          fontFamily: "var(--font-serif)",
                           textDecoration: "none",
                           display: "inline-flex", alignItems: "center", gap: 6,
                         }}
