@@ -47,7 +47,12 @@ export function CommandsReference({ commands }: { commands: BotCommand[] }) {
           <div className="min-h-0">
             <div style={{ borderTop: BD }}>
               {commands.map((cmd, i) => (
-                <div key={cmd.name} style={{ padding: "14px 20px", borderTop: i > 0 ? BD : undefined }}>
+                <div
+                  key={cmd.name}
+                  style={{ padding: "14px 20px", borderTop: i > 0 ? BD : undefined, transition: "background 0.12s, transform 0.18s cubic-bezier(0.16,1,0.3,1)" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.025)"; e.currentTarget.style.transform = "translateX(3px)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.transform = "none"; }}
+                >
 
                   {/* Name + admin badge */}
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7, flexWrap: "wrap" }}>

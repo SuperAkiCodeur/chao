@@ -14,7 +14,7 @@ export function PageShell({
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
 
       {/* Header 60px — aligne avec logo sidebar */}
-      <div style={{
+      <div className="anim-fade-in" style={{
         height: 60, flexShrink: 0,
         display: "flex", alignItems: "center",
         padding: "0 20px",
@@ -33,11 +33,14 @@ export function PageShell({
       </div>
 
       {/* Contenu scrollable */}
-      <div style={{
-        flex: 1, overflowY: "auto",
-        padding: "20px",
-        display: "flex", flexDirection: "column", gap: 10,
-      }}>
+      <div
+        className="anim-fade-up d-50"
+        style={{
+          flex: 1, overflowY: "auto",
+          padding: "20px",
+          display: "flex", flexDirection: "column", gap: 10,
+        }}
+      >
         {children}
       </div>
 
@@ -47,12 +50,18 @@ export function PageShell({
 
 /* ── Stat card ── */
 export function StatCard({
-  value, label, sub,
+  value, label, sub, delay = 0,
 }: {
-  value: string | number; label: string; sub?: string;
+  value: string | number; label: string; sub?: string; delay?: number;
 }) {
   return (
-    <div style={{ background: "#242424", borderRadius: 12, padding: "18px 20px", border: BD }}>
+    <div
+      className="anim-scale-in hover-lift"
+      style={{
+        background: "#242424", borderRadius: 12, padding: "18px 20px", border: BD,
+        animationDelay: `${delay}ms`,
+      }}
+    >
       <p style={{ fontSize: 30, fontWeight: 800, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1 }}>
         {value}
       </p>
@@ -70,15 +79,22 @@ export function StatCard({
 
 /* ── Section card ── */
 export function SectionCard({
-  title, badge, children, noPadding = false,
+  title, badge, children, noPadding = false, delay = 0,
 }: {
   title?: string;
   badge?: string | number;
   children: React.ReactNode;
   noPadding?: boolean;
+  delay?: number;
 }) {
   return (
-    <div style={{ background: "#202020", borderRadius: 12, border: BD, overflow: "hidden" }}>
+    <div
+      className="anim-fade-up"
+      style={{
+        background: "#202020", borderRadius: 12, border: BD, overflow: "hidden",
+        animationDelay: `${delay}ms`,
+      }}
+    >
       {title && (
         <div style={{
           padding: "14px 20px",

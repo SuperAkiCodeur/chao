@@ -105,9 +105,9 @@ function SelectDropdown({
 // ── Section ───────────────────────────────────────────────────────────────────
 
 function Section({
-  title, description, children,
+  title, description, children, delay = 0,
 }: {
-  title: string; description: string; children: React.ReactNode;
+  title: string; description: string; children: React.ReactNode; delay?: number;
 }) {
   const [saved, setSaved]   = useState(false);
   const [error, setError]   = useState<string | null>(null);
@@ -125,7 +125,7 @@ function Section({
   }
 
   return (
-    <div style={{ background: "#202020", borderRadius: 12, border: LINE }}>
+    <div className="anim-fade-up" style={{ background: "#202020", borderRadius: 12, border: LINE, animationDelay: `${delay}ms` }}>
       {/* Header */}
       <div style={{ padding: "14px 20px", borderBottom: LINE }}>
         <p style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{title}</p>
@@ -203,7 +203,7 @@ export function SettingsClient({ channels, roles, settings }: {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
 
-      <Section title="Cinéma" description="Salon d'annonces et rôle spectateur pour les séances cinéma">
+      <Section title="Cinéma" description="Salon d'annonces et rôle spectateur pour les séances cinéma" delay={0}>
         <Field label="Salon d'annonces" description="Salon où les séances sont publiées">
           <SelectDropdown name="cinema_channel_id" options={textChannels} value={vals["cinema_channel_id"] ?? ""} onChange={set("cinema_channel_id")} placeholder="Choisir un salon…" />
         </Field>
@@ -212,13 +212,13 @@ export function SettingsClient({ channels, roles, settings }: {
         </Field>
       </Section>
 
-      <Section title="Membres" description="Rôle automatiquement attribué aux nouveaux membres">
+      <Section title="Membres" description="Rôle automatiquement attribué aux nouveaux membres" delay={100}>
         <Field label="Rôle automatique" description="Attribué dès qu'un membre rejoint le serveur">
           <SelectDropdown name="member_role_id" options={sortedRoles} value={vals["member_role_id"] ?? ""} onChange={set("member_role_id")} placeholder="Choisir un rôle…" />
         </Field>
       </Section>
 
-      <Section title="Valorant" description="Salon pour les résultats et statistiques Valorant">
+      <Section title="Valorant" description="Salon pour les résultats et statistiques Valorant" delay={200}>
         <Field label="Salon Valorant" description="Salon où le bot poste les résultats">
           <SelectDropdown name="valorant_channel_id" options={textChannels} value={vals["valorant_channel_id"] ?? ""} onChange={set("valorant_channel_id")} placeholder="Choisir un salon…" />
         </Field>

@@ -173,9 +173,19 @@ function GamesList({ games }: { games: SteamGame[] }) {
         return (
           <div
             key={g.id}
-            style={{ display: "flex", alignItems: "center", gap: 12, background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: "10px 14px" }}
-            onMouseEnter={(e) => { (e.currentTarget.querySelector(".remove-btn") as HTMLElement | null)?.style.setProperty("opacity", "1"); }}
-            onMouseLeave={(e) => { (e.currentTarget.querySelector(".remove-btn") as HTMLElement | null)?.style.setProperty("opacity", "0"); }}
+            style={{ display: "flex", alignItems: "center", gap: 12, background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: "10px 14px", transition: "background 0.15s, transform 0.2s cubic-bezier(0.16,1,0.3,1), box-shadow 0.2s" }}
+            onMouseEnter={(e) => {
+              (e.currentTarget.querySelector(".remove-btn") as HTMLElement | null)?.style.setProperty("opacity", "1");
+              e.currentTarget.style.background = "rgba(255,255,255,0.07)";
+              e.currentTarget.style.transform = "translateY(-2px)";
+              e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.25)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget.querySelector(".remove-btn") as HTMLElement | null)?.style.setProperty("opacity", "0");
+              e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+              e.currentTarget.style.transform = "none";
+              e.currentTarget.style.boxShadow = "none";
+            }}
           >
             {g.headerImage ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -193,7 +203,7 @@ function GamesList({ games }: { games: SteamGame[] }) {
               </a>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3 }}>
                 {g.isOnSale === 1 && (
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "#4ade80", background: "rgba(74,222,128,0.12)", padding: "1px 6px", borderRadius: 99 }}>
+                  <span className="anim-pulse" style={{ fontSize: 10, fontWeight: 700, color: "#4ade80", background: "rgba(74,222,128,0.12)", padding: "1px 6px", borderRadius: 99 }}>
                     PROMO
                   </span>
                 )}

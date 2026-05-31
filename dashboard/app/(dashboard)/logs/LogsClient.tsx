@@ -58,8 +58,8 @@ export function LogsClient({ logs }: { logs: Log[] }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 
       {/* Filter bar */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-        {FILTERS.map((f) => {
+      <div className="anim-fade-in d-0" style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+        {FILTERS.map((f, i) => {
           const isActive = active === f.id;
           const count = f.types === null
             ? logs.length
@@ -68,11 +68,14 @@ export function LogsClient({ logs }: { logs: Log[] }) {
             <button
               key={f.id}
               onClick={() => setActive(f.id)}
+              className="anim-fade-up hover-glow"
               style={{
                 padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 500,
-                border: "none", cursor: "pointer", transition: "all 0.15s",
+                border: "none", cursor: "pointer",
                 background: isActive ? "#fff" : "rgba(255,255,255,0.06)",
                 color: isActive ? "#000" : "rgba(255,255,255,0.50)",
+                transition: "background 0.15s, color 0.15s, transform 0.2s",
+                animationDelay: `${i * 50}ms`,
               }}
             >
               {f.label}
@@ -87,14 +90,14 @@ export function LogsClient({ logs }: { logs: Log[] }) {
 
       {/* Empty state */}
       {filtered.length === 0 && (
-        <div style={{ background: "#202020", borderRadius: 12, border: LINE, padding: "32px 20px", textAlign: "center" }}>
+        <div className="anim-scale-in" style={{ background: "#202020", borderRadius: 12, border: LINE, padding: "32px 20px", textAlign: "center" }}>
           <p style={{ fontSize: 13, color: "rgba(255,255,255,0.30)" }}>Aucun événement pour ce filtre.</p>
         </div>
       )}
 
-      {/* Groups */}
-      {Array.from(groups.entries()).map(([day, entries]) => (
-        <div key={day} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      {/* Groups — stagger */}
+      {Array.from(groups.entries()).map(([day, entries], gi) => (
+        <div key={day} className="anim-fade-up" style={{ display: "flex", flexDirection: "column", gap: 8, animationDelay: `${gi * 80}ms` }}>
 
           {/* Day separator */}
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -123,10 +126,16 @@ export function LogsClient({ logs }: { logs: Log[] }) {
                       display: "flex", alignItems: "flex-start", justifyContent: "space-between",
                       gap: 16, padding: "11px 20px",
                       borderTop: i > 0 ? LINE : undefined,
-                      transition: "background 0.12s",
+                      transition: "background 0.12s, transform 0.18s cubic-bezier(0.16,1,0.3,1)",
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.03)")}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "rgba(255,255,255,0.03)";
+                      e.currentTarget.style.transform = "translateX(3px)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.transform = "none";
+                    }}
                   >
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 12, minWidth: 0 }}>
                       {/* Type badge */}

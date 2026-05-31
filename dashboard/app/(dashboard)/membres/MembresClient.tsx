@@ -594,10 +594,10 @@ export function MembresClient({ members, roles }: { members: DiscordMember[]; ro
           return (
             <div
               key={m.user.id}
-              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 20px", cursor: "pointer", transition: "background 0.12s" }}
+              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 20px", cursor: "pointer", transition: "background 0.12s, transform 0.18s cubic-bezier(0.16,1,0.3,1)" }}
               onClick={() => setDialog({ type: "detail", member: m })}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.04)")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.transform = "translateX(3px)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.transform = "none"; }}
             >
               {/* Left: avatar + name */}
               <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
