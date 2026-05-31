@@ -351,11 +351,25 @@ export function CinemaClient({ partiesWithMeta }: { partiesWithMeta: PartyWithMe
                           <Users size={10} /> {p.participants}
                         </span>
                       )}
-                      {p.avgRating && (
-                        <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "rgba(255,255,255,0.28)" }}>
-                          <Star size={10} /> {p.avgRating}
-                        </span>
-                      )}
+                      <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                        {[1,2,3,4,5].map(n => {
+                          const val = p.avgRating ? parseFloat(p.avgRating) : 0;
+                          const filled = val >= n;
+                          const half   = !filled && val >= n - 0.5;
+                          return (
+                            <Star key={n} size={11}
+                              fill={filled ? "#facc15" : half ? "#facc1580" : "none"}
+                              stroke={filled || half ? "#facc15" : "rgba(255,255,255,0.20)"}
+                              strokeWidth={1.5}
+                            />
+                          );
+                        })}
+                        {p.avgRating && (
+                          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.50)", marginLeft: 4 }}>
+                            {p.avgRating}/5
+                          </span>
+                        )}
+                      </span>
                     </div>
                   </div>
                 </div>
