@@ -472,7 +472,7 @@ function RoleDropdown({
       <button
         type="button"
         onClick={() => visible ? doClose() : doOpen()}
-        className="flex h-9 items-center gap-2 rounded-lg border border-border bg-muted/40 pl-3 pr-2.5 text-sm text-foreground hover:bg-muted/60 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50 whitespace-nowrap"
+        style={{ height: 36, display: "flex", alignItems: "center", gap: 8, borderRadius: 8, border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.06)", paddingLeft: 12, paddingRight: 10, fontSize: 14, color: "#fff", whiteSpace: "nowrap", cursor: "pointer", transition: "border-color 0.15s" }}
       >
         {selected ? (
           <>
@@ -480,9 +480,9 @@ function RoleDropdown({
             <span style={{ color: roleColor(selected.color) }}>{selected.name}</span>
           </>
         ) : (
-          <span className="text-muted-foreground">Tous les rôles</span>
+          <span style={{ color: "rgba(255,255,255,0.50)" }}>Tous les rôles</span>
         )}
-        <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground ml-1 transition-transform duration-200 ${visible && animClass !== "animate-expand-up" ? "rotate-180" : ""}`} />
+        <ChevronDown size={14} style={{ color: "rgba(255,255,255,0.45)", marginLeft: 2, transform: visible && animClass !== "animate-expand-up" ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
       </button>
 
       {visible && (
@@ -552,11 +552,11 @@ export function MembresClient({ members, roles }: { members: DiscordMember[]; ro
   return (
     <>
       {/* Search + role filter */}
-      <div className="flex gap-2 mb-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-          <Input
-            className="pl-9"
+      <div style={{ padding: "14px 20px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", gap: 8 }}>
+        <div style={{ position: "relative", flex: 1 }}>
+          <Search style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", width: 14, height: 14, color: "rgba(255,255,255,0.38)", pointerEvents: "none", flexShrink: 0 }} />
+          <input
+            style={{ width: "100%", height: 36, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, paddingLeft: 36, paddingRight: 12, fontSize: 13, color: "#fff", outline: "none" }}
             placeholder="Rechercher un membre…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -571,76 +571,76 @@ export function MembresClient({ members, roles }: { members: DiscordMember[]; ro
 
       {/* Active filter indicator */}
       {roleFilter && selectedRole && (
-        <div className="flex items-center gap-2 mb-3 -mt-1">
-          <span className="text-xs text-muted-foreground">Filtré par :</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px 0" }}>
+          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>Filtré par :</span>
           <span
-            className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-medium"
-            style={{ backgroundColor: `${roleColor(selectedRole.color)}20`, color: roleColor(selectedRole.color) }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 4, borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 500, backgroundColor: `${roleColor(selectedRole.color)}20`, color: roleColor(selectedRole.color) }}
           >
-            <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: roleColor(selectedRole.color) }} />
+            <span style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: roleColor(selectedRole.color) }} />
             {selectedRole.name}
           </span>
-          <button onClick={() => setRoleFilter("")} className="text-xs text-muted-foreground hover:text-foreground">✕</button>
-          <span className="text-xs text-muted-foreground">— {filtered.length} membre{filtered.length !== 1 ? "s" : ""}</span>
+          <button onClick={() => setRoleFilter("")} style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", background: "none", border: "none", cursor: "pointer" }}>✕</button>
+          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>— {filtered.length} membre{filtered.length !== 1 ? "s" : ""}</span>
         </div>
       )}
 
-
       {/* List */}
-      <div className="space-y-1">
+      <div style={{ padding: "6px 0" }}>
         {filtered.length === 0 && (
-          <p className="text-sm text-muted-foreground py-2">Aucun membre trouvé.</p>
+          <p style={{ padding: "16px 20px", fontSize: 13, color: "rgba(255,255,255,0.30)" }}>Aucun membre trouvé.</p>
         )}
         {filtered.map((m) => {
           const timedOut = isTimedOut(m);
           return (
             <div
               key={m.user.id}
-              className="flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-muted/40 hover:translate-x-0.5 transition-all duration-150 cursor-pointer"
+              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 20px", cursor: "pointer", transition: "background 0.12s" }}
               onClick={() => setDialog({ type: "detail", member: m })}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.04)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
             >
-              {/* Left: avatar + name + roles */}
-              <div className="flex items-center gap-3 min-w-0">
+              {/* Left: avatar + name */}
+              <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={avatarUrl(m)}
                   alt=""
-                  className="h-8 w-8 rounded-full shrink-0 bg-muted"
+                  style={{ width: 34, height: 34, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.08)", objectFit: "cover" }}
                   onError={(e) => { (e.target as HTMLImageElement).src = "https://cdn.discordapp.com/embed/avatars/0.png"; }}
                 />
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium text-foreground leading-none truncate">{displayName(m)}</p>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1 }}>{displayName(m)}</p>
                     {timedOut && <Badge variant="warning" className="text-[10px] px-1.5 py-0">sourdine</Badge>}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">@{m.user.username}</p>
+                  <p style={{ fontSize: 11, color: "rgba(255,255,255,0.40)", marginTop: 3 }}>@{m.user.username}</p>
                 </div>
               </div>
 
-              {/* Right: action buttons + chevron */}
-              <div className="flex items-center gap-1 shrink-0 ml-3" onClick={(e) => e.stopPropagation()}>
+              {/* Right: action buttons */}
+              <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0, marginLeft: 12 }} onClick={(e) => e.stopPropagation()}>
                 <button
                   onClick={(e) => { e.stopPropagation(); setDialog({ type: "timeout", member: m }); }}
-                  className="rounded-md p-1.5 text-muted-foreground hover:text-amber-600 hover:bg-amber-600/10 transition-colors"
+                  style={{ padding: 6, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.30)", borderRadius: 6, display: "flex" }}
                   title="Mettre en sourdine"
                 >
-                  <Clock className="h-3.5 w-3.5" />
+                  <Clock size={14} />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); setDialog({ type: "kick", member: m }); }}
-                  className="rounded-md p-1.5 text-muted-foreground hover:text-orange-600 hover:bg-orange-600/10 transition-colors"
+                  style={{ padding: 6, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.30)", borderRadius: 6, display: "flex" }}
                   title="Expulser"
                 >
-                  <UserMinus className="h-3.5 w-3.5" />
+                  <UserMinus size={14} />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); setDialog({ type: "ban", member: m }); }}
-                  className="rounded-md p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                  style={{ padding: 6, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.30)", borderRadius: 6, display: "flex" }}
                   title="Bannir"
                 >
-                  <UserX className="h-3.5 w-3.5" />
+                  <UserX size={14} />
                 </button>
-                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 ml-1" />
+                <ChevronRight size={14} style={{ color: "rgba(255,255,255,0.18)", marginLeft: 4 }} />
               </div>
             </div>
           );

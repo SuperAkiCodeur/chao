@@ -44,26 +44,25 @@ export function CommandsReference({ commands }: { commands: BotCommand[] }) {
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card">
+    <div style={{ background: "#222", borderRadius: 12, border: "1px solid rgba(255,255,255,0.12)", overflow: "hidden" }}>
       {/* Header / toggle */}
       <button
         type="button"
         onClick={togglePanel}
-        className="flex w-full items-center justify-between px-5 py-3.5 hover:bg-muted/30 transition-colors"
+        style={{ width: "100%", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px" }}
       >
-        <div className="flex items-center gap-2">
-          <Terminal className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Terminal size={14} style={{ color: "rgba(255,255,255,0.55)" }} />
+          <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.75)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
             Commandes Discord
           </span>
-          <span className="text-[10px] text-muted-foreground/50 font-normal ml-1">
+          <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", fontWeight: 500, marginLeft: 4 }}>
             {commands.length} commande{commands.length !== 1 ? "s" : ""}
           </span>
         </div>
         <ChevronDown
-          className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${
-            panelOpen ? "rotate-180" : ""
-          }`}
+          size={14}
+          style={{ color: "rgba(255,255,255,0.45)", transform: panelOpen ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }}
         />
       </button>
 

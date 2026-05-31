@@ -20,7 +20,7 @@
   --color-secondary-foreground: rgba(255,255,255,0.70);
 
   --color-muted:               #2a2a2a;
-  --color-muted-foreground:    rgba(255,255,255,0.42);
+  --color-muted-foreground:    rgba(255,255,255,0.55);
 
   --color-accent:              #2a2a2a;
   --color-accent-foreground:   #ffffff;
@@ -28,7 +28,7 @@
   --color-destructive:         #ef4444;
   --color-destructive-foreground: #ffffff;
 
-  --color-border:              rgba(255,255,255,0.08);
+  --color-border:              rgba(255,255,255,0.12);
   --color-input:               #2a2a2a;
   --color-ring:                #ffffff;
 

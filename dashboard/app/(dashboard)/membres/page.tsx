@@ -57,7 +57,7 @@ export default async function MembresPage() {
       </div>
 
       {/* List */}
-      <SectionCard title="Liste des membres" badge={`${members.length} membre${members.length !== 1 ? "s" : ""}`}>
+      <SectionCard title="Liste des membres" badge={`${members.length} membre${members.length !== 1 ? "s" : ""}`} noPadding>
         <div>
           {members.length === 0 ? (
             <p style={{ fontSize: 13, color: "rgba(255,255,255,0.30)", padding: "20px 0" }}>

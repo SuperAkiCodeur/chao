@@ -77,7 +77,7 @@ function SelectDropdown({ name, options, value, onChange, placeholder = "Sélect
         <button
           type="button"
           onClick={handleToggle}
-          className="flex h-9 w-full items-center gap-2 rounded-lg border border-border bg-muted/40 pl-3 pr-2.5 text-sm hover:bg-muted/60 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50"
+          style={{ height: 36, width: "100%", display: "flex", alignItems: "center", gap: 8, borderRadius: 8, border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.06)", paddingLeft: 12, paddingRight: 10, fontSize: 14, color: "#fff", cursor: "pointer", transition: "border-color 0.15s" }}
         >
           {selected ? (
             <span className="flex items-center gap-2 flex-1 min-w-0">
@@ -213,17 +213,17 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card">
+    <div style={{ background: "#222", borderRadius: 12, border: "1px solid rgba(255,255,255,0.12)", overflow: "hidden" }}>
       <button
         type="button"
         onClick={togglePanel}
-        className="flex w-full items-center justify-between px-5 py-3.5 hover:bg-muted/30 transition-colors"
+        style={{ width: "100%", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px" }}
       >
-        <div className="flex items-center gap-2">
-          <Settings className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Configuration</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Settings size={14} style={{ color: "rgba(255,255,255,0.55)" }} />
+          <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.75)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Configuration</span>
         </div>
-        <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${panelOpen ? "rotate-180" : ""}`} />
+        <ChevronDown size={14} style={{ color: "rgba(255,255,255,0.45)", transform: panelOpen ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
       </button>
 
       {panelVisible && (
@@ -254,7 +254,7 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
               <div className="px-5 pb-4 flex items-center justify-between border-t border-border pt-3">
                 <div>
                   {error && <p className="text-xs text-destructive">{error}</p>}
-                  {saved && <p className="text-xs text-emerald-700">✓ Enregistré</p>}
+                  {saved && <p className="text-xs" style={{ color: "#4ade80" }}>✓ Enregistré</p>}
                 </div>
                 <Button type="submit" size="sm" disabled={pending}>
                   <Save className="h-3.5 w-3.5" />
