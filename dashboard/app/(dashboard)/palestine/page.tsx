@@ -1,5 +1,6 @@
 import { PageShell, SectionCard } from "@/components/PageShell";
 import { FeatureSettings, type DiscordChannel, type DiscordRole } from "@/components/FeatureSettings";
+import { TodayArticlesClient, type TodayArticle } from "./TodayArticlesClient";
 import { ExternalLink, Clock } from "lucide-react";
 import { getAllSettings } from "@/lib/settings";
 
@@ -12,6 +13,14 @@ const AMP_HOME           = "https://agencemediapalestine.fr";
 const DEFAULT_SOURCE_URL = "https://agencemediapalestine.fr/wp-json/wp/v2/posts";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
+
+type WpPost = {
+  id:      number;
+  link:    string;
+  title:   { rendered: string };
+  excerpt: { rendered: string };
+  date:    string;
+};
 
 type DiscordEmbed = {
   title?:       string;
@@ -34,6 +43,21 @@ type BotPost = {
   description: string;
   timestamp:   string;
 };
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function stripHtml(html: string): string {
+  return html
+    .replace(/<[^>]+>/g, "")
+    .replace(/&[a-z]+;/gi, (e) => {
+      const map: Record<string, string> = {
+        "&amp;": "&", "&lt;": "<", "&gt;": ">",
+        "&quot;": '"', "&#039;": "'", "&nbsp;": " ",
+      };
+      return map[e] ?? e;
+    })
+    .trim();
+}
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
@@ -58,6 +82,31 @@ async function fetchBotPosts(channelId: string): Promise<BotPost[]> {
           timestamp:   embed.timestamp   ?? m.timestamp,
         };
       });
+  } catch {
+    return [];
+  }
+}
+
+async function fetchTodayArticles(sourceUrl: string): Promise<TodayArticle[]> {
+  try {
+    // Start of today in Paris time
+    const now   = new Date();
+    const paris = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Paris" }));
+    const start = new Date(paris);
+    start.setHours(0, 0, 0, 0);
+
+    const url = `${sourceUrl}?per_page=20&after=${encodeURIComponent(start.toISOString())}&_fields=id,link,title,excerpt,date&orderby=date&order=desc`;
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) return [];
+
+    const posts: WpPost[] = await res.json();
+    return posts.map((p) => ({
+      id:          p.id,
+      title:       stripHtml(p.title.rendered),
+      url:         p.link,
+      description: stripHtml(p.excerpt.rendered),
+      date:        p.date,
+    }));
   } catch {
     return [];
   }
@@ -93,93 +142,76 @@ export default async function PalestinePage() {
 
   const channelId = settings["palestine_channel_id"] ?? DEFAULT_CHANNEL_ID;
   const sourceUrl = settings["palestine_source_url"]  ?? DEFAULT_SOURCE_URL;
-  const posts     = await fetchBotPosts(channelId);
+
+  const [botPosts, todayArticles] = await Promise.all([
+    fetchBotPosts(channelId),
+    fetchTodayArticles(sourceUrl),
+  ]);
+
   const countdown = nextPost9h();
 
-  // Derive a readable domain from the source URL for display
+  // Pre-fill defaults so the input shows the actual URL even if not saved yet
+  const settingsWithDefaults = {
+    ...settings,
+    palestine_source_url: settings["palestine_source_url"] ?? DEFAULT_SOURCE_URL,
+  };
+
+  // Derive link domain from source URL
   let sourceDomain = AMP_HOME;
   try { sourceDomain = new URL(sourceUrl).origin; } catch { /* keep default */ }
+
+  const countdownLabel = countdown.hours > 0
+    ? `${countdown.hours}h ${String(countdown.minutes).padStart(2, "0")}min`
+    : `${countdown.minutes}min`;
 
   return (
     <PageShell title="Palestine" description="Articles postés quotidiennement par le bot à 9h (Paris)">
 
-      {/* Countdown hero */}
+      {/* Countdown — compact single line */}
       <div style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        gap: 20,
-        background: "rgba(0,151,54,0.08)",
-        border: "1px solid rgba(0,151,54,0.20)",
-        borderRadius: 14, padding: "20px 24px",
+        display: "flex", alignItems: "center", gap: 10,
+        alignSelf: "flex-start",
+        background: "rgba(0,151,54,0.07)",
+        border: "1px solid rgba(0,151,54,0.16)",
+        borderRadius: 8, padding: "7px 14px",
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <div style={{
-            width: 44, height: 44, borderRadius: 11,
-            background: "rgba(0,151,54,0.15)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            flexShrink: 0,
-          }}>
-            <Clock size={20} style={{ color: "#4ade80" }} />
-          </div>
-          <div>
-            <p style={{
-              fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
-              textTransform: "uppercase", color: "rgba(255,255,255,0.30)",
-              marginBottom: 8,
-            }}>
-              Prochain article
-            </p>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}>
-              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.38)" }}>dans</span>
-              {countdown.hours > 0 ? (
-                <>
-                  <span style={{ fontSize: 32, fontWeight: 700, color: "#4ade80", lineHeight: 1 }}>
-                    {countdown.hours}
-                  </span>
-                  <span style={{ fontSize: 16, fontWeight: 600, color: "rgba(74,222,128,0.75)" }}>h</span>
-                  <span style={{ fontSize: 20, fontWeight: 600, color: "rgba(74,222,128,0.65)", lineHeight: 1, marginLeft: 2 }}>
-                    {countdown.minutes}
-                  </span>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: "rgba(74,222,128,0.50)" }}>min</span>
-                </>
-              ) : (
-                <>
-                  <span style={{ fontSize: 32, fontWeight: 700, color: "#4ade80", lineHeight: 1 }}>
-                    {countdown.minutes}
-                  </span>
-                  <span style={{ fontSize: 16, fontWeight: 600, color: "rgba(74,222,128,0.75)" }}>min</span>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
+        <Clock size={12} style={{ color: "#4ade80", flexShrink: 0 }} />
+        <span style={{ fontSize: 13, color: "rgba(255,255,255,0.42)" }}>
+          Prochain article{" "}
+          <span style={{ fontWeight: 700, color: "#4ade80" }}>dans {countdownLabel}</span>
+        </span>
+        <span style={{ color: "rgba(255,255,255,0.15)", fontSize: 12 }}>·</span>
         <a
           href={sourceDomain}
           target="_blank"
           rel="noreferrer"
           style={{
-            display: "flex", alignItems: "center", gap: 6,
-            fontSize: 12, color: "rgba(255,255,255,0.35)",
-            textDecoration: "none", flexShrink: 0,
+            display: "flex", alignItems: "center", gap: 4,
+            fontSize: 12, color: "rgba(255,255,255,0.30)",
+            textDecoration: "none",
           }}
         >
           {AMP_AUTHOR}
-          <ExternalLink size={11} style={{ opacity: 0.6 }} />
+          <ExternalLink size={10} />
         </a>
       </div>
 
-      {/* Articles */}
+      {/* Today's articles (client — has post button) */}
+      <TodayArticlesClient articles={todayArticles} />
+
+      {/* Bot post history */}
       <SectionCard
         title="Articles postés"
-        badge={posts.length > 0 ? `${posts.length} article${posts.length !== 1 ? "s" : ""}` : undefined}
+        badge={botPosts.length > 0 ? `${botPosts.length} article${botPosts.length !== 1 ? "s" : ""}` : undefined}
         noPadding
       >
-        {posts.length === 0 ? (
+        {botPosts.length === 0 ? (
           <p style={{ padding: 20, fontSize: 14, color: "rgba(255,255,255,0.28)", fontStyle: "italic", textAlign: "center" }}>
             Aucun article trouvé dans ce salon.
           </p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column" }}>
-            {posts.map((post, i) => {
+            {botPosts.map((post, i) => {
               const date    = new Date(post.timestamp);
               const excerpt = post.description.slice(0, 200);
               return (
@@ -197,7 +229,7 @@ export default async function PalestinePage() {
                         style={{
                           fontSize: 14, fontWeight: 600, color: "#fff",
                           textDecoration: "none",
-                          display: "flex", alignItems: "center", gap: 6,
+                          display: "inline-flex", alignItems: "center", gap: 6,
                         }}
                       >
                         {post.title}
@@ -227,7 +259,7 @@ export default async function PalestinePage() {
       <FeatureSettings
         channels={channels}
         roles={[] as DiscordRole[]}
-        settings={settings}
+        settings={settingsWithDefaults}
         noCollapse
         fields={[
           {
