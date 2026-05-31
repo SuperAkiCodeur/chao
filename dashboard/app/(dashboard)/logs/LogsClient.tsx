@@ -55,7 +55,7 @@ export function LogsClient({ logs }: { logs: Log[] }) {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 
       {/* Filter bar */}
       <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
@@ -94,7 +94,7 @@ export function LogsClient({ logs }: { logs: Log[] }) {
 
       {/* Groups */}
       {Array.from(groups.entries()).map(([day, entries]) => (
-        <div key={day} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div key={day} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
 
           {/* Day separator */}
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -106,7 +106,7 @@ export function LogsClient({ logs }: { logs: Log[] }) {
           {/* Card */}
           <div style={{ background: "#202020", borderRadius: 12, border: LINE, overflow: "hidden" }}>
             {/* Card header */}
-            <div style={{ padding: "12px 20px", borderBottom: LINE }}>
+            <div style={{ padding: "11px 20px", borderBottom: LINE }}>
               <p style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.50)" }}>
                 {entries.length} événement{entries.length > 1 ? "s" : ""}
               </p>

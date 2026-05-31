@@ -585,7 +585,7 @@ export function MembresClient({ members, roles }: { members: DiscordMember[]; ro
       )}
 
       {/* List */}
-      <div style={{ padding: "6px 0" }}>
+      <div>
         {filtered.length === 0 && (
           <p style={{ padding: "16px 20px", fontSize: 13, color: "rgba(255,255,255,0.30)" }}>Aucun membre trouvé.</p>
         )}

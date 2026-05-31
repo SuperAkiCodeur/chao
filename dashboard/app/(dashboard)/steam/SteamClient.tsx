@@ -162,7 +162,7 @@ function GamesList({ games }: { games: SteamGame[] }) {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
       {games.map((g) => {
         const priceStr = g.lastKnownPriceEur !== null
           ? g.isOnSale
@@ -328,7 +328,7 @@ export function SteamClient({ games, config, channels, roles }: {
   games: SteamGame[]; config: SteamConfigData; channels: DiscordChannel[]; roles: DiscordRole[];
 }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       <GamesList games={games} />
       <SteamConfig config={config} channels={channels} roles={roles} />
     </div>

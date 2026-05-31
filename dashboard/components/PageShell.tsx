@@ -1,4 +1,4 @@
-const LINE = "1px solid rgba(255,255,255,0.06)";
+const BD = "1px solid rgba(255,255,255,0.08)";
 
 /* ── Page wrapper ── */
 export function PageShell({
@@ -13,19 +13,19 @@ export function PageShell({
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
 
-      {/* Header — même hauteur 60px que le logo sidebar */}
+      {/* Header 60px — aligne avec logo sidebar */}
       <div style={{
         height: 60, flexShrink: 0,
         display: "flex", alignItems: "center",
-        padding: "0 24px",
-        borderBottom: LINE,
+        padding: "0 20px",
+        borderBottom: BD,
       }}>
         <div>
-          <h1 style={{ fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em", lineHeight: 1 }}>
+          <h1 style={{ fontSize: 17, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em", lineHeight: 1 }}>
             {title}
           </h1>
           {description && (
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 3 }}>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 4, lineHeight: 1 }}>
               {description}
             </p>
           )}
@@ -35,8 +35,8 @@ export function PageShell({
       {/* Contenu scrollable */}
       <div style={{
         flex: 1, overflowY: "auto",
-        padding: "20px 24px",
-        display: "flex", flexDirection: "column", gap: 16,
+        padding: "20px",
+        display: "flex", flexDirection: "column", gap: 10,
       }}>
         {children}
       </div>
@@ -47,29 +47,20 @@ export function PageShell({
 
 /* ── Stat card ── */
 export function StatCard({
-  value,
-  label,
-  sub,
+  value, label, sub,
 }: {
-  value: string | number;
-  label: string;
-  sub?: string;
+  value: string | number; label: string; sub?: string;
 }) {
   return (
-    <div style={{
-      background: "#242424",
-      borderRadius: 12,
-      padding: "18px 20px",
-      border: LINE,
-    }}>
-      <p style={{ fontSize: 32, fontWeight: 800, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1 }}>
+    <div style={{ background: "#242424", borderRadius: 12, padding: "18px 20px", border: BD }}>
+      <p style={{ fontSize: 30, fontWeight: 800, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1 }}>
         {value}
       </p>
       <p style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.55)", marginTop: 8 }}>
         {label}
       </p>
       {sub && (
-        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.22)", marginTop: 3 }}>
+        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", marginTop: 3 }}>
           {sub}
         </p>
       )}
@@ -79,10 +70,7 @@ export function StatCard({
 
 /* ── Section card ── */
 export function SectionCard({
-  title,
-  badge,
-  children,
-  noPadding = false,
+  title, badge, children, noPadding = false,
 }: {
   title?: string;
   badge?: string | number;
@@ -90,19 +78,14 @@ export function SectionCard({
   noPadding?: boolean;
 }) {
   return (
-    <div style={{
-      background: "#202020",
-      borderRadius: 12,
-      border: LINE,
-      overflow: "hidden",
-    }}>
+    <div style={{ background: "#202020", borderRadius: 12, border: BD, overflow: "hidden" }}>
       {title && (
         <div style={{
           padding: "14px 20px",
-          borderBottom: LINE,
+          borderBottom: BD,
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
-          <p style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{title}</p>
+          <p style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{title}</p>
           {badge !== undefined && (
             <span style={{
               fontSize: 11, fontWeight: 600,
