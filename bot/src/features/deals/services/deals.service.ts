@@ -198,7 +198,7 @@ export async function handleDealsListSelect(interaction: StringSelectMenuInterac
   if (onSale > 0) desc += ` · 🔥 **${onSale} en promo**`;
   if (members.length > 0) desc += `\n👥 Partagée avec : ${memberNames}`;
 
-  await interaction.update({ content: `📋 **${list.name}**\n${desc}`, ...buildListActionMenu(list, isOwner) });
+  await interaction.update({ ...buildListActionMenu(list, isOwner), content: `📋 **${list.name}**\n${desc}` });
 }
 
 // ── Menu d'actions d'une liste ────────────────────────────────────────────────
@@ -398,8 +398,8 @@ export async function handleDealsCreateModal(interaction: ModalSubmitInteraction
   });
 
   await interaction.reply({
-    content: `✅ Liste **${list.name}** créée !`,
     ...buildListActionMenu(list, true),
+    content: `✅ Liste **${list.name}** créée !`,
     flags: MessageFlags.Ephemeral,
   });
   logger.info("[deals] liste créée", { guildId: interaction.guildId, userId: interaction.user.id, name });
