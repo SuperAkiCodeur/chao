@@ -11,6 +11,8 @@ export const SETTING_KEYS = {
   MODERATOR_ROLE_ID: "moderator_role_id",
   // Valorant
   VALORANT_CHANNEL_ID: "valorant_channel_id",
+  // Palestine
+  PALESTINE_CHANNEL_ID: "palestine_channel_id",
 } as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];
