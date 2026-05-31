@@ -33,15 +33,11 @@ export function PageShell({
       </div>
 
       {/* Contenu scrollable */}
-      <div
-        className="anim-fade-up d-50"
-        style={{
-          flex: 1, minHeight: 0, overflowY: "auto",
-          padding: "20px",
-          display: "flex", flexDirection: "column", gap: 10,
-        }}
-      >
-        {children}
+      {/* scroll container séparé du layout — flex-shrink ne peut pas écraser les enfants */}
+      <div className="anim-fade-up d-50" style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
+        <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 10 }}>
+          {children}
+        </div>
       </div>
 
     </div>
