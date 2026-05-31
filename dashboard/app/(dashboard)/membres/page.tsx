@@ -64,7 +64,7 @@ export default async function MembresPage() {
             </span>
           </span>
         }
-        noPadding
+        noPadding>
         <div>
           {members.length === 0 ? (
             <p style={{ fontSize: 14, color: "rgba(255,255,255,0.30)", padding: "20px 0" }}>
