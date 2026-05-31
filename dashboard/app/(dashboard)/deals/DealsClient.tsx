@@ -42,6 +42,7 @@ function ChannelSelect({ value, onChange, channels, placeholder = "Choisir un sa
           background: value ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.04)",
           border: value ? BDI : BD, borderRadius: 8,
           paddingLeft: 10, paddingRight: 8, fontSize: 13, cursor: "pointer",
+          transition: "border-color 0.15s, background 0.15s",
         }}
       >
         {selected ? (
@@ -56,15 +57,16 @@ function ChannelSelect({ value, onChange, channels, placeholder = "Choisir un sa
         ) : (
           <span style={{ flex: 1, textAlign: "left", color: "rgba(255,255,255,0.28)" }}>{placeholder}</span>
         )}
-        <CaretDown size={11} style={{ color: "rgba(255,255,255,0.30)", flexShrink: 0, transform: open ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
+        <CaretDown size={11} style={{ color: "rgba(255,255,255,0.30)", flexShrink: 0, transform: open ? "rotate(180deg)" : undefined, transition: "transform 0.25s ease" }} />
       </button>
 
       {open && (
-        <div style={{
-          position: "absolute", left: 0, top: "calc(100% + 4px)", zIndex: 50,
+        <div className="animate-expand-down" style={{
+          position: "absolute", left: 0, top: "calc(100% + 4px)", zIndex: 100,
           width: "max-content", minWidth: "100%", borderRadius: 10, border: BDI,
-          background: "#2a2a2a", boxShadow: "0 12px 36px rgba(0,0,0,0.45)",
+          background: "#2a2a2a", boxShadow: "0 12px 36px rgba(0,0,0,0.55)",
           maxHeight: 220, overflowY: "auto", padding: "4px 0",
+          transformOrigin: "top",
         }}>
           <button type="button" onClick={() => { onChange(""); setOpen(false); }}
             style={{ width: "100%", display: "flex", alignItems: "center", gap: 7, padding: "7px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 12, color: "rgba(255,255,255,0.35)" }}>
@@ -134,7 +136,7 @@ export function DealsClient({ channelId, channelName, notifChannelId, listName, 
   }
 
   return (
-    <div className="card-glow anim-fade-up" style={{ background: "#202020", borderRadius: 12, border: BD, overflow: "hidden" }}>
+    <div className="card-glow anim-fade-up" style={{ background: "#202020", borderRadius: 12, border: BD }}>
 
       {/* ── Ligne principale ── */}
       <div style={{
@@ -186,10 +188,6 @@ export function DealsClient({ channelId, channelName, notifChannelId, listName, 
               </button>
             </div>
           )}
-          {/* Salon source — sans icône # redondante */}
-          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.25)" }}>
-            #{channelName}
-          </span>
         </div>
 
         {/* Flèche */}

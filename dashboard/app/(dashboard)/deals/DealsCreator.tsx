@@ -51,11 +51,12 @@ function ChannelSelect({ value, onChange, channels, placeholder = "Choisir un sa
       </button>
 
       {open && (
-        <div style={{
-          position: "absolute", left: 0, top: "calc(100% + 4px)", zIndex: 50,
+        <div className="animate-expand-down" style={{
+          position: "absolute", left: 0, top: "calc(100% + 4px)", zIndex: 100,
           width: "100%", borderRadius: 10, border: BDI,
-          background: "#2a2a2a", boxShadow: "0 12px 36px rgba(0,0,0,0.45)",
+          background: "#2a2a2a", boxShadow: "0 12px 36px rgba(0,0,0,0.55)",
           maxHeight: 220, overflowY: "auto", padding: "4px 0",
+          transformOrigin: "top",
         }}>
           <button type="button" onClick={() => { onChange(""); setOpen(false); }}
             style={{ width: "100%", display: "flex", alignItems: "center", gap: 7, padding: "7px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "rgba(255,255,255,0.35)" }}>
