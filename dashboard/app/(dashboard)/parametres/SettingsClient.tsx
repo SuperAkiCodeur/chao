@@ -2,128 +2,99 @@
 
 import { useState, useTransition, useRef, useEffect } from "react";
 import { Check, ChevronDown, Save, Hash, Volume2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { saveSection } from "./actions";
 import type { ActionResult } from "./actions";
 
-export type DiscordChannel = {
-  id: string;
-  name: string;
-  type: number; // 0=text, 2=voice, 4=category, 5=announcement
-  parent_id: string | null;
-  position: number;
-};
+export type DiscordChannel = { id: string; name: string; type: number; parent_id: string | null; position: number };
+export type DiscordRole    = { id: string; name: string; color: number; position: number };
 
-export type DiscordRole = {
-  id: string;
-  name: string;
-  color: number;
-  position: number;
-};
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
+const LINE  = "1px solid rgba(255,255,255,0.08)";
+const LINE2 = "1px solid rgba(255,255,255,0.12)";
 
 function roleColor(color: number) {
-  return color === 0 ? "#4e5058" : `#${color.toString(16).padStart(6, "0")}`;
+  return color === 0 ? "#6b7280" : `#${color.toString(16).padStart(6, "0")}`;
 }
 
-function channelIcon(type: number) {
-  if (type === 2) return <Volume2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />;
-  return <Hash className="h-3.5 w-3.5 text-muted-foreground shrink-0" />;
-}
+// ── SelectDropdown ────────────────────────────────────────────────────────────
 
-// ── Generic select dropdown ───────────────────────────────────────────────────
-
-type SelectOption = { id: string; label: string; sub?: string; color?: string; icon?: React.ReactNode };
+type Option = { id: string; label: string; sub?: string; color?: string; icon?: React.ReactNode };
 
 function SelectDropdown({
-  name,
-  options,
-  value,
-  onChange,
-  placeholder = "Sélectionner…",
+  name, options, value, onChange, placeholder = "Sélectionner…",
 }: {
-  name: string;
-  options: SelectOption[];
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
+  name: string; options: Option[]; value: string; onChange: (v: string) => void; placeholder?: string;
 }) {
-  const [visible, setVisible] = useState(false);
+  const [open, setOpen]           = useState(false);
   const [animClass, setAnimClass] = useState("");
   const ref = useRef<HTMLDivElement>(null);
   const selected = options.find((o) => o.id === value);
+  const isVisible = open && animClass !== "animate-expand-up";
 
-  function doOpen() { setVisible(true); setAnimClass("animate-expand-down"); }
-  function doClose() { if (visible) setAnimClass("animate-expand-up"); }
-  function handleAnimEnd() {
-    if (animClass === "animate-expand-up") setVisible(false);
-    setAnimClass("");
-  }
+  function doOpen()  { setOpen(true);  setAnimClass("animate-expand-down"); }
+  function doClose() { if (!open) return; setAnimClass("animate-expand-up"); }
+  function onAnimEnd() { if (animClass === "animate-expand-up") setOpen(false); setAnimClass(""); }
 
   useEffect(() => {
-    function handler(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) doClose();
-    }
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) doClose(); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>
       <input type="hidden" name={name} value={value} />
-      <div ref={ref} className="relative">
+      <div ref={ref} style={{ position: "relative" }}>
         <button
           type="button"
-          onClick={() => visible ? doClose() : doOpen()}
-          className="flex h-9 w-full items-center gap-2 rounded-lg border border-border bg-muted/40 pl-3 pr-2.5 text-sm text-foreground hover:bg-muted/60 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50"
+          onClick={() => open ? doClose() : doOpen()}
+          style={{
+            height: 36, width: "100%", display: "flex", alignItems: "center", gap: 8,
+            background: "rgba(255,255,255,0.06)", border: LINE2, borderRadius: 8,
+            paddingLeft: 12, paddingRight: 10, fontSize: 13, cursor: "pointer",
+          }}
         >
           {selected ? (
-            <span className="flex items-center gap-2 flex-1 min-w-0">
+            <span style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0 }}>
               {selected.icon}
-              {selected.color && (
-                <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: selected.color }} />
-              )}
-              <span className="truncate" style={selected.color ? { color: selected.color } : {}}>
+              {selected.color && <span style={{ width: 8, height: 8, borderRadius: "50%", background: selected.color, flexShrink: 0 }} />}
+              <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: selected.color ?? "#fff" }}>
                 {selected.label}
               </span>
+              {selected.sub && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.30)", flexShrink: 0 }}>· {selected.sub}</span>}
             </span>
           ) : (
-            <span className="text-muted-foreground flex-1 text-left">{placeholder}</span>
+            <span style={{ flex: 1, textAlign: "left", color: "rgba(255,255,255,0.35)" }}>{placeholder}</span>
           )}
-          <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground shrink-0 ml-1 transition-transform duration-200 ${visible && animClass !== "animate-expand-up" ? "rotate-180" : ""}`} />
+          <ChevronDown size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0, transform: isVisible ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
         </button>
 
-        {visible && (
+        {open && (
           <div
-            className={`absolute left-0 top-full mt-1 z-50 w-full min-w-[220px] rounded-lg border border-border bg-card shadow-xl py-1 max-h-64 overflow-y-auto ${animClass}`}
-            onAnimationEnd={handleAnimEnd}
+            className={animClass}
+            onAnimationEnd={onAnimEnd}
+            style={{
+              position: "absolute", left: 0, top: "calc(100% + 4px)", zIndex: 50,
+              width: "100%", minWidth: 200, borderRadius: 10,
+              border: LINE2, background: "#2c2c2c", boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
+            }}
           >
-            <button
-              type="button"
-              onClick={() => { onChange(""); doClose(); }}
-              className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 transition-colors"
-            >
-              <span className="text-muted-foreground flex-1 text-left">— Aucun —</span>
-              {!value && <Check className="h-3.5 w-3.5 text-primary" />}
-            </button>
-            <div className="my-1 border-t border-border" />
-            {options.map((o) => (
-              <button
-                key={o.id}
-                type="button"
-                onClick={() => { onChange(o.id); doClose(); }}
-                className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 transition-colors"
-              >
-                {o.icon}
-                {o.color && <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: o.color }} />}
-                <span className="flex-1 text-left text-foreground truncate" style={o.color ? { color: o.color } : {}}>
-                  {o.label}
-                </span>
-                {o.sub && <span className="text-xs text-muted-foreground shrink-0">{o.sub}</span>}
-                {value === o.id && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
+            <div style={{ maxHeight: 220, overflowY: "auto", padding: "4px 0" }}>
+              <button type="button" onClick={() => { onChange(""); doClose(); }}
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "rgba(255,255,255,0.35)" }}>
+                <span style={{ flex: 1, textAlign: "left" }}>— Aucun —</span>
+                {!value && <Check size={13} style={{ color: "#fff" }} />}
               </button>
-            ))}
+              {options.map((o) => (
+                <button key={o.id} type="button" onClick={() => { onChange(o.id); doClose(); }}
+                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 13 }}>
+                  {o.icon}
+                  {o.color && <span style={{ width: 8, height: 8, borderRadius: "50%", background: o.color, flexShrink: 0 }} />}
+                  <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: o.color ?? "#fff" }}>{o.label}</span>
+                  {o.sub && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.30)", flexShrink: 0 }}>{o.sub}</span>}
+                  {value === o.id && <Check size={13} style={{ color: "#fff", flexShrink: 0 }} />}
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -131,30 +102,21 @@ function SelectDropdown({
   );
 }
 
-// ── Section card ──────────────────────────────────────────────────────────────
+// ── Section ───────────────────────────────────────────────────────────────────
 
 function Section({
-  title,
-  description,
-  children,
-  keys,
-  currentValues,
+  title, description, children,
 }: {
-  title: string;
-  description: string;
-  children: React.ReactNode;
-  keys: string[];
-  currentValues: Record<string, string>;
+  title: string; description: string; children: React.ReactNode;
 }) {
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [pending, start] = useTransition();
+  const [saved, setSaved]   = useState(false);
+  const [error, setError]   = useState<string | null>(null);
+  const [pending, start]    = useTransition();
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    setError(null);
-    setSaved(false);
+    setError(null); setSaved(false);
     start(async () => {
       const res: ActionResult = await saveSection(fd);
       if (res.success) { setSaved(true); setTimeout(() => setSaved(false), 2500); }
@@ -163,24 +125,36 @@ function Section({
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card">
-      <div className="px-5 py-4 border-b border-border">
-        <p className="text-sm font-semibold text-foreground">{title}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+    <div style={{ background: "#202020", borderRadius: 12, border: LINE, overflow: "hidden" }}>
+      {/* Header */}
+      <div style={{ padding: "14px 20px", borderBottom: LINE }}>
+        <p style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{title}</p>
+        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.40)", marginTop: 3 }}>{description}</p>
       </div>
+      {/* Fields */}
       <form onSubmit={handleSubmit}>
-        <div className="p-5 space-y-4">
+        <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
           {children}
         </div>
-        <div className="px-5 pb-4 flex items-center justify-between">
-          <div>
-            {error && <p className="text-xs text-destructive">{error}</p>}
-            {saved && <p className="text-xs text-emerald-700">✓ Enregistré</p>}
+        {/* Footer */}
+        <div style={{ padding: "12px 20px", borderTop: LINE, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ fontSize: 12 }}>
+            {error && <span style={{ color: "#ef4444" }}>{error}</span>}
+            {saved && <span style={{ color: "#4ade80" }}>✓ Enregistré</span>}
           </div>
-          <Button type="submit" size="sm" disabled={pending}>
-            <Save className="h-3.5 w-3.5" />
+          <button
+            type="submit"
+            disabled={pending}
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              background: "#fff", color: "#000", border: "none", borderRadius: 8,
+              padding: "8px 16px", fontSize: 13, fontWeight: 600,
+              cursor: pending ? "not-allowed" : "pointer", opacity: pending ? 0.6 : 1,
+            }}
+          >
+            <Save size={13} />
             {pending ? "Enregistrement…" : "Enregistrer"}
-          </Button>
+          </button>
         </div>
       </form>
     </div>
@@ -189,10 +163,10 @@ function Section({
 
 function Field({ label, description, children }: { label: string; description?: string; children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-2 gap-4 items-start">
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, alignItems: "center" }}>
       <div>
-        <p className="text-xs font-medium text-foreground">{label}</p>
-        {description && <p className="text-xs text-muted-foreground mt-0.5">{description}</p>}
+        <p style={{ fontSize: 13, fontWeight: 600, color: "#fff", lineHeight: 1 }}>{label}</p>
+        {description && <p style={{ fontSize: 11, color: "rgba(255,255,255,0.40)", marginTop: 4, lineHeight: 1.4 }}>{description}</p>}
       </div>
       <div>{children}</div>
     </div>
@@ -201,23 +175,25 @@ function Field({ label, description, children }: { label: string; description?: 
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
-export function SettingsClient({
-  channels,
-  roles,
-  settings,
-}: {
+export function SettingsClient({ channels, roles, settings }: {
   channels: DiscordChannel[];
   roles: DiscordRole[];
   settings: Record<string, string>;
 }) {
-  // Local state for each setting value (controlled dropdowns)
   const [vals, setVals] = useState<Record<string, string>>(settings);
   function set(key: string) { return (v: string) => setVals((prev) => ({ ...prev, [key]: v })); }
 
+  const categoryMap  = new Map(channels.filter((c) => c.type === 4).map((c) => [c.id, c.name]));
   const textChannels = channels
-    .filter((c) => c.type === 0 || c.type === 5)
+    .filter((c) => c.type !== 4)
     .sort((a, b) => a.position - b.position)
-    .map((c) => ({ id: c.id, label: c.name, icon: channelIcon(c.type) }));
+    .map((c) => ({
+      id: c.id, label: c.name,
+      sub: c.parent_id ? (categoryMap.get(c.parent_id) ?? undefined) : undefined,
+      icon: c.type === 2 || c.type === 13
+        ? <Volume2 size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />
+        : <Hash    size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />,
+    }));
 
   const sortedRoles = roles
     .filter((r) => r.name !== "@everyone")
@@ -225,69 +201,29 @@ export function SettingsClient({
     .map((r) => ({ id: r.id, label: r.name, color: roleColor(r.color) }));
 
   return (
-    <div className="space-y-4">
-      {/* Cinéma */}
-      <Section
-        title="🎬 Cinéma"
-        description="Salon d'annonces et rôle spectateur pour les séances cinéma."
-        keys={["cinema_channel_id", "cinema_spectator_role_id"]}
-        currentValues={vals}
-      >
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+
+      <Section title="Cinéma" description="Salon d'annonces et rôle spectateur pour les séances cinéma">
         <Field label="Salon d'annonces" description="Salon où les séances sont publiées">
-          <SelectDropdown
-            name="cinema_channel_id"
-            options={textChannels}
-            value={vals["cinema_channel_id"] ?? ""}
-            onChange={set("cinema_channel_id")}
-            placeholder="Choisir un salon…"
-          />
+          <SelectDropdown name="cinema_channel_id" options={textChannels} value={vals["cinema_channel_id"] ?? ""} onChange={set("cinema_channel_id")} placeholder="Choisir un salon…" />
         </Field>
         <Field label="Rôle spectateur" description="Rôle attribué aux participants">
-          <SelectDropdown
-            name="cinema_spectator_role_id"
-            options={sortedRoles}
-            value={vals["cinema_spectator_role_id"] ?? ""}
-            onChange={set("cinema_spectator_role_id")}
-            placeholder="Choisir un rôle…"
-          />
+          <SelectDropdown name="cinema_spectator_role_id" options={sortedRoles} value={vals["cinema_spectator_role_id"] ?? ""} onChange={set("cinema_spectator_role_id")} placeholder="Choisir un rôle…" />
         </Field>
       </Section>
 
-      {/* Membres */}
-      <Section
-        title="👥 Membres"
-        description="Rôle automatiquement attribué aux nouveaux membres."
-        keys={["member_role_id"]}
-        currentValues={vals}
-      >
-        <Field label="Rôle automatique" description="Attribué dès qu'un membre rejoint">
-          <SelectDropdown
-            name="member_role_id"
-            options={sortedRoles}
-            value={vals["member_role_id"] ?? ""}
-            onChange={set("member_role_id")}
-            placeholder="Choisir un rôle…"
-          />
+      <Section title="Membres" description="Rôle automatiquement attribué aux nouveaux membres">
+        <Field label="Rôle automatique" description="Attribué dès qu'un membre rejoint le serveur">
+          <SelectDropdown name="member_role_id" options={sortedRoles} value={vals["member_role_id"] ?? ""} onChange={set("member_role_id")} placeholder="Choisir un rôle…" />
         </Field>
       </Section>
 
-      {/* Valorant */}
-      <Section
-        title="🎯 Valorant"
-        description="Salon pour les résultats et statistiques Valorant."
-        keys={["valorant_channel_id"]}
-        currentValues={vals}
-      >
+      <Section title="Valorant" description="Salon pour les résultats et statistiques Valorant">
         <Field label="Salon Valorant" description="Salon où le bot poste les résultats">
-          <SelectDropdown
-            name="valorant_channel_id"
-            options={textChannels}
-            value={vals["valorant_channel_id"] ?? ""}
-            onChange={set("valorant_channel_id")}
-            placeholder="Choisir un salon…"
-          />
+          <SelectDropdown name="valorant_channel_id" options={textChannels} value={vals["valorant_channel_id"] ?? ""} onChange={set("valorant_channel_id")} placeholder="Choisir un salon…" />
         </Field>
       </Section>
+
     </div>
   );
 }

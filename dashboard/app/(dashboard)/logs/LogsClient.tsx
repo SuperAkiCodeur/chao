@@ -1,31 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
-const TYPE_CONFIG: Record<string, { label: string; variant: "default" | "secondary" | "success" | "warning" | "muted" | "destructive" }> = {
-  cinema:     { label: "Cinéma",     variant: "secondary" },
-  valorant:   { label: "Valorant",   variant: "destructive" },
-  member:     { label: "Membre",     variant: "success" },
-  moderation: { label: "Modération", variant: "warning" },
+const LINE = "1px solid rgba(255,255,255,0.08)";
+
+const TYPE_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
+  cinema:     { label: "Cinéma",     color: "#a78bfa", bg: "rgba(167,139,250,0.12)" },
+  valorant:   { label: "Valorant",   color: "#f87171", bg: "rgba(248,113,113,0.12)" },
+  member:     { label: "Membre",     color: "#4ade80", bg: "rgba(74,222,128,0.12)"  },
+  moderation: { label: "Modération", color: "#fbbf24", bg: "rgba(251,191,36,0.12)"  },
 };
 
 const FILTERS = [
-  { id: "all",      label: "Tout",     types: null                          },
-  { id: "discord",  label: "Discord",  types: ["member", "moderation"]      },
-  { id: "cinema",   label: "Cinéma",   types: ["cinema"]                    },
-  { id: "valorant", label: "Valorant", types: ["valorant"]                  },
+  { id: "all",      label: "Tout",     types: null                     },
+  { id: "discord",  label: "Discord",  types: ["member", "moderation"] },
+  { id: "cinema",   label: "Cinéma",   types: ["cinema"]               },
+  { id: "valorant", label: "Valorant", types: ["valorant"]             },
 ] as const;
 
 type FilterId = typeof FILTERS[number]["id"];
-
 type Log = { id: number; type: string; description: string; createdAt: string };
 
 function formatRelative(iso: string): string {
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (diff < 60) return "à l'instant";
-  if (diff < 3600) return `il y a ${Math.floor(diff / 60)} min`;
+  if (diff < 60)    return "à l'instant";
+  if (diff < 3600)  return `il y a ${Math.floor(diff / 60)} min`;
   if (diff < 86400) return `il y a ${Math.floor(diff / 3600)} h`;
   return `il y a ${Math.floor(diff / 86400)} j`;
 }
@@ -41,11 +40,9 @@ export function LogsClient({ logs }: { logs: Log[] }) {
   const [active, setActive] = useState<FilterId>("all");
 
   const activeFilter = FILTERS.find((f) => f.id === active)!;
-
-  const filtered = logs.filter((log) => {
-    if (activeFilter.types === null) return true;
-    return (activeFilter.types as readonly string[]).includes(log.type);
-  });
+  const filtered = logs.filter((log) =>
+    activeFilter.types === null || (activeFilter.types as readonly string[]).includes(log.type)
+  );
 
   // Group by day
   const groups = new Map<string, Log[]>();
@@ -58,9 +55,10 @@ export function LogsClient({ logs }: { logs: Log[] }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
       {/* Filter bar */}
-      <div className="flex items-center gap-1.5 flex-wrap">
+      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
         {FILTERS.map((f) => {
           const isActive = active === f.id;
           const count = f.types === null
@@ -70,77 +68,92 @@ export function LogsClient({ logs }: { logs: Log[] }) {
             <button
               key={f.id}
               onClick={() => setActive(f.id)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-150 ${
-                isActive
-                  ? "bg-foreground text-background"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              }`}
+              style={{
+                padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 500,
+                border: "none", cursor: "pointer", transition: "all 0.15s",
+                background: isActive ? "#fff" : "rgba(255,255,255,0.06)",
+                color: isActive ? "#000" : "rgba(255,255,255,0.50)",
+              }}
             >
               {f.label}
-              <span className={`ml-1.5 text-[10px] ${isActive ? "opacity-60" : "opacity-40"}`}>
-                {count}
-              </span>
+              <span style={{ marginLeft: 6, fontSize: 10, opacity: 0.55 }}>{count}</span>
             </button>
           );
         })}
-        <span className="ml-auto text-xs text-muted-foreground/60">
+        <span style={{ marginLeft: "auto", fontSize: 11, color: "rgba(255,255,255,0.28)" }}>
           {filtered.length} entrée{filtered.length !== 1 ? "s" : ""}
         </span>
       </div>
 
-      {filtered.length === 0 ? (
-        <Card>
-          <CardContent className="py-10 text-center">
-            <p className="text-sm text-muted-foreground">Aucun événement pour ce filtre.</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-6">
-          {Array.from(groups.entries()).map(([day, entries]) => (
-            <div key={day}>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="h-px flex-1 bg-border" />
-                <span className="text-xs font-medium text-muted-foreground capitalize">{day}</span>
-                <div className="h-px flex-1 bg-border" />
-              </div>
-
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold text-foreground">
-                    {entries.length} événement{entries.length > 1 ? "s" : ""}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-1">
-                    {entries.map((log) => {
-                      const config = TYPE_CONFIG[log.type] ?? { label: log.type, variant: "muted" as const };
-                      return (
-                        <div
-                          key={log.id}
-                          className="flex items-start justify-between gap-4 rounded-lg px-3 py-2.5 hover:bg-muted/40 hover:translate-x-0.5 transition-all duration-150"
-                        >
-                          <div className="flex items-start gap-3 min-w-0">
-                            <Badge variant={config.variant} className="shrink-0 mt-px">
-                              {config.label}
-                            </Badge>
-                            <span className="text-sm text-foreground leading-snug">{log.description}</span>
-                          </div>
-                          <span
-                            className="text-xs text-muted-foreground shrink-0 mt-0.5"
-                            title={formatFull(log.createdAt)}
-                          >
-                            {formatRelative(log.createdAt)}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          ))}
+      {/* Empty state */}
+      {filtered.length === 0 && (
+        <div style={{ background: "#202020", borderRadius: 12, border: LINE, padding: "32px 20px", textAlign: "center" }}>
+          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.30)" }}>Aucun événement pour ce filtre.</p>
         </div>
       )}
+
+      {/* Groups */}
+      {Array.from(groups.entries()).map(([day, entries]) => (
+        <div key={day} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+
+          {/* Day separator */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.07)" }} />
+            <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.35)", textTransform: "capitalize" }}>{day}</span>
+            <span style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.07)" }} />
+          </div>
+
+          {/* Card */}
+          <div style={{ background: "#202020", borderRadius: 12, border: LINE, overflow: "hidden" }}>
+            {/* Card header */}
+            <div style={{ padding: "12px 20px", borderBottom: LINE }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.50)" }}>
+                {entries.length} événement{entries.length > 1 ? "s" : ""}
+              </p>
+            </div>
+
+            {/* Rows */}
+            <div>
+              {entries.map((log, i) => {
+                const cfg = TYPE_CONFIG[log.type] ?? { label: log.type, color: "rgba(255,255,255,0.55)", bg: "rgba(255,255,255,0.08)" };
+                return (
+                  <div
+                    key={log.id}
+                    style={{
+                      display: "flex", alignItems: "flex-start", justifyContent: "space-between",
+                      gap: 16, padding: "11px 20px",
+                      borderTop: i > 0 ? LINE : undefined,
+                      transition: "background 0.12s",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.03)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                  >
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: 12, minWidth: 0 }}>
+                      {/* Type badge */}
+                      <span style={{
+                        fontSize: 10, fontWeight: 700, flexShrink: 0, marginTop: 2,
+                        color: cfg.color, background: cfg.bg,
+                        padding: "2px 8px", borderRadius: 99,
+                      }}>
+                        {cfg.label}
+                      </span>
+                      <span style={{ fontSize: 13, color: "#fff", lineHeight: 1.5 }}>{log.description}</span>
+                    </div>
+                    <span
+                      style={{ fontSize: 11, color: "rgba(255,255,255,0.28)", flexShrink: 0, marginTop: 2 }}
+                      title={formatFull(log.createdAt)}
+                    >
+                      {formatRelative(log.createdAt)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+        </div>
+      ))}
+
     </div>
   );
 }

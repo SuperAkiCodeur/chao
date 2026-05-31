@@ -1,12 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import { Trash2, ChevronDown, Search, Check, Settings, Save, Hash, Volume2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { saveSteamConfig, removeSteamGame } from "./actions";
 import type { DiscordChannel, DiscordRole } from "@/components/FeatureSettings";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
 
 export type SteamGame = {
   id: number;
@@ -26,17 +23,18 @@ export type SteamConfigData = {
   notifRoleId: string | null;
 };
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+const LINE  = "1px solid rgba(255,255,255,0.08)";
+const LINE2 = "1px solid rgba(255,255,255,0.12)";
 
 function formatEur(cents: number) {
   return `${(cents / 100).toFixed(2)} €`;
 }
 
 function roleColor(color: number) {
-  return color === 0 ? "#4e5058" : `#${color.toString(16).padStart(6, "0")}`;
+  return color === 0 ? "#6b7280" : `#${color.toString(16).padStart(6, "0")}`;
 }
 
-// ── Select dropdown ───────────────────────────────────────────────────────────
+// ── SelectDropdown ────────────────────────────────────────────────────────────
 
 type Option = { id: string; label: string; sub?: string; color?: string; icon?: React.ReactNode };
 
@@ -45,70 +43,91 @@ function SelectDropdown({
 }: {
   name: string; options: Option[]; value: string; onChange: (v: string) => void; placeholder?: string;
 }) {
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const selected = options.find((o) => o.id === value);
-  const filtered = query ? options.filter((o) =>
-    o.label.toLowerCase().includes(query.toLowerCase()) ||
-    (o.sub ?? "").toLowerCase().includes(query.toLowerCase())
-  ) : options;
+  const [open, setOpen]           = useState(false);
+  const [animClass, setAnimClass] = useState("");
+  const [query, setQuery]         = useState("");
+  const ref       = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const selected  = options.find((o) => o.id === value);
+  const isVisible = open && animClass !== "animate-expand-up";
+  const filtered  = query ? options.filter((o) => o.label.toLowerCase().includes(query.toLowerCase())) : options;
 
-  function close() { setOpen(false); setQuery(""); }
+  function doOpen()  { setOpen(true);  setAnimClass("animate-expand-down"); setTimeout(() => searchRef.current?.focus(), 10); }
+  function doClose() { if (!open) return; setAnimClass("animate-expand-up"); }
+  function onAnimEnd() { if (animClass === "animate-expand-up") { setOpen(false); setQuery(""); } setAnimClass(""); }
+
+  useEffect(() => {
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) doClose(); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>
       <input type="hidden" name={name} value={value} />
-      <div className="relative">
+      <div ref={ref} style={{ position: "relative" }}>
         <button
           type="button"
-          onClick={() => setOpen((v) => !v)}
-          className="flex h-9 w-full items-center gap-2 rounded-lg border border-border bg-muted/40 pl-3 pr-2.5 text-sm hover:bg-muted/60 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50"
+          onClick={() => open ? doClose() : doOpen()}
+          style={{
+            height: 36, width: "100%", display: "flex", alignItems: "center", gap: 8,
+            background: "rgba(255,255,255,0.06)", border: LINE2, borderRadius: 8,
+            paddingLeft: 12, paddingRight: 10, fontSize: 13, cursor: "pointer",
+          }}
         >
           {selected ? (
-            <span className="flex items-center gap-2 flex-1 min-w-0">
+            <span style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0 }}>
               {selected.icon}
-              {selected.color && <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: selected.color }} />}
-              <span className="truncate text-foreground" style={selected.color ? { color: selected.color } : {}}>{selected.label}</span>
-              {selected.sub && <span className="text-muted-foreground/60 text-xs shrink-0">· {selected.sub}</span>}
+              {selected.color && <span style={{ width: 8, height: 8, borderRadius: "50%", background: selected.color, flexShrink: 0 }} />}
+              <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: selected.color ?? "#fff" }}>
+                {selected.label}
+              </span>
+              {selected.sub && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.30)", flexShrink: 0 }}>· {selected.sub}</span>}
             </span>
           ) : (
-            <span className="text-muted-foreground flex-1 text-left">{placeholder}</span>
+            <span style={{ flex: 1, textAlign: "left", color: "rgba(255,255,255,0.35)" }}>{placeholder}</span>
           )}
-          <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+          <ChevronDown size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0, transform: isVisible ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
         </button>
 
         {open && (
-          <div className="absolute left-0 top-full mt-1 z-50 w-full min-w-[220px] rounded-lg border border-border bg-card shadow-xl">
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
-              <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          <div
+            className={animClass}
+            onAnimationEnd={onAnimEnd}
+            style={{
+              position: "absolute", left: 0, top: "calc(100% + 4px)", zIndex: 50,
+              width: "100%", minWidth: 200, borderRadius: 10,
+              border: LINE2, background: "#2c2c2c", boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderBottom: LINE }}>
+              <Search size={13} style={{ color: "rgba(255,255,255,0.30)", flexShrink: 0 }} />
               <input
-                autoFocus
+                ref={searchRef}
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Escape" && close()}
+                onKeyDown={(e) => e.key === "Escape" && doClose()}
                 placeholder="Rechercher…"
-                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 outline-none"
+                style={{ flex: 1, background: "transparent", border: "none", outline: "none", fontSize: 13, color: "#fff" }}
               />
             </div>
-            <div className="py-1 max-h-52 overflow-y-auto">
-              {!query && (
-                <button type="button" onClick={() => { onChange(""); close(); }}
-                  className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 transition-colors">
-                  <span className="text-muted-foreground flex-1 text-left">— Aucun —</span>
-                  {!value && <Check className="h-3.5 w-3.5 text-primary" />}
-                </button>
-              )}
+            <div style={{ maxHeight: 210, overflowY: "auto", padding: "4px 0" }}>
+              <button type="button" onClick={() => { onChange(""); doClose(); }}
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "rgba(255,255,255,0.35)" }}>
+                <span style={{ flex: 1, textAlign: "left" }}>— Aucun —</span>
+                {!value && <Check size={13} style={{ color: "#fff" }} />}
+              </button>
               {filtered.length === 0 ? (
-                <p className="px-3 py-2 text-xs text-muted-foreground/60 italic">Aucun résultat</p>
+                <p style={{ padding: "8px 12px", fontSize: 11, color: "rgba(255,255,255,0.30)", fontStyle: "italic" }}>Aucun résultat</p>
               ) : filtered.map((o) => (
-                <button key={o.id} type="button" onClick={() => { onChange(o.id); close(); }}
-                  className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-muted/40 transition-colors">
+                <button key={o.id} type="button" onClick={() => { onChange(o.id); doClose(); }}
+                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 13 }}>
                   {o.icon}
-                  {o.color && <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: o.color }} />}
-                  <span className="flex-1 text-left truncate text-foreground" style={o.color ? { color: o.color } : {}}>{o.label}</span>
-                  {o.sub && <span className="text-muted-foreground/50 text-xs shrink-0">{o.sub}</span>}
-                  {value === o.id && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
+                  {o.color && <span style={{ width: 8, height: 8, borderRadius: "50%", background: o.color, flexShrink: 0 }} />}
+                  <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: o.color ?? "#fff" }}>{o.label}</span>
+                  {o.sub && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.30)", flexShrink: 0 }}>{o.sub}</span>}
+                  {value === o.id && <Check size={13} style={{ color: "#fff", flexShrink: 0 }} />}
                 </button>
               ))}
             </div>
@@ -119,7 +138,7 @@ function SelectDropdown({
   );
 }
 
-// ── Liste des jeux ────────────────────────────────────────────────────────────
+// ── GamesList ─────────────────────────────────────────────────────────────────
 
 function GamesList({ games }: { games: SteamGame[] }) {
   const [pending, start] = useTransition();
@@ -132,14 +151,18 @@ function GamesList({ games }: { games: SteamGame[] }) {
 
   if (games.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground py-2">
-        Aucun jeu tracké. Utilise <code className="text-xs bg-muted px-1 rounded">/steam add</code> dans Discord.
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", padding: "8px 0" }}>
+        Aucun jeu tracké. Utilise{" "}
+        <code style={{ fontSize: 11, background: "rgba(255,255,255,0.08)", padding: "1px 6px", borderRadius: 4 }}>
+          /steam add
+        </code>{" "}
+        dans Discord.
       </p>
     );
   }
 
   return (
-    <div className="space-y-1.5">
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
       {games.map((g) => {
         const priceStr = g.lastKnownPriceEur !== null
           ? g.isOnSale
@@ -148,37 +171,49 @@ function GamesList({ games }: { games: SteamGame[] }) {
           : "Prix non vérifié";
 
         return (
-          <div key={g.id} className="flex items-center gap-3 rounded-lg bg-muted/30 px-3 py-2.5 group">
+          <div
+            key={g.id}
+            style={{ display: "flex", alignItems: "center", gap: 12, background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: "10px 14px" }}
+            onMouseEnter={(e) => { (e.currentTarget.querySelector(".remove-btn") as HTMLElement | null)?.style.setProperty("opacity", "1"); }}
+            onMouseLeave={(e) => { (e.currentTarget.querySelector(".remove-btn") as HTMLElement | null)?.style.setProperty("opacity", "0"); }}
+          >
             {g.headerImage ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={g.headerImage} alt={g.title} className="h-8 w-14 rounded object-cover shrink-0" />
+              <img src={g.headerImage} alt={g.title} style={{ height: 34, width: 56, borderRadius: 6, objectFit: "cover", flexShrink: 0 }} />
             ) : (
-              <div className="h-8 w-14 rounded bg-muted shrink-0" />
+              <div style={{ height: 34, width: 56, borderRadius: 6, background: "rgba(255,255,255,0.06)", flexShrink: 0 }} />
             )}
-            <div className="flex-1 min-w-0">
+            <div style={{ flex: 1, minWidth: 0 }}>
               <a
                 href={`https://store.steampowered.com/app/${g.steamAppId}`}
                 target="_blank" rel="noreferrer"
-                className="text-xs font-medium text-foreground hover:text-primary transition-colors truncate block"
+                style={{ fontSize: 13, fontWeight: 600, color: "#fff", textDecoration: "none", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
               >
                 {g.title}
               </a>
-              <div className="flex items-center gap-2 mt-0.5">
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3 }}>
                 {g.isOnSale === 1 && (
-                  <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-600/10 px-1.5 py-0.5 rounded">PROMO</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#4ade80", background: "rgba(74,222,128,0.12)", padding: "1px 6px", borderRadius: 99 }}>
+                    PROMO
+                  </span>
                 )}
-                <span className="text-[11px] text-muted-foreground">{priceStr}</span>
+                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.40)" }}>{priceStr}</span>
               </div>
             </div>
-            <span className="text-[10px] text-muted-foreground/50 shrink-0">{g.addedByName ?? ""}</span>
+            {g.addedByName && (
+              <span style={{ fontSize: 10, color: "rgba(255,255,255,0.25)", flexShrink: 0 }}>{g.addedByName}</span>
+            )}
             <button
+              className="remove-btn"
               type="button"
               onClick={() => handleRemove(g.id)}
               disabled={pending && removing === g.id}
-              className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+              style={{ padding: 6, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.30)", borderRadius: 6, display: "flex", opacity: 0, transition: "opacity 0.15s, color 0.15s", flexShrink: 0 }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#ef4444")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.30)")}
               title="Retirer"
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <Trash2 size={14} />
             </button>
           </div>
         );
@@ -187,40 +222,30 @@ function GamesList({ games }: { games: SteamGame[] }) {
   );
 }
 
-// ── Configuration ─────────────────────────────────────────────────────────────
+// ── SteamConfig ───────────────────────────────────────────────────────────────
 
-function SteamConfig({
-  config, channels, roles,
-}: {
-  config: SteamConfigData;
-  channels: DiscordChannel[];
-  roles: DiscordRole[];
+function SteamConfig({ config, channels, roles }: {
+  config: SteamConfigData; channels: DiscordChannel[]; roles: DiscordRole[];
 }) {
-  const [open, setOpen] = useState(false);
-  const [vals, setVals] = useState({
-    notifChannelId: config.notifChannelId ?? "",
-    notifRoleId:    config.notifRoleId    ?? "",
-  });
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [pending, start] = useTransition();
+  const [open, setOpen]     = useState(false);
+  const [vals, setVals]     = useState({ notifChannelId: config.notifChannelId ?? "", notifRoleId: config.notifRoleId ?? "" });
+  const [saved, setSaved]   = useState(false);
+  const [error, setError]   = useState<string | null>(null);
+  const [pending, start]    = useTransition();
 
-  // Catégories pour l'affichage
-  const categoryMap = new Map(channels.filter((c) => c.type === 4).map((c) => [c.id, c.name]));
-
-  const channelOptions: Option[] = channels
+  const categoryMap    = new Map(channels.filter((c) => c.type === 4).map((c) => [c.id, c.name]));
+  const channelOptions = channels
     .filter((c) => c.type !== 4)
     .sort((a, b) => a.position - b.position)
     .map((c) => ({
-      id: c.id,
-      label: c.name,
+      id: c.id, label: c.name,
       sub: c.parent_id ? (categoryMap.get(c.parent_id) ?? undefined) : undefined,
       icon: c.type === 2 || c.type === 13
-        ? <Volume2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-        : <Hash className="h-3.5 w-3.5 text-muted-foreground shrink-0" />,
+        ? <Volume2 size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />
+        : <Hash    size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />,
     }));
 
-  const roleOptions: Option[] = roles
+  const roleOptions = roles
     .filter((r) => r.name !== "@everyone")
     .sort((a, b) => b.position - a.position)
     .map((r) => ({ id: r.id, label: r.name, color: roleColor(r.color) }));
@@ -237,62 +262,59 @@ function SteamConfig({
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card">
+    <div style={{ background: "#222", borderRadius: 12, border: LINE2, overflow: "hidden" }}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between px-5 py-3.5 hover:bg-muted/30 transition-colors"
+        style={{ width: "100%", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px" }}
       >
-        <div className="flex items-center gap-2">
-          <Settings className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Configuration</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Settings size={14} style={{ color: "rgba(255,255,255,0.50)" }} />
+          <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.75)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Configuration</span>
         </div>
-        <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+        <ChevronDown size={14} style={{ color: "rgba(255,255,255,0.40)", transform: open ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
       </button>
 
       {open && (
-        <form onSubmit={handleSubmit} className="border-t border-border">
-          <div className="p-5 space-y-4">
-            <div className="grid grid-cols-2 gap-4 items-start">
+        <form onSubmit={handleSubmit} style={{ borderTop: LINE }}>
+          <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, alignItems: "center" }}>
               <div>
-                <p className="text-xs font-medium text-foreground">Salon autorisé</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Seul ce salon peut utiliser <code className="bg-muted px-0.5 rounded">/steam</code> et reçoit les alertes promo
+                <p style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>Salon autorisé</p>
+                <p style={{ fontSize: 11, color: "rgba(255,255,255,0.40)", marginTop: 4 }}>
+                  Seul ce salon peut utiliser{" "}
+                  <code style={{ fontSize: 10, background: "rgba(255,255,255,0.08)", padding: "1px 5px", borderRadius: 4 }}>/steam</code>{" "}
+                  et reçoit les alertes
                 </p>
               </div>
-              <SelectDropdown
-                name="notifChannelId"
-                options={channelOptions}
-                value={vals.notifChannelId}
-                onChange={(v) => setVals((p) => ({ ...p, notifChannelId: v }))}
-                placeholder="Choisir un salon…"
-              />
+              <SelectDropdown name="notifChannelId" options={channelOptions} value={vals.notifChannelId} onChange={(v) => setVals((p) => ({ ...p, notifChannelId: v }))} placeholder="Choisir un salon…" />
             </div>
-            <div className="grid grid-cols-2 gap-4 items-start">
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, alignItems: "center" }}>
               <div>
-                <p className="text-xs font-medium text-foreground">Rôle autorisé</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Seul ce rôle peut utiliser la commande et reçoit les pings promo
-                </p>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>Rôle autorisé</p>
+                <p style={{ fontSize: 11, color: "rgba(255,255,255,0.40)", marginTop: 4 }}>Seul ce rôle peut utiliser la commande et reçoit les pings promo</p>
               </div>
-              <SelectDropdown
-                name="notifRoleId"
-                options={roleOptions}
-                value={vals.notifRoleId}
-                onChange={(v) => setVals((p) => ({ ...p, notifRoleId: v }))}
-                placeholder="Choisir un rôle…"
-              />
+              <SelectDropdown name="notifRoleId" options={roleOptions} value={vals.notifRoleId} onChange={(v) => setVals((p) => ({ ...p, notifRoleId: v }))} placeholder="Choisir un rôle…" />
             </div>
           </div>
-          <div className="px-5 pb-4 flex items-center justify-between border-t border-border pt-3">
-            <div>
-              {error && <p className="text-xs text-destructive">{error}</p>}
-              {saved && <p className="text-xs text-emerald-700">✓ Enregistré</p>}
+          <div style={{ padding: "12px 20px", borderTop: LINE, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ fontSize: 12 }}>
+              {error && <span style={{ color: "#ef4444" }}>{error}</span>}
+              {saved && <span style={{ color: "#4ade80" }}>✓ Enregistré</span>}
             </div>
-            <Button type="submit" size="sm" disabled={pending}>
-              <Save className="h-3.5 w-3.5" />
+            <button
+              type="submit"
+              disabled={pending}
+              style={{
+                display: "flex", alignItems: "center", gap: 6,
+                background: "#fff", color: "#000", border: "none", borderRadius: 8,
+                padding: "8px 16px", fontSize: 13, fontWeight: 600,
+                cursor: pending ? "not-allowed" : "pointer", opacity: pending ? 0.6 : 1,
+              }}
+            >
+              <Save size={13} />
               {pending ? "Enregistrement…" : "Enregistrer"}
-            </Button>
+            </button>
           </div>
         </form>
       )}
@@ -300,18 +322,13 @@ function SteamConfig({
   );
 }
 
-// ── Composant principal ───────────────────────────────────────────────────────
+// ── Main ──────────────────────────────────────────────────────────────────────
 
-export function SteamClient({
-  games, config, channels, roles,
-}: {
-  games: SteamGame[];
-  config: SteamConfigData;
-  channels: DiscordChannel[];
-  roles: DiscordRole[];
+export function SteamClient({ games, config, channels, roles }: {
+  games: SteamGame[]; config: SteamConfigData; channels: DiscordChannel[]; roles: DiscordRole[];
 }) {
   return (
-    <div className="space-y-4">
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       <GamesList games={games} />
       <SteamConfig config={config} channels={channels} roles={roles} />
     </div>
