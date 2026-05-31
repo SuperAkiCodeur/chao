@@ -262,17 +262,17 @@ function SteamConfig({ config, channels, roles }: {
   }
 
   return (
-    <div style={{ background: "#222", borderRadius: 12, border: LINE2, overflow: "hidden" }}>
+    <div style={{ background: "#202020", borderRadius: 12, border: LINE }}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         style={{ width: "100%", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px" }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Settings size={14} style={{ color: "rgba(255,255,255,0.50)" }} />
-          <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.75)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Configuration</span>
+          <Settings size={13} style={{ color: "rgba(255,255,255,0.45)" }} />
+          <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.70)", textTransform: "uppercase", letterSpacing: "0.07em" }}>Configuration</span>
         </div>
-        <ChevronDown size={14} style={{ color: "rgba(255,255,255,0.40)", transform: open ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
+        <ChevronDown size={13} style={{ color: "rgba(255,255,255,0.35)", transform: open ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
       </button>
 
       {open && (

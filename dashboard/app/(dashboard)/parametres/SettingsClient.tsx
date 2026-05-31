@@ -125,7 +125,7 @@ function Section({
   }
 
   return (
-    <div style={{ background: "#202020", borderRadius: 12, border: LINE, overflow: "hidden" }}>
+    <div style={{ background: "#202020", borderRadius: 12, border: LINE }}>
       {/* Header */}
       <div style={{ padding: "14px 20px", borderBottom: LINE }}>
         <p style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{title}</p>

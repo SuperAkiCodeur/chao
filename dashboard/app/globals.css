@@ -56,3 +56,26 @@ button { cursor: pointer; }
 ::selection { background: #fff; color: #000; }
 ::-webkit-scrollbar { width: 3px; height: 3px; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); border-radius: 99px; }
+
+/* ── Accordion / dropdown animations ── */
+@keyframes accordion-down {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes accordion-up {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+@keyframes expand-down {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes expand-up {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-6px); }
+}
+
+.animate-accordion-down { animation: accordion-down 0.18s ease-out forwards; }
+.animate-accordion-up   { animation: accordion-up   0.14s ease-in  forwards; }
+.animate-expand-down    { animation: expand-down    0.15s ease-out forwards; }
+.animate-expand-up      { animation: expand-up      0.12s ease-in  forwards; }

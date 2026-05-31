@@ -195,7 +195,7 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
   }
 
   return (
-    <div style={{ background: "#202020", borderRadius: 12, border: BD, overflow: "hidden" }}>
+    <div style={{ background: "#202020", borderRadius: 12, border: BD }}>
 
       {/* Header */}
       <button type="button" onClick={togglePanel}
