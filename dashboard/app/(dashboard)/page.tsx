@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { cinemaParties, valorantLinks } from "@/lib/schema";
 import { eq, count } from "drizzle-orm";
-import { Search } from "@phosphor-icons/react";
+import { MagnifyingGlass } from "@phosphor-icons/react";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +27,7 @@ export default async function HomePage() {
       <div className="anim-fade-in" style={{ height: 60, flexShrink: 0, display: "flex", alignItems: "center", padding: "0 20px", gap: 10, borderBottom: BD }}>
         {/* Search */}
         <div style={{ position: "relative", flex: 1, maxWidth: 340 }}>
-          <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.25)", pointerEvents: "none" }} />
+          <MagnifyingGlass size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.25)", pointerEvents: "none" }} />
           <input readOnly placeholder="Rechercher…" style={{ width: "100%", height: 34, background: "rgba(255,255,255,0.05)", border: BD, borderRadius: 8, paddingLeft: 30, paddingRight: 12, fontSize: 14, color: "rgba(255,255,255,0.40)", outline: "none" }} />
         </div>
         <div style={{ flex: 1 }} />
