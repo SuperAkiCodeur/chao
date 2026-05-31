@@ -58,7 +58,7 @@ export default async function HomePage() {
 
         {/* ── Hero card (like Toko big banner) ── */}
         <div style={{
-          borderRadius: 16, background: "#1E2A10",
+          borderRadius: 16, background: "#1F1F1F",
           padding: "30px 30px 30px", display: "flex", alignItems: "stretch", gap: 20, flexShrink: 0,
         }}>
           {/* Left text */}
@@ -83,19 +83,19 @@ export default async function HomePage() {
           {/* 3 mini-cards (like Toko "01 Going shopping / 02 Around the world / 03 Paris en ville") */}
           <div style={{ display: "flex", gap: 10, alignItems: "stretch" }}>
             {[
-              { n: "01", title: "Cinéma",   sub: `${activeCinema} actif${activeCinema !== 1 ? "s" : ""}`, bg: "#fff",    color: "#111" },
-              { n: "02", title: "Valorant", sub: `${totalValorant} comptes`,                               bg: LIME,      color: "#000" },
-              { n: "03", title: "Steam",    sub: "Catalogue",                                              bg: "#fff",    color: "#111" },
+              { n: "01", title: "Cinéma",   sub: `${activeCinema} actif${activeCinema !== 1 ? "s" : ""}`, bg: "#fff",   color: "#111" },
+              { n: "02", title: "Valorant", sub: `${totalValorant} comptes`,                               bg: LIME,     color: "#000" },
+              { n: "03", title: "Steam",    sub: "Catalogue",                                              bg: "#111",   color: "#fff" },
             ].map(({ n, title, sub, bg, color }) => (
               <div key={n} style={{
                 width: 130, borderRadius: 14, padding: "16px 16px",
                 background: bg, display: "flex", flexDirection: "column", justifyContent: "space-between",
                 minHeight: 160,
               }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: bg === "#fff" ? "#AAA" : "rgba(0,0,0,0.40)", letterSpacing: "0.04em" }}>{n}</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: bg === "#fff" ? "#AAA" : bg === "#111" ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.40)", letterSpacing: "0.04em" }}>{n}</span>
                 <div>
                   <p style={{ fontSize: 20, fontWeight: 800, color, letterSpacing: "-0.03em", lineHeight: 1.2 }}>{title}</p>
-                  <p style={{ fontSize: 11, color: bg === "#fff" ? "#999" : "rgba(0,0,0,0.50)", marginTop: 5 }}>{sub}</p>
+                  <p style={{ fontSize: 11, color: bg === "#fff" ? "#999" : bg === "#111" ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.50)", marginTop: 5 }}>{sub}</p>
                 </div>
               </div>
             ))}
@@ -184,9 +184,9 @@ export default async function HomePage() {
               <p style={{ fontSize: 11, color: "rgba(255,255,255,0.28)", fontWeight: 600, marginBottom: 10, letterSpacing: "0.05em", textTransform: "uppercase" }}>Aujourd'hui</p>
 
               {[
-                { label: "Séances actives",  value: activeCinema,  detail: "en ce moment",    dot: LIME },
-                { label: "Comptes Valorant", value: totalValorant, detail: "Discord liés",     dot: "#A78BFA" },
-                { label: "Disponibilité",    value: "100%",        detail: "aucune coupure",   dot: "#34D399" },
+                { label: "Séances actives",  value: activeCinema,  detail: "en ce moment",  dot: LIME },
+                { label: "Comptes Valorant", value: totalValorant, detail: "Discord liés",   dot: "rgba(255,255,255,0.30)" },
+                { label: "Disponibilité",    value: "100%",        detail: "aucune coupure", dot: "rgba(255,255,255,0.30)" },
               ].map(({ label, value, detail, dot }) => (
                 <div key={label} style={{
                   background: "#2A2A2A", borderRadius: 12, padding: "14px 16px", marginBottom: 8,
