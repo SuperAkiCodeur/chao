@@ -17,18 +17,18 @@ async function getData() {
   ]);
 
   // Grouper par salon
-  const byChannel = new Map<string, { games: typeof games; notifChannelId: string | null }>();
+  const byChannel = new Map<string, { games: typeof games; notifChannelId: string | null; listName: string | null }>();
   for (const g of games) {
     if (!byChannel.has(g.channelId)) {
       const cfg = configs.find((c) => c.channelId === g.channelId);
-      byChannel.set(g.channelId, { games: [], notifChannelId: cfg?.notifChannelId ?? null });
+      byChannel.set(g.channelId, { games: [], notifChannelId: cfg?.notifChannelId ?? null, listName: cfg?.name ?? null });
     }
     byChannel.get(g.channelId)!.games.push(g);
   }
   // Ajouter les salons avec config mais sans jeux
   for (const cfg of configs) {
     if (!byChannel.has(cfg.channelId)) {
-      byChannel.set(cfg.channelId, { games: [], notifChannelId: cfg.notifChannelId ?? null });
+      byChannel.set(cfg.channelId, { games: [], notifChannelId: cfg.notifChannelId ?? null, listName: cfg.name ?? null });
     }
   }
   return byChannel;
@@ -65,7 +65,7 @@ export default async function DealsPage() {
           </p>
         </SectionCard>
       ) : (
-        [...data.entries()].map(([channelId, { games, notifChannelId }]) => {
+        [...data.entries()].map(([channelId, { games, notifChannelId, listName }]) => {
           const channel = channels.find((c) => c.id === channelId);
           return (
             <DealsClient
@@ -73,6 +73,7 @@ export default async function DealsPage() {
               channelId={channelId}
               channelName={channel?.name ?? channelId}
               notifChannelId={notifChannelId}
+              listName={listName}
               games={games}
               channels={channels}
             />

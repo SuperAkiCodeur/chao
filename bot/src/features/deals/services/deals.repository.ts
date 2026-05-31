@@ -58,3 +58,13 @@ export async function setNotifChannel(guildId: string, channelId: string, notifC
     await db.insert(dealsConfig).values({ guildId, channelId, notifChannelId });
   }
 }
+
+export async function setListName(guildId: string, channelId: string, name: string) {
+  const existing = await getConfig(guildId, channelId);
+  if (existing) {
+    await db.update(dealsConfig).set({ name })
+      .where(and(eq(dealsConfig.guildId, guildId), eq(dealsConfig.channelId, channelId)));
+  } else {
+    await db.insert(dealsConfig).values({ guildId, channelId, name, notifChannelId: null });
+  }
+}

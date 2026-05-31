@@ -135,6 +135,10 @@ async function main(): Promise<void> {
   `;
   console.log("✓ deals_config");
 
+  // Ajout du nom de liste dans deals_config
+  await sql`ALTER TABLE deals_config ADD COLUMN IF NOT EXISTS name TEXT`;
+  console.log("✓ deals_config.name");
+
   await sql.end();
   console.log("Migration terminée.");
 }

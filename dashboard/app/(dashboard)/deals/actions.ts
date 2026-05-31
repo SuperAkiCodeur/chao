@@ -32,6 +32,23 @@ export async function saveDealsNotifChannel(channelId: string, notifChannelId: s
   }
 }
 
+export async function renameDeals(channelId: string, name: string): Promise<ActionResult> {
+  try {
+    const existing = await db.select().from(dealsConfig)
+      .where(and(eq(dealsConfig.guildId, GUILD_ID), eq(dealsConfig.channelId, channelId)));
+    if (existing.length > 0) {
+      await db.update(dealsConfig).set({ name: name.trim() || null })
+        .where(and(eq(dealsConfig.guildId, GUILD_ID), eq(dealsConfig.channelId, channelId)));
+    } else {
+      await db.insert(dealsConfig).values({ guildId: GUILD_ID, channelId, name: name.trim() || null, notifChannelId: null });
+    }
+    revalidatePath("/deals");
+    return { success: true };
+  } catch {
+    return { success: false, error: "Erreur lors du renommage." };
+  }
+}
+
 export async function removeDealsGame(id: number): Promise<ActionResult> {
   try {
     await db.delete(dealsGames)

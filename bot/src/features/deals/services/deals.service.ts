@@ -29,6 +29,8 @@ import {
   DEALS_MAIN_MENU_ID,
   DEALS_PRICE_SELECT_ID,
   DEALS_REMOVE_SELECT_ID,
+  DEALS_RENAME_INPUT,
+  DEALS_RENAME_MODAL_ID,
   DEALS_SEARCH_INPUT,
   DEALS_SEARCH_MODAL_ID,
 } from "../domain/deals.constants.js";
@@ -42,6 +44,7 @@ import {
   getGames,
   insertGame,
   removeGame,
+  setListName,
   setNotifChannel,
   updateGamePrice,
 } from "./deals.repository.js";
@@ -71,8 +74,12 @@ async function buildMainMenu(guildId: string, channelId: string) {
   const config = await getConfig(guildId, channelId);
   const onSale = games.filter((g) => g.isOnSale === 1).length;
 
-  let header = `🔥 **Deals** — ${games.length} jeu${games.length !== 1 ? "x" : ""} tracké${games.length !== 1 ? "s" : ""}`;
-  if (onSale > 0) header += ` · 🔥 ${onSale} en promo`;
+  const listName = config?.name ?? null;
+  let header = listName
+    ? `🔥 **${listName}**`
+    : `🔥 **Deals** — *liste sans nom*`;
+  header += ` — ${games.length} jeu${games.length !== 1 ? "x" : ""} tracké${games.length !== 1 ? "s" : ""}`;
+  if (onSale > 0) header += ` · ${onSale} en promo`;
   if (config?.notifChannelId) header += `\n📢 Notifs : <#${config.notifChannelId}>`;
 
   const select = new StringSelectMenuBuilder()
@@ -89,6 +96,8 @@ async function buildMainMenu(guildId: string, channelId: string) {
         .setDescription("Voir les jeux actuellement en promotion"),
       new StringSelectMenuOptionBuilder().setLabel("💰 Comparer les prix").setValue("prix")
         .setDescription("Comparer prix Steam et revendeurs"),
+      new StringSelectMenuOptionBuilder().setLabel("✏️ Nommer / renommer la liste").setValue("renommer")
+        .setDescription(listName ? `Nom actuel : ${listName}` : "Donner un nom à cette liste"),
       new StringSelectMenuOptionBuilder().setLabel("⚙️ Salon de notifications").setValue("config")
         .setDescription("Changer le salon où les alertes promo sont envoyées"),
     );
@@ -234,6 +243,26 @@ export async function handleDealsMenu(interaction: StringSelectMenuInteraction):
       components: [new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select), buildBackRow()],
       embeds: [],
     });
+    return;
+  }
+
+  // ── Renommer ───────────────────────────────────────────────────────────────
+  if (value === "renommer") {
+    const config = await getConfig(guildId, channelId);
+    const modal = new ModalBuilder().setCustomId(DEALS_RENAME_MODAL_ID).setTitle("Nommer la liste");
+    modal.addComponents(
+      new ActionRowBuilder<TextInputBuilder>().addComponents(
+        new TextInputBuilder()
+          .setCustomId(DEALS_RENAME_INPUT)
+          .setLabel("Nom de la liste")
+          .setStyle(TextInputStyle.Short)
+          .setPlaceholder("Ex : Wishlist été, Jeux co-op…")
+          .setValue(config?.name ?? "")
+          .setRequired(true)
+          .setMaxLength(50),
+      ),
+    );
+    await interaction.showModal(modal);
     return;
   }
 
@@ -395,6 +424,19 @@ export async function handleDealsPriceSelect(interaction: StringSelectMenuIntera
     .setDescription(lines.join("\n"));
 
   await interaction.editReply({ content: "", embeds: [embed], components: [buildBackRow()] });
+}
+
+// ── Renommer (modal) ──────────────────────────────────────────────────────────
+
+export async function handleDealsRenameModal(interaction: ModalSubmitInteraction): Promise<void> {
+  if (!interaction.guildId) return;
+  const name = interaction.fields.getTextInputValue(DEALS_RENAME_INPUT).trim();
+  if (!name) { await interaction.reply({ content: "❌ Nom invalide.", flags: MessageFlags.Ephemeral }); return; }
+
+  await setListName(interaction.guildId, interaction.channelId, name);
+  const menu = await buildMainMenu(interaction.guildId, interaction.channelId);
+  await interaction.reply({ ...menu, flags: MessageFlags.Ephemeral });
+  logger.info("[deals] liste renommée", { guildId: interaction.guildId, channelId: interaction.channelId, name });
 }
 
 // ── Config — salon de notifs ──────────────────────────────────────────────────

@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Trash, FloppyDisk, CaretDown, Hash, SpeakerHigh, ArrowRight } from "@phosphor-icons/react";
-import { saveDealsNotifChannel, removeDealsGame } from "./actions";
+import { Trash, FloppyDisk, CaretDown, Hash, SpeakerHigh, ArrowRight, PencilSimple, Check } from "@phosphor-icons/react";
+import { saveDealsNotifChannel, removeDealsGame, renameDeals } from "./actions";
 import type { DiscordChannel } from "@/components/FeatureSettings";
 
 const BD  = "1px solid rgba(255,255,255,0.08)";
@@ -22,20 +22,25 @@ function ChannelIcon({ type }: { type: number }) {
     : <Hash        size={11} style={{ color: "rgba(255,255,255,0.30)", flexShrink: 0 }} />;
 }
 
-export function DealsClient({ channelId, channelName, notifChannelId, games, channels }: {
+export function DealsClient({ channelId, channelName, notifChannelId, listName, games, channels }: {
   channelId: string;
   channelName: string;
   notifChannelId: string | null;
+  listName: string | null;
   games: Game[];
   channels: DiscordChannel[];
 }) {
-  const [notifVal, setNotifVal]       = useState(notifChannelId ?? "");
-  const [saved, setSaved]             = useState(false);
-  const [error, setError]             = useState<string | null>(null);
-  const [gamesOpen, setGamesOpen]     = useState(false);
-  const [removing, setRemoving]       = useState<number | null>(null);
-  const [pending, startSave]          = useTransition();
-  const [removePending, startRemove]  = useTransition();
+  const [notifVal, setNotifVal]         = useState(notifChannelId ?? "");
+  const [saved, setSaved]               = useState(false);
+  const [error, setError]               = useState<string | null>(null);
+  const [gamesOpen, setGamesOpen]       = useState(false);
+  const [removing, setRemoving]         = useState<number | null>(null);
+  const [nameEditing, setNameEditing]   = useState(false);
+  const [nameVal, setNameVal]           = useState(listName ?? "");
+  const [nameSaved, setNameSaved]       = useState(false);
+  const [pending, startSave]            = useTransition();
+  const [removePending, startRemove]    = useTransition();
+  const [namePending, startNameSave]    = useTransition();
 
   const textChannels = channels
     .filter((c) => c.type !== 4)
@@ -43,6 +48,13 @@ export function DealsClient({ channelId, channelName, notifChannelId, games, cha
 
   const notifChannel  = textChannels.find((c) => c.id === notifVal) ?? null;
   const onSaleCount   = games.filter((g) => g.isOnSale === 1).length;
+
+  function handleSaveName() {
+    startNameSave(async () => {
+      const res = await renameDeals(channelId, nameVal);
+      if (res.success) { setNameSaved(true); setNameEditing(false); setTimeout(() => setNameSaved(false), 2000); }
+    });
+  }
 
   function handleSave() {
     setError(null); setSaved(false);
@@ -66,17 +78,49 @@ export function DealsClient({ channelId, channelName, notifChannelId, games, cha
         display: "grid", gridTemplateColumns: "1fr auto 1fr auto auto",
         alignItems: "center", gap: 12, padding: "14px 20px",
       }}>
-        {/* Salon source (liste) */}
-        <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
-          <Hash size={14} style={{ color: "rgba(255,255,255,0.40)", flexShrink: 0 }} />
-          <span style={{ fontSize: 20, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {channelName}
-          </span>
-          {onSaleCount > 0 && (
-            <span style={{ fontSize: 10, fontWeight: 700, color: "#4ade80", background: "rgba(74,222,128,0.12)", padding: "2px 7px", borderRadius: 99, flexShrink: 0 }}>
-              🔥 {onSaleCount}
-            </span>
+        {/* Nom de la liste (éditable) */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}>
+          {nameEditing ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <input
+                autoFocus
+                value={nameVal}
+                onChange={(e) => setNameVal(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleSaveName(); if (e.key === "Escape") setNameEditing(false); }}
+                maxLength={50}
+                style={{
+                  fontSize: 18, fontWeight: 400, fontFamily: "var(--font-serif)",
+                  color: "#fff", background: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.16)", borderRadius: 6,
+                  padding: "2px 8px", outline: "none", minWidth: 0, flex: 1,
+                }}
+              />
+              <button type="button" onClick={handleSaveName} disabled={namePending}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "#4ade80", display: "flex", padding: 4 }}>
+                <Check size={14} />
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 20, fontWeight: 400, color: nameVal ? "#fff" : "rgba(255,255,255,0.28)", fontFamily: "var(--font-serif)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontStyle: nameVal ? "normal" : "italic" }}>
+                {nameVal || "Sans nom"}
+              </span>
+              {nameSaved && <Check size={12} style={{ color: "#4ade80", flexShrink: 0 }} />}
+              {onSaleCount > 0 && (
+                <span style={{ fontSize: 10, fontWeight: 700, color: "#4ade80", background: "rgba(74,222,128,0.12)", padding: "2px 7px", borderRadius: 99, flexShrink: 0 }}>
+                  🔥 {onSaleCount}
+                </span>
+              )}
+              <button type="button" onClick={() => setNameEditing(true)}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.25)", display: "flex", padding: 2, flexShrink: 0 }}
+                title="Renommer">
+                <PencilSimple size={12} />
+              </button>
+            </div>
           )}
+          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", gap: 3 }}>
+            <Hash size={10} style={{ flexShrink: 0 }} />{channelName}
+          </span>
         </div>
 
         {/* Flèche */}

@@ -99,6 +99,7 @@ export const dealsConfig = pgTable(
   {
     guildId: text("guild_id").notNull(),
     channelId: text("channel_id").notNull(),
+    name: text("name"),
     notifChannelId: text("notif_channel_id"),
   },
   (t) => [primaryKey({ columns: [t.guildId, t.channelId] })],

@@ -50,6 +50,7 @@ import {
   handleDealsMenu,
   handleDealsBack,
   handleDealsSearchModal,
+  handleDealsRenameModal,
   handleDealsAddSelect,
   handleDealsRemoveSelect,
   handleDealsPriceSelect,
@@ -58,6 +59,7 @@ import {
 import {
   DEALS_MAIN_MENU_ID,
   DEALS_SEARCH_MODAL_ID,
+  DEALS_RENAME_MODAL_ID,
   DEALS_ADD_SELECT_ID,
   DEALS_REMOVE_SELECT_ID,
   DEALS_PRICE_SELECT_ID,
@@ -88,6 +90,8 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
       try {
         if (id === DEALS_SEARCH_MODAL_ID) {
           await handleDealsSearchModal(interaction);
+        } else if (id === DEALS_RENAME_MODAL_ID) {
+          await handleDealsRenameModal(interaction);
         } else if (id.startsWith(CINEMA_MODAL_START_PREFIX)) {
           await handleCinemaStartModal(interaction);
         } else if (id === VALORANT_MODAL_LINK_ID) {
