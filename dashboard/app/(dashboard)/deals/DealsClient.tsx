@@ -136,7 +136,7 @@ export function DealsClient({ channelId, channelName, notifChannelId, listName, 
   }
 
   return (
-    <div className="card-glow anim-soft-up" style={{ background: "#202020", borderRadius: 12, border: BD, position: "relative", zIndex: 1 }}>
+    <div className="card-glow" style={{ background: "#202020", borderRadius: 12, border: BD, position: "relative", zIndex: 1 }}>
 
       {/* ── Ligne principale ── */}
       <div style={{
@@ -240,7 +240,7 @@ export function DealsClient({ channelId, channelName, notifChannelId, listName, 
 
       {/* ── Jeux ── */}
       {gamesOpen && (
-        <div className="anim-fade-in" style={{ borderTop: BD }}>
+        <div style={{ borderTop: BD }}>
           {games.length === 0 ? (
             <p style={{ padding: "14px 20px", fontSize: 13, color: "rgba(255,255,255,0.28)", fontStyle: "italic" }}>
               Aucun jeu — utilise <code>/deals</code> dans <strong>#{channelName}</strong> pour en ajouter.
