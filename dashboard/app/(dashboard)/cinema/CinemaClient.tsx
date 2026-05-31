@@ -320,19 +320,20 @@ export function CinemaClient({ partiesWithMeta }: { partiesWithMeta: PartyWithMe
       </div>
 
       {/* Séances prévues — grandes cartes */}
+      <SectionCard title="Séances prévues" badge={upcoming.length > 0 ? upcoming.length : undefined} noPadding>
       {upcoming.length === 0 ? (
-        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.28)", fontStyle: "italic", textAlign: "center", padding: "8px 0" }}>
+        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.28)", fontStyle: "italic", textAlign: "center", padding: "20px" }}>
           Aucune séance prévue
         </p>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {upcoming.map((p) => {
+        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+          {upcoming.map((p, i) => {
             const date   = new Date(p.viewingAt);
             const isPast = date <= now;
             return (
               <div key={p.messageId} style={{
-                display: "flex", gap: 20,
-                background: "#202020", borderRadius: 12, border: BD, padding: 20,
+                display: "flex", gap: 20, padding: 20,
+                borderTop: i > 0 ? BD : undefined,
               }}>
                 <Poster url={p.meta.posterUrl} title={p.title} width={96} />
                 <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
@@ -367,6 +368,7 @@ export function CinemaClient({ partiesWithMeta }: { partiesWithMeta: PartyWithMe
           })}
         </div>
       )}
+      </SectionCard>
 
       {/* Historique */}
       <SectionCard title="Historique" badge={history.length} noPadding>

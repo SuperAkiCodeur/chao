@@ -230,8 +230,8 @@ export function FeatureSettings({ fields, channels, roles, settings, noCollapse 
   const saveButton = (
     <button type="submit" disabled={pending}
       style={{
-        display: "flex", alignItems: "center", gap: 8,
-        background: "#fff", color: "#000", border: "none", borderRadius: 8,
+        display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+        width: "100%", background: "#fff", color: "#000", border: "none", borderRadius: 8,
         padding: "10px 20px", fontSize: 14, fontWeight: 600,
         cursor: pending ? "not-allowed" : "pointer", opacity: pending ? 0.6 : 1,
       }}
@@ -266,7 +266,7 @@ export function FeatureSettings({ fields, channels, roles, settings, noCollapse 
         <div style={{ background: "#202020", borderRadius: 12, border: BD }}>
           {fieldsBlock}
         </div>
-        <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end" }}>
+        <div style={{ marginTop: 12 }}>
           {saveButton}
         </div>
         {toastEl}
