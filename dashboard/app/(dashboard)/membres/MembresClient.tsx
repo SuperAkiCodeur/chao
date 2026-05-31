@@ -83,7 +83,7 @@ function BtnCancel({ onClick }: { onClick: () => void }) {
   return <button type="button" onClick={onClick} style={{ ...btnBase, background: "rgba(255,255,255,0.06)", border: BDI, color: "rgba(255,255,255,0.60)" }}>Annuler</button>;
 }
 function BtnPrimary({ children, disabled, onClick }: { children: React.ReactNode; disabled?: boolean; onClick?: () => void }) {
-  return <button type={onClick ? "button" : "submit"} disabled={disabled} onClick={onClick} style={{ ...btnBase, background: "#fff", color: "#000", border: "none", opacity: disabled ? 0.6 : 1, cursor: disabled ? "not-allowed" : "pointer" }}>{children}</button>;
+  return <button type={onClick ? "button" : "submit"} disabled={disabled} onClick={onClick} style={{ ...btnBase, background: "rgba(255,255,255,0.10)", color: "#fff", border: "1px solid rgba(255,255,255,0.16)", opacity: disabled ? 0.6 : 1, cursor: disabled ? "not-allowed" : "pointer" }}>{children}</button>;
 }
 function BtnDestructive({ children, disabled, onClick }: { children: React.ReactNode; disabled?: boolean; onClick: () => void }) {
   return <button type="button" disabled={disabled} onClick={onClick} style={{ ...btnBase, background: "rgba(239,68,68,0.10)", border: "1px solid rgba(239,68,68,0.25)", color: "#ef4444", opacity: disabled ? 0.6 : 1, cursor: disabled ? "not-allowed" : "pointer" }}>{children}</button>;

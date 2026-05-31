@@ -37,7 +37,7 @@ type LaunchStep  = { step: "form" } | { step: "confirm"; tmdb: TmdbResult; fv: F
 
 const btnPrimary: React.CSSProperties = {
   display: "flex", alignItems: "center", gap: 8,
-  background: "#fff", color: "#000", border: "none", borderRadius: 8,
+  background: "rgba(255,255,255,0.10)", color: "#fff", border: "1px solid rgba(255,255,255,0.16)", borderRadius: 8,
   padding: "8px 18px", fontSize: 14, fontWeight: 600, cursor: "pointer",
 };
 const btnGhost: React.CSSProperties = {
@@ -311,7 +311,7 @@ export function CinemaClient({ partiesWithMeta }: { partiesWithMeta: PartyWithMe
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
         <button onClick={() => setDialog({ type: "launch" })} style={{
           display: "flex", alignItems: "center", gap: 8,
-          background: "#fff", color: "#000", border: "none", borderRadius: 8,
+          background: "rgba(255,255,255,0.10)", color: "#fff", border: "1px solid rgba(255,255,255,0.16)", borderRadius: 8,
           padding: "9px 18px", fontSize: 14, fontWeight: 600, cursor: "pointer",
         }}>
           <Plus size={15} />

@@ -60,7 +60,7 @@ export default async function HomePage() {
                   : <>Bot Chao<br />est en ligne</>}
               </h1>
             </div>
-            <a href="/cinema" className="hover-glow" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", color: "#000", fontWeight: 700, fontSize: 14, padding: "9px 16px", borderRadius: 8, textDecoration: "none", alignSelf: "flex-start", transition: "transform 0.2s cubic-bezier(0.16,1,0.3,1), box-shadow 0.2s" }}>
+            <a href="/cinema" className="hover-glow" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.10)", color: "#fff", border: "1px solid rgba(255,255,255,0.16)", fontWeight: 600, fontSize: 14, padding: "9px 16px", borderRadius: 8, textDecoration: "none", alignSelf: "flex-start", transition: "transform 0.2s cubic-bezier(0.16,1,0.3,1), box-shadow 0.2s" }}>
               Voir les séances ↗
             </a>
           </div>

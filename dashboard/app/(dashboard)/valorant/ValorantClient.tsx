@@ -59,7 +59,7 @@ function BtnCancel({ onClick }: { onClick: () => void }) {
 function BtnPrimary({ children, disabled }: { children: React.ReactNode; disabled?: boolean }) {
   return (
     <button type="submit" disabled={disabled}
-      style={{ padding: "7px 14px", borderRadius: 8, fontSize: 14, fontWeight: 600, border: "none", background: "#fff", color: "#000", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.6 : 1 }}>
+      style={{ padding: "7px 14px", borderRadius: 8, fontSize: 14, fontWeight: 600, border: "1px solid rgba(255,255,255,0.16)", background: "rgba(255,255,255,0.10)", color: "#fff", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.6 : 1 }}>
       {children}
     </button>
   );
@@ -239,7 +239,7 @@ export function ValorantClient({ accounts, defaultGuildId }: { accounts: Account
           style={{
             display: "flex", alignItems: "center", gap: 6,
             padding: "7px 14px", borderRadius: 8, fontSize: 14, fontWeight: 600,
-            background: "#fff", color: "#000", border: "none", cursor: "pointer",
+            background: "rgba(255,255,255,0.10)", color: "#fff", border: "1px solid rgba(255,255,255,0.16)", cursor: "pointer",
             transition: "opacity 0.15s",
           }}
           onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")}

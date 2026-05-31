@@ -147,7 +147,7 @@ function Section({
             disabled={pending}
             style={{
               display: "flex", alignItems: "center", gap: 6,
-              background: "#fff", color: "#000", border: "none", borderRadius: 8,
+              background: "rgba(255,255,255,0.10)", color: "#fff", border: "1px solid rgba(255,255,255,0.16)", borderRadius: 8,
               padding: "8px 16px", fontSize: 14, fontWeight: 600,
               cursor: pending ? "not-allowed" : "pointer", opacity: pending ? 0.6 : 1,
             }}
