@@ -12,7 +12,8 @@ export type SettingField = {
   key: string;
   label: string;
   description: string;
-  kind: "channel" | "role";
+  kind: "channel" | "role" | "text";
+  placeholder?: string;
 };
 
 function roleColor(color: number) {
@@ -215,13 +216,29 @@ export function FeatureSettings({ fields, channels, roles, settings, noCollapse 
             <p style={{ fontSize: 14, fontWeight: 600, color: "#fff", lineHeight: 1 }}>{f.label}</p>
             <p style={{ fontSize: 12, color: "rgba(255,255,255,0.38)", marginTop: 5, lineHeight: 1.4 }}>{f.description}</p>
           </div>
-          <SelectDropdown
-            name={f.key}
-            options={f.kind === "channel" ? textChannels : roleOptions}
-            value={vals[f.key] ?? ""}
-            onChange={(v) => setVals((prev) => ({ ...prev, [f.key]: v }))}
-            placeholder={f.kind === "channel" ? "Choisir un salon…" : "Choisir un rôle…"}
-          />
+          {f.kind === "text" ? (
+            <input
+              name={f.key}
+              type="text"
+              defaultValue={vals[f.key] ?? ""}
+              placeholder={f.placeholder ?? ""}
+              style={{
+                height: 34, width: "100%",
+                background: "rgba(255,255,255,0.05)", border: BDI,
+                borderRadius: 8, padding: "0 12px",
+                fontSize: 13, color: "#fff", outline: "none",
+                fontFamily: "ui-monospace, monospace",
+              }}
+            />
+          ) : (
+            <SelectDropdown
+              name={f.key}
+              options={f.kind === "channel" ? textChannels : roleOptions}
+              value={vals[f.key] ?? ""}
+              onChange={(v) => setVals((prev) => ({ ...prev, [f.key]: v }))}
+              placeholder={f.kind === "channel" ? "Choisir un salon…" : "Choisir un rôle…"}
+            />
+          )}
         </div>
       ))}
     </div>

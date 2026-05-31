@@ -9,6 +9,7 @@ const BOT_TOKEN          = process.env.DISCORD_BOT_TOKEN!;
 const DEFAULT_CHANNEL_ID = "1510242757627609178";
 const AMP_AUTHOR         = "Agence Média Palestine";
 const AMP_HOME           = "https://agencemediapalestine.fr";
+const DEFAULT_SOURCE_URL = "https://agencemediapalestine.fr/wp-json/wp/v2/posts";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -73,7 +74,7 @@ async function getChannels(): Promise<DiscordChannel[]> {
 
 // ── Countdown ─────────────────────────────────────────────────────────────────
 
-function nextPost9h(): { label: string; hours: number; minutes: number } {
+function nextPost9h(): { hours: number; minutes: number } {
   const now   = new Date();
   const paris = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Paris" }));
   const target = new Date(paris);
@@ -82,8 +83,7 @@ function nextPost9h(): { label: string; hours: number; minutes: number } {
   const diffMs  = target.getTime() - paris.getTime();
   const hours   = Math.floor(diffMs / 3600000);
   const minutes = Math.floor((diffMs % 3600000) / 60000);
-  const label   = hours > 0 ? `${hours}h ${minutes}min` : `${minutes}min`;
-  return { label, hours, minutes };
+  return { hours, minutes };
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -92,8 +92,13 @@ export default async function PalestinePage() {
   const [settings, channels] = await Promise.all([getAllSettings(), getChannels()]);
 
   const channelId = settings["palestine_channel_id"] ?? DEFAULT_CHANNEL_ID;
+  const sourceUrl = settings["palestine_source_url"]  ?? DEFAULT_SOURCE_URL;
   const posts     = await fetchBotPosts(channelId);
   const countdown = nextPost9h();
+
+  // Derive a readable domain from the source URL for display
+  let sourceDomain = AMP_HOME;
+  try { sourceDomain = new URL(sourceUrl).origin; } catch { /* keep default */ }
 
   return (
     <PageShell title="Palestine" description="Articles postés quotidiennement par le bot à 9h (Paris)">
@@ -116,21 +121,44 @@ export default async function PalestinePage() {
             <Clock size={20} style={{ color: "#4ade80" }} />
           </div>
           <div>
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.42)", marginBottom: 4 }}>
+            <p style={{
+              fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
+              textTransform: "uppercase", color: "rgba(255,255,255,0.30)",
+              marginBottom: 8,
+            }}>
               Prochain article
             </p>
-            <p style={{ fontSize: 26, fontWeight: 700, color: "#4ade80", lineHeight: 1 }}>
-              dans {countdown.label}
-            </p>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}>
+              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.38)" }}>dans</span>
+              {countdown.hours > 0 ? (
+                <>
+                  <span style={{ fontSize: 32, fontWeight: 700, color: "#4ade80", lineHeight: 1 }}>
+                    {countdown.hours}
+                  </span>
+                  <span style={{ fontSize: 16, fontWeight: 600, color: "rgba(74,222,128,0.75)" }}>h</span>
+                  <span style={{ fontSize: 20, fontWeight: 600, color: "rgba(74,222,128,0.65)", lineHeight: 1, marginLeft: 2 }}>
+                    {countdown.minutes}
+                  </span>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: "rgba(74,222,128,0.50)" }}>min</span>
+                </>
+              ) : (
+                <>
+                  <span style={{ fontSize: 32, fontWeight: 700, color: "#4ade80", lineHeight: 1 }}>
+                    {countdown.minutes}
+                  </span>
+                  <span style={{ fontSize: 16, fontWeight: 600, color: "rgba(74,222,128,0.75)" }}>min</span>
+                </>
+              )}
+            </div>
           </div>
         </div>
         <a
-          href={AMP_HOME}
+          href={sourceDomain}
           target="_blank"
           rel="noreferrer"
           style={{
             display: "flex", alignItems: "center", gap: 6,
-            fontSize: 12, color: "rgba(255,255,255,0.38)",
+            fontSize: 12, color: "rgba(255,255,255,0.35)",
             textDecoration: "none", flexShrink: 0,
           }}
         >
@@ -207,6 +235,13 @@ export default async function PalestinePage() {
             label:       "Salon source",
             description: "Salon Discord où le bot poste les articles quotidiens",
             kind:        "channel",
+          },
+          {
+            key:         "palestine_source_url",
+            label:       "Flux RSS / API",
+            description: "URL de l'API WordPress utilisée par le bot pour récupérer les articles",
+            kind:        "text",
+            placeholder: DEFAULT_SOURCE_URL,
           },
         ]}
       />
