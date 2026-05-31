@@ -269,9 +269,9 @@ export function CinemaClient({ partiesWithMeta }: { partiesWithMeta: PartyWithMe
   const [dialog, setDialog] = useState<DialogState>({ type: "none" });
   function close() { setDialog({ type: "none" }); }
 
-  const upcoming = partiesWithMeta.filter(p => p.status === "active");
-  const history  = partiesWithMeta.filter(p => p.status !== "active");
   const now      = new Date();
+  const upcoming = partiesWithMeta.filter(p => p.status === "active" && new Date(p.viewingAt) > now);
+  const history  = partiesWithMeta.filter(p => p.status !== "active" || new Date(p.viewingAt) <= now);
 
   return (
     <>
@@ -293,7 +293,7 @@ export function CinemaClient({ partiesWithMeta }: { partiesWithMeta: PartyWithMe
           <div style={{ display: "flex", flexDirection: "column" }}>
             {upcoming.map((p, i) => {
               const date   = new Date(p.viewingAt);
-              const isPast = date < now;
+              const isPast = date <= now;
               return (
                 <div key={p.messageId} style={{ display: "flex", gap: 14, padding: "14px 20px", borderTop: i > 0 ? BD : undefined, alignItems: "center" }}>
                   <Poster url={p.meta.posterUrl} title={p.title} width={52} />
