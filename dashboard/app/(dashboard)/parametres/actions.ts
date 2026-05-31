@@ -15,6 +15,7 @@ export async function saveSection(formData: FormData): Promise<ActionResult> {
     }
     await saveSettings(entries);
     revalidatePath("/parametres");
+    revalidatePath("/membres");
     return { success: true };
   } catch {
     return { success: false, error: "Erreur lors de la sauvegarde." };

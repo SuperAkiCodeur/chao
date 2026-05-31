@@ -84,8 +84,10 @@ export default async function MembresPage() {
         channels={[]}
         roles={roles}
         settings={settings}
+        noCollapse
         fields={[
-          { key: "member_role_id", label: "Rôle automatique", description: "Attribué dès qu'un membre rejoint le serveur", kind: "role" },
+          { key: "member_role_id",    label: "Rôle automatique", description: "Attribué dès qu'un membre rejoint le serveur", kind: "role" },
+          { key: "moderator_role_id", label: "Rôle modérateur",  description: "Identifie les modérateurs du serveur",          kind: "role" },
         ]}
       />
 

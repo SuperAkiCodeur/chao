@@ -8,6 +8,7 @@ export const SETTING_KEYS = {
   CINEMA_SPECTATOR_ROLE_ID: "cinema_spectator_role_id",
   // Membres
   MEMBER_ROLE_ID: "member_role_id",
+  MODERATOR_ROLE_ID: "moderator_role_id",
   // Valorant
   VALORANT_CHANNEL_ID: "valorant_channel_id",
 } as const;

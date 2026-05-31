@@ -141,11 +141,12 @@ function SelectDropdown({
 }
 
 // ── FeatureSettings ───────────────────────────────────────────────────────────
-export function FeatureSettings({ fields, channels, roles, settings }: {
+export function FeatureSettings({ fields, channels, roles, settings, noCollapse = false }: {
   fields: SettingField[];
   channels: DiscordChannel[];
   roles: DiscordRole[];
   settings: Record<string, string>;
+  noCollapse?: boolean;
 }) {
   const [panelVisible, setPanelVisible] = useState(false);
   const [panelAnimClass, setPanelAnimClass] = useState("");
@@ -194,6 +195,53 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
     });
   }
 
+  const formBody = (
+    <form onSubmit={handleSubmit} style={noCollapse ? undefined : { borderTop: BD }}>
+      <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
+        {fields.map((f) => (
+          <div key={f.key} style={{ display: "grid", gridTemplateColumns: "1fr 260px", gap: 16, alignItems: "center" }}>
+            <div>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "#fff", lineHeight: 1 }}>{f.label}</p>
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.38)", marginTop: 4, lineHeight: 1.4 }}>{f.description}</p>
+            </div>
+            <SelectDropdown
+              name={f.key}
+              options={f.kind === "channel" ? textChannels : roleOptions}
+              value={vals[f.key] ?? ""}
+              onChange={(v) => setVals((prev) => ({ ...prev, [f.key]: v }))}
+              placeholder={f.kind === "channel" ? "Choisir un salon…" : "Choisir un rôle…"}
+            />
+          </div>
+        ))}
+      </div>
+      <div style={{ padding: "11px 20px", borderTop: BD, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ fontSize: 13 }}>
+          {error && <span style={{ color: "#ef4444" }}>{error}</span>}
+          {saved && <span style={{ color: "#4ade80" }}>✓ Enregistré</span>}
+        </div>
+        <button type="submit" disabled={pending}
+          style={{
+            display: "flex", alignItems: "center", gap: 6,
+            background: "#fff", color: "#000", border: "none", borderRadius: 8,
+            padding: "7px 14px", fontSize: 13, fontWeight: 600,
+            cursor: pending ? "not-allowed" : "pointer", opacity: pending ? 0.6 : 1,
+          }}
+        >
+          <Save size={12} />
+          {pending ? "Enregistrement…" : "Enregistrer"}
+        </button>
+      </div>
+    </form>
+  );
+
+  if (noCollapse) {
+    return (
+      <div style={{ background: "#202020", borderRadius: 12, border: BD }}>
+        {formBody}
+      </div>
+    );
+  }
+
   return (
     <div style={{ background: "#202020", borderRadius: 12, border: BD }}>
 
@@ -211,42 +259,7 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
       {panelVisible && (
         <div className={panelAnimClass} onAnimationEnd={onPanelAnimEnd}>
           <div className="min-h-0">
-            <form onSubmit={handleSubmit} style={{ borderTop: BD }}>
-              <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
-                {fields.map((f) => (
-                  <div key={f.key} style={{ display: "grid", gridTemplateColumns: "1fr 260px", gap: 16, alignItems: "center" }}>
-                    <div>
-                      <p style={{ fontSize: 14, fontWeight: 600, color: "#fff", lineHeight: 1 }}>{f.label}</p>
-                      <p style={{ fontSize: 12, color: "rgba(255,255,255,0.38)", marginTop: 4, lineHeight: 1.4 }}>{f.description}</p>
-                    </div>
-                    <SelectDropdown
-                      name={f.key}
-                      options={f.kind === "channel" ? textChannels : roleOptions}
-                      value={vals[f.key] ?? ""}
-                      onChange={(v) => setVals((prev) => ({ ...prev, [f.key]: v }))}
-                      placeholder={f.kind === "channel" ? "Choisir un salon…" : "Choisir un rôle…"}
-                    />
-                  </div>
-                ))}
-              </div>
-              <div style={{ padding: "11px 20px", borderTop: BD, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ fontSize: 13 }}>
-                  {error && <span style={{ color: "#ef4444" }}>{error}</span>}
-                  {saved && <span style={{ color: "#4ade80" }}>✓ Enregistré</span>}
-                </div>
-                <button type="submit" disabled={pending}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 6,
-                    background: "#fff", color: "#000", border: "none", borderRadius: 8,
-                    padding: "7px 14px", fontSize: 13, fontWeight: 600,
-                    cursor: pending ? "not-allowed" : "pointer", opacity: pending ? 0.6 : 1,
-                  }}
-                >
-                  <Save size={12} />
-                  {pending ? "Enregistrement…" : "Enregistrer"}
-                </button>
-              </div>
-            </form>
+            {formBody}
           </div>
         </div>
       )}
