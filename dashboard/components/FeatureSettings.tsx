@@ -279,7 +279,7 @@ export function FeatureSettings({ fields, channels, roles, settings, noCollapse 
   if (noCollapse) {
     return (
       <form onSubmit={handleSubmit}>
-        <div style={{ background: "#202020", borderRadius: 12, border: BD }}>
+        <div className="card-glow anim-fade-up" style={{ background: "#202020", borderRadius: 12, border: BD }}>
           {fieldsBlock}
         </div>
         <div style={{ marginTop: 12 }}>

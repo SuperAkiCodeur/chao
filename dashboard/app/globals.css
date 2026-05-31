@@ -186,3 +186,72 @@ button { cursor: pointer; }
   box-shadow: 0 0 0 2px rgba(255,255,255,0.15);
   transform: scale(1.03);
 }
+
+/* ── Blur-in entrance (richer than fade-up) ── */
+@keyframes blur-in {
+  from { opacity: 0; filter: blur(8px); transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; filter: blur(0);   transform: none; }
+}
+.anim-blur-in { animation: blur-in 0.55s cubic-bezier(0.16,1,0.3,1) both; }
+
+/* ── Float loop ── */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-5px); }
+}
+.float { animation: float 2.8s ease-in-out infinite; }
+
+/* ── 3D tilt on hover ── */
+.hover-tilt {
+  transition: transform 0.30s cubic-bezier(0.16,1,0.3,1), box-shadow 0.30s;
+}
+.hover-tilt:hover {
+  transform: perspective(700px) rotateY(4deg) rotateX(-2deg) translateY(-3px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.38);
+}
+
+/* ── Card border glow on hover ── */
+.card-glow {
+  transition: box-shadow 0.25s, border-color 0.25s;
+}
+.card-glow:hover {
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.10), 0 16px 48px rgba(0,0,0,0.38);
+  border-color: rgba(255,255,255,0.14) !important;
+}
+
+/* ── Icon hover spin ── */
+.hover-spin {
+  display: inline-flex;
+  transition: transform 0.45s cubic-bezier(0.16,1,0.3,1);
+}
+.hover-spin:hover { transform: rotate(18deg) scale(1.15); }
+
+/* ── Pulse ring (status indicators) ── */
+@keyframes pulse-expand {
+  from { transform: scale(0.85); opacity: 0.55; }
+  to   { transform: scale(2.0);  opacity: 0; }
+}
+.pulse-ring {
+  position: relative;
+  display: inline-flex;
+}
+.pulse-ring::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse-expand 1.8s ease-out infinite;
+  pointer-events: none;
+}
+
+/* ── Button press feedback ── */
+button:active:not(:disabled) {
+  transform: scale(0.96);
+  transition: transform 0.07s ease;
+}
+
+/* ── Extra stagger delays ── */
+.d-700 { animation-delay: 700ms; }
+.d-800 { animation-delay: 800ms; }
+.d-900 { animation-delay: 900ms; }

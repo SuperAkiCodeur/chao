@@ -21,11 +21,11 @@ export function PageShell({
         borderBottom: BD,
       }}>
         <div>
-          <h1 style={{ fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", letterSpacing: "-0.01em", lineHeight: 1 }}>
+          <h1 className="anim-blur-in" style={{ fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", letterSpacing: "-0.01em", lineHeight: 1 }}>
             {title}
           </h1>
           {description && (
-            <p style={{ fontSize: 16, color: "rgba(255,255,255,0.35)", marginTop: 8, lineHeight: 1, fontStyle: "italic", fontFamily: "var(--font-serif)" }}>
+            <p className="anim-fade-in d-150" style={{ fontSize: 16, color: "rgba(255,255,255,0.35)", marginTop: 8, lineHeight: 1, fontStyle: "italic", fontFamily: "var(--font-serif)" }}>
               {description}
             </p>
           )}
@@ -86,7 +86,7 @@ export function SectionCard({
 }) {
   return (
     <div
-      className="anim-fade-up"
+      className="anim-fade-up card-glow"
       style={{
         background: "#202020", borderRadius: 12, border: BD, overflow: "hidden",
         animationDelay: `${delay}ms`,

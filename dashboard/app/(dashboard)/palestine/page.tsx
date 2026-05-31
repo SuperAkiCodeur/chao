@@ -203,7 +203,7 @@ export default async function PalestinePage() {
     <PageShell title="Palestine" description="Articles postés quotidiennement par le bot à 9h (Paris)">
 
       {/* Countdown — compact full-width bar */}
-      <div style={{
+      <div className="anim-blur-in" style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         gap: 12,
         background: "rgba(0,151,54,0.07)",
@@ -211,7 +211,7 @@ export default async function PalestinePage() {
         borderRadius: 8, padding: "9px 16px",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <Clock size={12} style={{ color: "#4ade80", flexShrink: 0 }} />
+          <span className="float"><Clock size={12} style={{ color: "#4ade80", flexShrink: 0 }} /></span>
           <span style={{ fontSize: 13, color: "rgba(255,255,255,0.42)" }}>Prochain article</span>
           <span style={{
             fontSize: 19, color: "#4ade80",

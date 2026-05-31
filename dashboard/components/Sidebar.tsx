@@ -67,9 +67,9 @@ const NAV_TOP = [
 ];
 
 const NAV_BOTTOM = [
-  { href: "/commandes",  label: "Commandes",  Icon: BookOpen },
-  { href: "/logs",       label: "Logs",       Icon: Scroll   },
-  { href: "/parametres", label: "Paramètres", Icon: GearSix  },
+  { href: "/commandes",  label: "Commandes",  Icon: BookOpen, iconClass: ""           },
+  { href: "/logs",       label: "Logs",       Icon: Scroll,   iconClass: ""           },
+  { href: "/parametres", label: "Paramètres", Icon: GearSix,  iconClass: "hover-spin" },
 ];
 
 const linkBase: React.CSSProperties = {
@@ -238,11 +238,12 @@ export function Sidebar() {
         <div style={{ height: 1, background: "rgba(255,255,255,0.05)", margin: "6px 4px" }} />
 
         {/* Bottom items */}
-        {NAV_BOTTOM.map(({ href, label, Icon }, i) => {
+        {NAV_BOTTOM.map(({ href, label, Icon, iconClass }, i) => {
           const active = path === href;
           return (
             <NavLink key={href} href={href} label={label} Icon={Icon}
-              active={active} delay={(NAV_TOP.length + 1 + i) * 45} />
+              active={active} delay={(NAV_TOP.length + 1 + i) * 45}
+              iconClass={iconClass} />
           );
         })}
 
@@ -286,10 +287,10 @@ export function Sidebar() {
 
 // ── Shared nav link ───────────────────────────────────────────────────────────
 
-function NavLink({ href, label, Icon, active, delay }: {
+function NavLink({ href, label, Icon, active, delay, iconClass = "" }: {
   href: string; label: string;
   Icon: React.ComponentType<{ size?: number; weight?: IconWeight; strokeWidth?: number; style?: React.CSSProperties }>;
-  active: boolean; delay: number;
+  active: boolean; delay: number; iconClass?: string;
 }) {
   return (
     <Link
@@ -314,7 +315,7 @@ function NavLink({ href, label, Icon, active, delay }: {
         }
       }}
     >
-      <Icon size={17} weight={active ? "bold" : "regular"} />
+      <span className={iconClass || undefined}><Icon size={17} weight={active ? "bold" : "regular"} /></span>
       {label}
     </Link>
   );
