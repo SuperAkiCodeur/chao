@@ -1,15 +1,15 @@
 import { getAllSettings } from "@/lib/settings";
 import { SettingsClient, type DiscordChannel, type DiscordRole } from "./SettingsClient";
+import { PageShell } from "@/components/PageShell";
 
 export const dynamic = "force-dynamic";
 
-const GUILD_ID = process.env.DISCORD_GUILD_ID!;
+const GUILD_ID  = process.env.DISCORD_GUILD_ID!;
 const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN!;
 
 async function getChannels(): Promise<DiscordChannel[]> {
   const res = await fetch(`https://discord.com/api/v10/guilds/${GUILD_ID}/channels`, {
-    headers: { Authorization: `Bot ${BOT_TOKEN}` },
-    cache: "no-store",
+    headers: { Authorization: `Bot ${BOT_TOKEN}` }, cache: "no-store",
   });
   if (!res.ok) return [];
   const channels = await res.json() as DiscordChannel[];
@@ -18,8 +18,7 @@ async function getChannels(): Promise<DiscordChannel[]> {
 
 async function getRoles(): Promise<DiscordRole[]> {
   const res = await fetch(`https://discord.com/api/v10/guilds/${GUILD_ID}/roles`, {
-    headers: { Authorization: `Bot ${BOT_TOKEN}` },
-    cache: "no-store",
+    headers: { Authorization: `Bot ${BOT_TOKEN}` }, cache: "no-store",
   });
   if (!res.ok) return [];
   const roles = await res.json() as DiscordRole[];
@@ -27,19 +26,11 @@ async function getRoles(): Promise<DiscordRole[]> {
 }
 
 export default async function ParametresPage() {
-  const [channels, roles, settings] = await Promise.all([
-    getChannels(),
-    getRoles(),
-    getAllSettings(),
-  ]);
+  const [channels, roles, settings] = await Promise.all([getChannels(), getRoles(), getAllSettings()]);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold text-foreground">Paramètres</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">Configuration des salons et rôles utilisés par le bot</p>
-      </div>
+    <PageShell title="Paramètres" description="Configuration des salons et rôles utilisés par le bot">
       <SettingsClient channels={channels} roles={roles} settings={settings} />
-    </div>
+    </PageShell>
   );
 }

@@ -1,6 +1,44 @@
 @import "tailwindcss";
 
-@theme inline { --font-sans: var(--font-inter); }
+@theme inline {
+  --font-sans: var(--font-inter);
+
+  /* ── Dark theme tokens ── */
+  --color-background:          #181818;
+  --color-foreground:          #ffffff;
+
+  --color-card:                #202020;
+  --color-card-foreground:     #ffffff;
+
+  --color-popover:             #2a2a2a;
+  --color-popover-foreground:  #ffffff;
+
+  --color-primary:             #C8FF47;
+  --color-primary-foreground:  #000000;
+
+  --color-secondary:           #2a2a2a;
+  --color-secondary-foreground: rgba(255,255,255,0.70);
+
+  --color-muted:               #2a2a2a;
+  --color-muted-foreground:    rgba(255,255,255,0.42);
+
+  --color-accent:              #2a2a2a;
+  --color-accent-foreground:   #ffffff;
+
+  --color-destructive:         #ef4444;
+  --color-destructive-foreground: #ffffff;
+
+  --color-border:              rgba(255,255,255,0.08);
+  --color-input:               #2a2a2a;
+  --color-ring:                #C8FF47;
+
+  --radius-sm:   0.5rem;
+  --radius-md:   0.75rem;
+  --radius-lg:   0.875rem;
+  --radius-xl:   1rem;
+  --radius-2xl:  1.25rem;
+  --radius-full: 9999px;
+}
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -9,11 +47,12 @@ html, body {
   font-family: var(--font-inter), "Inter", sans-serif;
   -webkit-font-smoothing: antialiased;
   background: #111;
+  color: #fff;
 }
 
 a { text-decoration: none; }
 button { cursor: pointer; }
 
 ::selection { background: #C8FF47; color: #000; }
-::-webkit-scrollbar { width: 3px; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 99px; }
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); border-radius: 99px; }

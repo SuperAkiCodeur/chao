@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { dashboardLogs } from "@/lib/schema";
 import { desc } from "drizzle-orm";
 import { LogsClient } from "./LogsClient";
+import { PageShell } from "@/components/PageShell";
 
 export const dynamic = "force-dynamic";
 
@@ -13,13 +14,8 @@ export default async function LogsPage() {
   const logs = await getData();
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold text-foreground">Logs</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">Historique des événements du serveur et du dashboard</p>
-      </div>
-
+    <PageShell title="Logs" description="Historique des événements du serveur et du dashboard">
       <LogsClient logs={logs} />
-    </div>
+    </PageShell>
   );
 }

@@ -1,14 +1,12 @@
 import { db } from "@/lib/db";
 import { valorantLinks } from "@/lib/schema";
 import { desc } from "drizzle-orm";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Crosshair } from "lucide-react";
 import { ValorantClient } from "./ValorantClient";
 import { FeatureSettings, type DiscordChannel, type DiscordRole } from "@/components/FeatureSettings";
 import { CommandsReference } from "@/components/CommandsReference";
 import { ApiAttribution } from "@/components/ApiAttribution";
 import { getAllSettings } from "@/lib/settings";
+import { PageShell, StatCard, SectionCard } from "@/components/PageShell";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +21,6 @@ async function getChannels(): Promise<DiscordChannel[]> {
   const res = await fetch(`https://discord.com/api/v10/guilds/${DEFAULT_GUILD_ID}/channels`, {
     headers: { Authorization: `Bot ${BOT_TOKEN}` }, cache: "no-store",
   });
-  if (!res.ok) console.error("[valorant] channels fetch failed", res.status, await res.text().catch(() => ""));
   return res.ok ? res.json() : [];
 }
 
@@ -31,95 +28,35 @@ export default async function ValorantPage() {
   const [accounts, channels, settings] = await Promise.all([getData(), getChannels(), getAllSettings()]);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold text-foreground">Valorant</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">Comptes Riot liés aux membres Discord</p>
+    <PageShell title="Valorant" description="Comptes Riot liés aux membres Discord">
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 12 }}>
+        <StatCard value={accounts.length} label="Comptes liés" sub="joueurs enregistrés" />
       </div>
 
-      {/* Stat card */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Card>
-          <CardContent className="p-5">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-600/10">
-                <Crosshair className="h-4 w-4 text-red-600" />
-              </div>
-            </div>
-            <p className="text-2xl font-bold tracking-tight text-foreground">{accounts.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">Comptes liés</p>
-            <p className="text-xs text-muted-foreground/60 mt-0.5">joueurs enregistrés</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Accounts list */}
-      <Card>
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-semibold text-foreground">Comptes liés</CardTitle>
-            <Badge variant="secondary">{accounts.length} compte{accounts.length !== 1 ? "s" : ""}</Badge>
-          </div>
-        </CardHeader>
-        <CardContent>
+      <SectionCard title="Comptes liés" badge={`${accounts.length} compte${accounts.length !== 1 ? "s" : ""}`}>
+        <div style={{ padding: "0 20px 16px" }}>
           <ValorantClient accounts={accounts} defaultGuildId={DEFAULT_GUILD_ID} />
-        </CardContent>
-      </Card>
+        </div>
+      </SectionCard>
 
-      <FeatureSettings
-        channels={channels}
-        roles={[] as DiscordRole[]}
-        settings={settings}
-        fields={[
-          { key: "valorant_channel_id", label: "Salon Valorant", description: "Salon où le bot poste les résultats", kind: "channel" },
-        ]}
-      />
-
-      <CommandsReference commands={[
-        {
-          name: "/valorant",
-          description:
-            "Ouvre un menu éphémère (visible uniquement par toi) avec cinq actions disponibles :",
-          params: [
-            {
-              name: "🔗 Lier mon compte",
-              description:
-                "Associe ton Riot ID (format Pseudo#Tag — ex : Player#EUW) à ton profil Discord. Obligatoire avant d'utiliser les autres actions. Peut être mis à jour à tout moment.",
-              required: false,
-            },
-            {
-              name: "📊 Mes résultats",
-              description:
-                "Affiche tes derniers matchs : mode de jeu, résultat (victoire / défaite), K/D/A et évolution de rang.",
-              required: false,
-            },
-            {
-              name: "📈 Mes stats",
-              description:
-                "Statistiques détaillées sur tes parties. Quatre types : Global (K/D, winrate…), Par agent, Par map, Temps de jeu.",
-              required: false,
-            },
-            {
-              name: "🏆 Classement",
-              description:
-                "Classement de tous les membres du serveur ayant lié leur compte, triés par rang Valorant.",
-              required: false,
-            },
-            {
-              name: "❓ Aide",
-              description: "Affiche la liste de toutes les actions disponibles directement dans le menu.",
-              required: false,
-            },
-          ],
-          note: "La réponse est éphémère. Le salon peut être restreint via la configuration ci-dessus.",
-        },
+      <FeatureSettings channels={channels} roles={[] as DiscordRole[]} settings={settings} fields={[
+        { key: "valorant_channel_id", label: "Salon Valorant", description: "Salon où le bot poste les résultats", kind: "channel" },
       ]} />
 
-      <ApiAttribution
-        name="HenrikDev API"
-        url="https://henrikdev.xyz/"
-        description="statistiques et résultats Valorant via l'API Riot Games"
-      />
-    </div>
+      <CommandsReference commands={[{
+        name: "/valorant", description: "Ouvre un menu éphémère avec cinq actions :",
+        params: [
+          { name: "🔗 Lier mon compte",   description: "Associe ton Riot ID (format Pseudo#Tag) à ton profil Discord.",                            required: false },
+          { name: "📊 Mes résultats",     description: "Affiche tes derniers matchs : mode, résultat, K/D/A et évolution de rang.",                required: false },
+          { name: "📈 Mes stats",         description: "Statistiques détaillées : Global, Par agent, Par map, Temps de jeu.",                      required: false },
+          { name: "🏆 Classement",        description: "Classement des membres du serveur ayant lié leur compte, triés par rang.",                  required: false },
+          { name: "❓ Aide",               description: "Affiche la liste de toutes les actions disponibles.",                                      required: false },
+        ],
+      }]} />
+
+      <ApiAttribution name="HenrikDev API" url="https://henrikdev.xyz/" description="statistiques et résultats Valorant via l'API Riot Games" />
+
+    </PageShell>
   );
 }
