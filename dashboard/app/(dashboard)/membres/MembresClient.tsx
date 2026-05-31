@@ -102,11 +102,11 @@ const labelSt: React.CSSProperties = {
 
 // ── InfoRow ───────────────────────────────────────────────────────────────────
 
-function InfoRow({ label, value, color }: { label: string; value: string; color?: string }) {
+function InfoRow({ label, value, color, divider = true }: { label: string; value: string; color?: string; divider?: boolean }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, padding: "12px 16px", borderTop: BD }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, padding: "14px 20px", borderTop: divider ? BD : undefined }}>
       <span style={{ fontSize: 12, color: "rgba(255,255,255,0.40)", flexShrink: 0 }}>{label}</span>
-      <span style={{ fontSize: 12, fontWeight: 500, color: color ?? "#fff", fontFamily: label === "Discord ID" ? "ui-monospace, monospace" : undefined, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right", maxWidth: "62%" }}>
+      <span style={{ fontSize: 12, fontWeight: 500, color: color ?? "#fff", fontFamily: label === "Discord ID" ? "ui-monospace, monospace" : undefined, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right", maxWidth: "58%" }}>
         {value}
       </span>
     </div>
@@ -158,44 +158,50 @@ function DetailDialog({
   const timedOut = isTimedOut(member);
   const createdAt = snowflakeToDate(member.user.id);
 
+  const infoRows: { label: string; value: string; color?: string }[] = [
+    { label: "Discord ID",    value: member.user.id },
+    { label: "A rejoint le",  value: new Date(member.joined_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" }) },
+    { label: "Compte créé le",value: createdAt.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" }) },
+  ];
+  if (timedOut) {
+    infoRows.push({
+      label: "Sourdine jusqu'au",
+      value: new Date(member.communication_disabled_until!).toLocaleString("fr-FR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }),
+      color: "#fbbf24",
+    });
+  }
+
   return (
-    <DialogContent className="max-w-sm">
+    <DialogContent>
       <DialogHeader>
         {/* Avatar + name */}
-        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 0 }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={avatarUrl(member)} alt=""
-            style={{ width: 48, height: 48, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.08)", objectFit: "cover" }}
+            style={{ width: 52, height: 52, borderRadius: "50%", flexShrink: 0, background: "rgba(255,255,255,0.08)", objectFit: "cover" }}
             onError={(e) => { (e.target as HTMLImageElement).src = "https://cdn.discordapp.com/embed/avatars/0.png"; }}
           />
           <div style={{ minWidth: 0 }}>
-            <DialogTitle style={{ fontSize: 17, fontWeight: 700 }}>{displayName(member)}</DialogTitle>
-            <DialogDescription style={{ fontSize: 12, marginTop: 3 }}>@{member.user.username}</DialogDescription>
+            <DialogTitle style={{ fontSize: 18, fontWeight: 700 }}>{displayName(member)}</DialogTitle>
+            <DialogDescription style={{ fontSize: 12, marginTop: 4 }}>@{member.user.username}</DialogDescription>
           </div>
         </div>
       </DialogHeader>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
 
-        {/* Info rows */}
+        {/* Info rows — premier sans borderTop pour éviter le double trait */}
         <div style={{ borderRadius: 10, border: BD, overflow: "hidden" }}>
-          <InfoRow label="Discord ID" value={member.user.id} />
-          <InfoRow label="A rejoint le" value={new Date(member.joined_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })} />
-          <InfoRow label="Compte créé le" value={createdAt.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })} />
-          {timedOut && (
-            <InfoRow
-              label="Sourdine jusqu'au"
-              value={new Date(member.communication_disabled_until!).toLocaleString("fr-FR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
-              color="#fbbf24"
-            />
-          )}
+          {infoRows.map((row, i) => (
+            <InfoRow key={row.label} label={row.label} value={row.value} color={row.color} divider={i > 0} />
+          ))}
         </div>
 
         {/* Roles */}
         {memberRoles.length > 0 && (
           <div>
-            <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.40)", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+            <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.40)", marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.06em" }}>
               Rôles ({memberRoles.length})
             </p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
@@ -217,7 +223,7 @@ function DetailDialog({
           {/* Gérer les rôles */}
           <button
             onClick={() => { onClose(); onAction("roles"); }}
-            style={{ ...btnBase, width: "100%", padding: "10px 16px", background: "rgba(255,255,255,0.08)", border: BD, color: "#fff", fontSize: 13 }}
+            style={{ ...btnBase, width: "100%", padding: "12px 16px", background: "rgba(255,255,255,0.08)", border: BD, color: "#fff", fontSize: 13 }}
             onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.14)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}
           >
@@ -235,7 +241,7 @@ function DetailDialog({
               <button
                 key={action}
                 onClick={() => { onClose(); onAction(action); }}
-                style={{ ...btnBase, flex: 1, padding: "10px 8px", background: bg, border: `1px solid ${border}`, color, fontSize: 12 }}
+                style={{ ...btnBase, flex: 1, padding: "12px 8px", background: bg, border: `1px solid ${border}`, color, fontSize: 12 }}
                 onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.80"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
               >
