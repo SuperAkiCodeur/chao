@@ -5,16 +5,24 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { signOut } from "next-auth/react";
 import {
-  LayoutDashboard, Users, Clapperboard,
-  ScrollText, Crosshair, Gamepad2, Settings, LogOut,
-  BookOpen, Flag, Layers, ChevronDown,
+  LayoutDashboard, Users, Popcorn,
+  ScrollText, Swords, Gamepad2, Settings, LogOut,
+  BookOpen, Layers, ChevronDown,
 } from "lucide-react";
 
+function WatermelonIcon({ size = 17, style }: { size?: number; strokeWidth?: number; style?: React.CSSProperties }) {
+  return (
+    <span aria-hidden style={{ fontSize: Math.round(size * 0.88), lineHeight: 1, display: "inline-block", userSelect: "none", ...style }}>
+      🍉
+    </span>
+  );
+}
+
 const FEATURES = [
-  { href: "/cinema",    label: "Cinéma",    Icon: Clapperboard },
-  { href: "/valorant",  label: "Valorant",  Icon: Crosshair    },
-  { href: "/steam",     label: "Steam",     Icon: Gamepad2     },
-  { href: "/palestine", label: "Palestine", Icon: Flag         },
+  { href: "/cinema",    label: "Cinéma",    Icon: Popcorn        },
+  { href: "/valorant",  label: "Valorant",  Icon: Swords         },
+  { href: "/steam",     label: "Steam",     Icon: Gamepad2       },
+  { href: "/palestine", label: "Palestine", Icon: WatermelonIcon },
 ];
 
 const FEATURE_HREFS = new Set(FEATURES.map((f) => f.href));
