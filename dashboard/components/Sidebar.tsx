@@ -36,12 +36,14 @@ export function Sidebar() {
         borderBottom: "1px solid rgba(255,255,255,0.06)",
       }}>
         <span style={{
-          fontSize: 24, fontWeight: 800, color: "#fff", letterSpacing: "-0.05em",
-          transition: "letter-spacing 0.3s cubic-bezier(0.16,1,0.3,1), opacity 0.2s",
+          fontSize: 26, fontWeight: 400, color: "#fff",
+          fontFamily: "var(--font-serif)",
+          letterSpacing: "0.01em",
+          transition: "letter-spacing 0.35s cubic-bezier(0.16,1,0.3,1)",
           display: "inline-block",
         }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.letterSpacing = "-0.02em"; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.letterSpacing = "-0.05em"; }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.letterSpacing = "0.06em"; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.letterSpacing = "0.01em"; }}
         >
           chao
         </span>

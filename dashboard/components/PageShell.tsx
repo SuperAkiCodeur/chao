@@ -21,11 +21,11 @@ export function PageShell({
         borderBottom: BD,
       }}>
         <div>
-          <h1 style={{ fontSize: 17, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em", lineHeight: 1 }}>
+          <h1 style={{ fontSize: 20, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", letterSpacing: "0.01em", lineHeight: 1 }}>
             {title}
           </h1>
           {description && (
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 4, lineHeight: 1 }}>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 5, lineHeight: 1, fontStyle: "italic", fontFamily: "var(--font-serif)" }}>
               {description}
             </p>
           )}
@@ -62,7 +62,7 @@ export function StatCard({
         animationDelay: `${delay}ms`,
       }}
     >
-      <p style={{ fontSize: 30, fontWeight: 800, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1 }}>
+      <p style={{ fontSize: 34, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", letterSpacing: "0", lineHeight: 1 }}>
         {value}
       </p>
       <p style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.55)", marginTop: 8 }}>

@@ -54,7 +54,7 @@ export default async function HomePage() {
           <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", minWidth: 0 }}>
             <div>
               <p className="anim-fade-in d-200" style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginBottom: 8 }}>Bienvenue 👋</p>
-              <h1 className="anim-fade-up d-250" style={{ fontSize: "clamp(22px,2.2vw,32px)", fontWeight: 800, color: "#fff", lineHeight: 1.2, letterSpacing: "-0.03em", marginBottom: 20 }}>
+              <h1 className="anim-fade-up d-250" style={{ fontSize: "clamp(26px,2.6vw,40px)", fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", lineHeight: 1.15, letterSpacing: "0.01em", marginBottom: 20 }}>
                 {activeCinema > 0
                   ? <>{activeCinema} séance{activeCinema > 1 ? "s" : ""}<br />active{activeCinema > 1 ? "s" : ""} en ce moment</>
                   : <>Bot Chao<br />est en ligne</>}
@@ -89,7 +89,7 @@ export default async function HomePage() {
           <div style={{ background: "#202020", borderRadius: 12, border: BD, overflow: "hidden", display: "flex", flexDirection: "column", minHeight: 0 }}>
             <div style={{ padding: "14px 20px", borderBottom: BD, flexShrink: 0 }}>
               <p style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", fontWeight: 600, marginBottom: 3 }}>Total · {totalCinema} séances</p>
-              <p style={{ fontSize: 15, fontWeight: 700, color: "#fff", marginBottom: 10 }}>Séances cinéma</p>
+              <p style={{ fontSize: 17, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", marginBottom: 10 }}>Séances cinéma</p>
               {/* Progress bar animée */}
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{ flex: 1, height: 3, borderRadius: 99, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
@@ -99,7 +99,7 @@ export default async function HomePage() {
                     animation: "scale-in-x 1.2s cubic-bezier(0.16,1,0.3,1) 600ms both",
                   }} />
                 </div>
-                <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.30)", minWidth: 26 }}>{progress}%</span>
+                <span style={{ fontSize: 13, fontWeight: 400, color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-serif)", minWidth: 26 }}>{progress}%</span>
               </div>
             </div>
             <div style={{ flex: 1, overflowY: "auto" }}>
@@ -129,7 +129,7 @@ export default async function HomePage() {
 
             {/* Stats */}
             <div className="anim-fade-up d-200" style={{ background: "#202020", borderRadius: 12, border: BD, padding: "14px 20px" }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 12 }}>Statistiques</p>
+              <p style={{ fontSize: 15, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", marginBottom: 12 }}>Statistiques</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {[
                   { label: "Séances actives",  value: activeCinema,  sub: "en ce moment",  delay: 300 },
@@ -141,7 +141,7 @@ export default async function HomePage() {
                       <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.45)" }}>{label}</p>
                       <span style={{ fontSize: 10, color: "rgba(255,255,255,0.20)" }}>{sub}</span>
                     </div>
-                    <p style={{ fontSize: 22, fontWeight: 800, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1 }}>{value}</p>
+                    <p style={{ fontSize: 26, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", lineHeight: 1 }}>{value}</p>
                   </div>
                 ))}
               </div>
@@ -149,7 +149,7 @@ export default async function HomePage() {
 
             {/* Quick links */}
             <div className="anim-fade-up d-300" style={{ background: "#202020", borderRadius: 12, border: BD, padding: "14px 20px" }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 10 }}>Accès rapide</p>
+              <p style={{ fontSize: 15, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", marginBottom: 10 }}>Accès rapide</p>
               {[
                 { href: "/membres",    label: "Membres",    sub: "Gérer les membres", icon: "👥" },
                 { href: "/logs",       label: "Logs",       sub: "Voir l'historique", icon: "📋" },

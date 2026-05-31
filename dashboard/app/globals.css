@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-inter);
+  --font-sans:  var(--font-inter);
+  --font-serif: var(--font-serif);
 
   /* ── Dark theme tokens ── */
   --color-background:          #181818;
