@@ -70,7 +70,8 @@ function ChannelSelect({ value, onChange, channels, placeholder = "Choisir un sa
         }}>
           <button type="button" onClick={() => { onChange(""); setOpen(false); }}
             style={{ width: "100%", display: "flex", alignItems: "center", gap: 7, padding: "7px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 12, color: "rgba(255,255,255,0.35)" }}>
-            <span style={{ flex: 1, textAlign: "left" }}>— Aucun —</span>
+            <span style={{ width: 11, height: 11, flexShrink: 0 }} />
+            <span style={{ flex: 1 }}>— Aucun —</span>
             {!value && <Check size={11} style={{ color: "#fff" }} />}
           </button>
           {channels.map((c) => (
