@@ -87,21 +87,35 @@ export function DealsCreator({ channels, usedChannelIds }: {
   usedChannelIds: string[];
 }) {
   const [open, setOpen]         = useState(false);
-  const [name, setName]         = useState("");
+  const [name, setName]           = useState("");
   const [channelId, setChannelId] = useState("");
-  const [notifId, setNotifId]   = useState("");
+  const [notifId, setNotifId]     = useState("");
+  const [notifManual, setNotifManual] = useState(false); // true si l'user a choisi manuellement
   const [error, setError]       = useState<string | null>(null);
   const [pending, start]        = useTransition();
 
   const textChannels = channels.filter((c) => c.type !== 4).sort((a, b) => a.position - b.position);
   const availableChannels = textChannels.filter((c) => !usedChannelIds.includes(c.id));
 
+  function handleSetChannel(id: string) {
+    setChannelId(id);
+    // Pré-remplit notif avec le salon source sauf si l'user a déjà choisi manuellement
+    if (!notifManual) setNotifId(id);
+  }
+
+  function handleSetNotif(id: string) {
+    setNotifId(id);
+    setNotifManual(true); // l'user a fait un choix explicite
+  }
+
   function handleCreate() {
     if (!channelId) { setError("Choisis un salon source."); return; }
     setError(null);
     start(async () => {
-      const res = await createDealsList({ channelId, name, notifChannelId: notifId || undefined });
-      if (res.success) { setOpen(false); setName(""); setChannelId(""); setNotifId(""); }
+      // Si notifId vide (Aucun sélectionné manuellement), on passe null ; sinon notifId ou channelId par défaut
+      const notifChannelId = notifManual && !notifId ? undefined : (notifId || channelId);
+      const res = await createDealsList({ channelId, name, notifChannelId });
+      if (res.success) { setOpen(false); setName(""); setChannelId(""); setNotifId(""); setNotifManual(false); }
       else setError(res.error);
     });
   }
@@ -126,7 +140,7 @@ export function DealsCreator({ channels, usedChannelIds }: {
       </button>
 
       {open && (
-        <div className="anim-soft-up" style={{ borderTop: BD, padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
+        <div className="anim-fade-in" style={{ borderTop: BD, padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
           {/* Nom */}
           <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 12, alignItems: "center" }}>
             <label style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", fontWeight: 600 }}>Nom</label>
@@ -147,7 +161,7 @@ export function DealsCreator({ channels, usedChannelIds }: {
             <label style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", fontWeight: 600 }}>Salon source</label>
             <ChannelSelect
               value={channelId}
-              onChange={setChannelId}
+              onChange={handleSetChannel}
               channels={availableChannels}
               placeholder="Salon où /deals sera utilisé…"
             />
@@ -158,7 +172,7 @@ export function DealsCreator({ channels, usedChannelIds }: {
             <label style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", fontWeight: 600 }}>Notifs <span style={{ fontWeight: 400, opacity: 0.5 }}>(optionnel)</span></label>
             <ChannelSelect
               value={notifId}
-              onChange={setNotifId}
+              onChange={handleSetNotif}
               channels={textChannels}
               placeholder="Salon des alertes promo…"
             />

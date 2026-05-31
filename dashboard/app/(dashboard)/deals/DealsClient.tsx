@@ -241,7 +241,7 @@ export function DealsClient({ channelId, channelName, notifChannelId, listName, 
 
       {/* ── Jeux ── */}
       {gamesOpen && (
-        <div className="anim-soft-up" style={{ borderTop: BD }}>
+        <div className="anim-fade-in" style={{ borderTop: BD }}>
           {games.length === 0 ? (
             <p style={{ padding: "14px 20px", fontSize: 13, color: "rgba(255,255,255,0.28)", fontStyle: "italic" }}>
               Aucun jeu — utilise <code>/deals</code> dans <strong>#{channelName}</strong> pour en ajouter.
