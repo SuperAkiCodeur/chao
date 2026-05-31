@@ -104,7 +104,7 @@ const labelSt: React.CSSProperties = {
 
 function InfoRow({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, padding: "9px 14px", borderTop: BD }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, padding: "12px 16px", borderTop: BD }}>
       <span style={{ fontSize: 12, color: "rgba(255,255,255,0.40)", flexShrink: 0 }}>{label}</span>
       <span style={{ fontSize: 12, fontWeight: 500, color: color ?? "#fff", fontFamily: label === "Discord ID" ? "ui-monospace, monospace" : undefined, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right", maxWidth: "62%" }}>
         {value}
@@ -162,7 +162,7 @@ function DetailDialog({
     <DialogContent className="max-w-sm">
       <DialogHeader>
         {/* Avatar + name */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 4 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 0 }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={avatarUrl(member)} alt=""
@@ -170,13 +170,13 @@ function DetailDialog({
             onError={(e) => { (e.target as HTMLImageElement).src = "https://cdn.discordapp.com/embed/avatars/0.png"; }}
           />
           <div style={{ minWidth: 0 }}>
-            <DialogTitle style={{ fontSize: 16, fontWeight: 700 }}>{displayName(member)}</DialogTitle>
-            <DialogDescription style={{ fontSize: 12, marginTop: 2 }}>@{member.user.username}</DialogDescription>
+            <DialogTitle style={{ fontSize: 17, fontWeight: 700 }}>{displayName(member)}</DialogTitle>
+            <DialogDescription style={{ fontSize: 12, marginTop: 3 }}>@{member.user.username}</DialogDescription>
           </div>
         </div>
       </DialogHeader>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
         {/* Info rows */}
         <div style={{ borderRadius: 10, border: BD, overflow: "hidden" }}>
@@ -195,14 +195,14 @@ function DetailDialog({
         {/* Roles */}
         {memberRoles.length > 0 && (
           <div>
-            <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.40)", marginBottom: 8 }}>
+            <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.40)", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.06em" }}>
               Rôles ({memberRoles.length})
             </p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
               {memberRoles.map((r) => {
                 const c = roleColor(r.color);
                 return (
-                  <span key={r.id} style={{ display: "inline-flex", alignItems: "center", gap: 5, borderRadius: 5, padding: "3px 9px", fontSize: 11, fontWeight: 600, backgroundColor: `${c}22`, color: c }}>
+                  <span key={r.id} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 6, padding: "4px 11px", fontSize: 12, fontWeight: 600, backgroundColor: `${c}22`, color: c }}>
                     <span style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: c, flexShrink: 0 }} />
                     {r.name}
                   </span>
@@ -213,11 +213,11 @@ function DetailDialog({
         )}
 
         {/* Actions */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {/* Gérer les rôles */}
           <button
             onClick={() => { onClose(); onAction("roles"); }}
-            style={{ ...btnBase, width: "100%", background: "rgba(255,255,255,0.08)", border: BD, color: "#fff", fontSize: 13 }}
+            style={{ ...btnBase, width: "100%", padding: "10px 16px", background: "rgba(255,255,255,0.08)", border: BD, color: "#fff", fontSize: 13 }}
             onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.14)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}
           >
@@ -235,7 +235,7 @@ function DetailDialog({
               <button
                 key={action}
                 onClick={() => { onClose(); onAction(action); }}
-                style={{ ...btnBase, flex: 1, background: bg, border: `1px solid ${border}`, color, fontSize: 12 }}
+                style={{ ...btnBase, flex: 1, padding: "10px 8px", background: bg, border: `1px solid ${border}`, color, fontSize: 12 }}
                 onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.80"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
               >
