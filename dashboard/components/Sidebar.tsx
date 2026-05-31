@@ -55,7 +55,7 @@ function WatermelonIcon({ size = 17, weight = "regular", style }: { size?: numbe
 const FEATURES = [
   { href: "/cinema",    label: "Cinéma",    Icon: Popcorn        },
   { href: "/valorant",  label: "Valorant",  Icon: Sword          },
-  { href: "/steam",     label: "Steam",     Icon: GameController },
+  { href: "/deals",     label: "Deals",     Icon: GameController },
   { href: "/palestine", label: "Palestine", Icon: WatermelonIcon },
 ];
 

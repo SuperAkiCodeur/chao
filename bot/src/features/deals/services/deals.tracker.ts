@@ -1,11 +1,11 @@
 import { EmbedBuilder, type Client } from "discord.js";
 import { logger } from "../../../core/app/logger.js";
-import { STEAM_CONSTANTS } from "../domain/steam.constants.js";
-import { formatEur, getSteamAppDetails, getSteamUrl } from "./steam.api.js";
-import { getAllGames, getSteamChannelConfig, updateGameTrackerData } from "./steam.repository.js";
+import { DEALS_CONSTANTS } from "../domain/deals.constants.js";
+import { formatEur, getSteamAppDetails, getSteamUrl } from "./deals.api.js";
+import { getAllGames, getDealsChannelConfig, updateGameTrackerData } from "./deals.repository.js";
 
 async function checkPromos(client: Client): Promise<void> {
-  logger.info("[steam.tracker] démarrage de la vérification des promos");
+  logger.info("[deals.tracker] démarrage de la vérification des promos");
 
   const games = await getAllGames();
   if (games.length === 0) return;
@@ -18,7 +18,7 @@ async function checkPromos(client: Client): Promise<void> {
         const sep = key.indexOf(":");
         const guildId = key.slice(0, sep);
         const channelId = key.slice(sep + 1);
-        return [key, await getSteamChannelConfig(guildId, channelId)] as const;
+        return [key, await getDealsChannelConfig(guildId, channelId)] as const;
       }),
     ),
   );
@@ -48,7 +48,7 @@ async function checkPromos(client: Client): Promise<void> {
         if (!channel?.isSendable()) continue;
 
         const embed = new EmbedBuilder()
-          .setColor(STEAM_CONSTANTS.EMBED_COLOR_SALE)
+          .setColor(DEALS_CONSTANTS.EMBED_COLOR_SALE)
           .setTitle("🎮 Promo Steam !")
           .setDescription(
             `**[${game.title}](${getSteamUrl(game.steamAppId)})**\n\n` +
@@ -60,31 +60,31 @@ async function checkPromos(client: Client): Promise<void> {
         const mention = config.notifRoleId ? `<@&${config.notifRoleId}> ` : "";
         await channel.send({ content: mention || undefined, embeds: [embed] });
 
-        logger.info("[steam.tracker] notification envoyée", {
+        logger.info("[deals.tracker] notification envoyée", {
           guildId: game.guildId,
           title: game.title,
           discount: price.discount_percent,
         });
       }
     } catch (error) {
-      logger.error("[steam.tracker] erreur sur le jeu", { gameId: game.id, title: game.title, error });
+      logger.error("[deals.tracker] erreur sur le jeu", { gameId: game.id, title: game.title, error });
     }
   }
 
-  logger.info("[steam.tracker] vérification terminée", { count: games.length });
+  logger.info("[deals.tracker] vérification terminée", { count: games.length });
 }
 
-export function startSteamTracker(client: Client): void {
+export function startDealsTracker(client: Client): void {
   const run = () => {
     checkPromos(client).catch((error) => {
-      logger.error("[steam.tracker] erreur non gérée", { error });
+      logger.error("[deals.tracker] erreur non gérée", { error });
     });
   };
 
   // Premier check 30s après le démarrage du bot
   setTimeout(run, 30_000);
   // Puis toutes les 6h
-  setInterval(run, STEAM_CONSTANTS.TRACKER_INTERVAL_MS);
+  setInterval(run, DEALS_CONSTANTS.TRACKER_INTERVAL_MS);
 
-  logger.info("[steam.tracker] démarré", { intervalHours: 6 });
+  logger.info("[deals.tracker] démarré", { intervalHours: 6 });
 }

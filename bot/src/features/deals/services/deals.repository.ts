@@ -1,9 +1,9 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "../../../core/db/client.js";
 import {
-  steamChannelPermissions,
-  steamConfig,
-  steamGames,
+  dealsChannelPermissions,
+  dealsConfig,
+  dealsGames,
 } from "../../../core/db/schema.js";
 
 // ── Jeux ──────────────────────────────────────────────────────────────────────
@@ -11,23 +11,23 @@ import {
 export async function getGamesForChannel(guildId: string, channelId: string) {
   return db
     .select()
-    .from(steamGames)
-    .where(and(eq(steamGames.guildId, guildId), eq(steamGames.channelId, channelId)));
+    .from(dealsGames)
+    .where(and(eq(dealsGames.guildId, guildId), eq(dealsGames.channelId, channelId)));
 }
 
 export async function getAllGames() {
-  return db.select().from(steamGames);
+  return db.select().from(dealsGames);
 }
 
 export async function getGameByAppId(guildId: string, channelId: string, steamAppId: number) {
   const rows = await db
     .select()
-    .from(steamGames)
+    .from(dealsGames)
     .where(
       and(
-        eq(steamGames.guildId, guildId),
-        eq(steamGames.channelId, channelId),
-        eq(steamGames.steamAppId, steamAppId),
+        eq(dealsGames.guildId, guildId),
+        eq(dealsGames.channelId, channelId),
+        eq(dealsGames.steamAppId, steamAppId),
       ),
     );
   return rows[0] ?? null;
@@ -46,7 +46,7 @@ export async function insertGame(data: {
   isOnSale?: number;
   lastCheckedAt?: string;
 }) {
-  await db.insert(steamGames).values({
+  await db.insert(dealsGames).values({
     ...data,
     addedAt: new Date().toISOString(),
     isOnSale: data.isOnSale ?? 0,
@@ -54,7 +54,7 @@ export async function insertGame(data: {
 }
 
 export async function deleteGame(id: number) {
-  await db.delete(steamGames).where(eq(steamGames.id, id));
+  await db.delete(dealsGames).where(eq(dealsGames.id, id));
 }
 
 export async function updateGameTrackerData(
@@ -66,32 +66,32 @@ export async function updateGameTrackerData(
     lastCheckedAt: string;
   },
 ) {
-  await db.update(steamGames).set(data).where(eq(steamGames.id, id));
+  await db.update(dealsGames).set(data).where(eq(dealsGames.id, id));
 }
 
 // ── Config (par salon) ────────────────────────────────────────────────────────
 
-export async function getSteamChannelConfig(guildId: string, channelId: string) {
+export async function getDealsChannelConfig(guildId: string, channelId: string) {
   const rows = await db
     .select()
-    .from(steamConfig)
-    .where(and(eq(steamConfig.guildId, guildId), eq(steamConfig.channelId, channelId)));
+    .from(dealsConfig)
+    .where(and(eq(dealsConfig.guildId, guildId), eq(dealsConfig.channelId, channelId)));
   return rows[0] ?? null;
 }
 
-export async function upsertSteamChannelConfig(
+export async function upsertDealsChannelConfig(
   guildId: string,
   channelId: string,
   data: { notifChannelId: string | null; notifRoleId: string | null },
 ) {
-  const existing = await getSteamChannelConfig(guildId, channelId);
+  const existing = await getDealsChannelConfig(guildId, channelId);
   if (existing) {
     await db
-      .update(steamConfig)
+      .update(dealsConfig)
       .set(data)
-      .where(and(eq(steamConfig.guildId, guildId), eq(steamConfig.channelId, channelId)));
+      .where(and(eq(dealsConfig.guildId, guildId), eq(dealsConfig.channelId, channelId)));
   } else {
-    await db.insert(steamConfig).values({ guildId, channelId, ...data });
+    await db.insert(dealsConfig).values({ guildId, channelId, ...data });
   }
 }
 
@@ -100,14 +100,14 @@ export async function upsertSteamChannelConfig(
 export async function getChannelPermissions(guildId: string) {
   return db
     .select()
-    .from(steamChannelPermissions)
-    .where(eq(steamChannelPermissions.guildId, guildId));
+    .from(dealsChannelPermissions)
+    .where(eq(dealsChannelPermissions.guildId, guildId));
 }
 
 export async function insertChannelPermission(guildId: string, channelId: string, roleId: string) {
-  await db.insert(steamChannelPermissions).values({ guildId, channelId, roleId });
+  await db.insert(dealsChannelPermissions).values({ guildId, channelId, roleId });
 }
 
 export async function deleteChannelPermission(id: number) {
-  await db.delete(steamChannelPermissions).where(eq(steamChannelPermissions.id, id));
+  await db.delete(dealsChannelPermissions).where(eq(dealsChannelPermissions.id, id));
 }

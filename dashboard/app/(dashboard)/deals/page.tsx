@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
-import { steamGames, steamConfig } from "@/lib/schema";
+import { dealsGames, dealsConfig } from "@/lib/schema";
 import { eq } from "drizzle-orm";
-import { SteamClient } from "./SteamClient";
+import { DealsClient } from "./DealsClient";
 import type { DiscordChannel, DiscordRole } from "@/components/FeatureSettings";
 import { PageShell, StatCard, SectionCard } from "@/components/PageShell";
 
@@ -12,8 +12,8 @@ const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN!;
 
 async function getData() {
   const [games, configs] = await Promise.all([
-    db.select().from(steamGames).where(eq(steamGames.guildId, GUILD_ID)),
-    db.select().from(steamConfig).where(eq(steamConfig.guildId, GUILD_ID)),
+    db.select().from(dealsGames).where(eq(dealsGames.guildId, GUILD_ID)),
+    db.select().from(dealsConfig).where(eq(dealsConfig.guildId, GUILD_ID)),
   ]);
   return { games, config: configs[0] ?? { notifChannelId: null, notifRoleId: null } };
 }
@@ -28,12 +28,12 @@ async function getDiscord() {
   return { channels, roles };
 }
 
-export default async function SteamPage() {
+export default async function DealsPage() {
   const [{ games, config }, { channels, roles }] = await Promise.all([getData(), getDiscord()]);
   const onSaleCount = games.filter(g => g.isOnSale === 1).length;
 
   return (
-    <PageShell title="Steam" description="Liste de jeux trackés, comparaison de prix et alertes promotions">
+    <PageShell title="Deals" description="Liste de jeux trackés, comparaison de prix et alertes promotions">
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 12 }}>
         <StatCard value={games.length}  label="Jeux trackés" />
@@ -42,7 +42,7 @@ export default async function SteamPage() {
 
       <SectionCard title="Jeux trackés">
         <div>
-          <SteamClient games={games} config={config} channels={channels} roles={roles} />
+          <DealsClient games={games} config={config} channels={channels} roles={roles} />
         </div>
       </SectionCard>
 

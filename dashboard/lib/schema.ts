@@ -75,10 +75,10 @@ export const valorantLinks = pgTable(
 );
 
 // ---------------------------------------------------------------------------
-// Steam
+// Deals (Steam game tracker)
 // ---------------------------------------------------------------------------
 
-export const steamGames = pgTable("steam_games", {
+export const dealsGames = pgTable("deals_games", {
   id: serial("id").primaryKey(),
   guildId: text("guild_id").notNull(),
   channelId: text("channel_id").notNull().default(""),
@@ -94,8 +94,8 @@ export const steamGames = pgTable("steam_games", {
   isOnSale: integer("is_on_sale").default(0).notNull(),
 });
 
-export const steamConfig = pgTable(
-  "steam_config",
+export const dealsConfig = pgTable(
+  "deals_config",
   {
     guildId: text("guild_id").notNull(),
     channelId: text("channel_id").notNull().default(""),
@@ -105,7 +105,7 @@ export const steamConfig = pgTable(
   (t) => [primaryKey({ columns: [t.guildId, t.channelId] })],
 );
 
-export const steamChannelPermissions = pgTable("steam_channel_permissions", {
+export const dealsChannelPermissions = pgTable("deals_channel_permissions", {
   id: serial("id").primaryKey(),
   guildId: text("guild_id").notNull(),
   channelId: text("channel_id").notNull(),

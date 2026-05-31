@@ -18,30 +18,30 @@ import {
 import { logger } from "../../../core/app/logger.js";
 import { env } from "../../../core/config/env.js";
 import {
-  STEAM_ADD_SELECT_ID,
-  STEAM_BACK_BTN_ID,
-  STEAM_CONSTANTS,
-  STEAM_INPUT_NAME_ID,
-  STEAM_MENU_ID,
-  STEAM_MODAL_ADD_ID,
-  STEAM_PRICE_SELECT_ID,
-  STEAM_REMOVE_SELECT_ID,
-} from "../domain/steam.constants.js";
-import { formatEur, getSteamAppDetails, getSteamUrl, searchSteamGames } from "./steam.api.js";
+  DEALS_ADD_SELECT_ID,
+  DEALS_BACK_BTN_ID,
+  DEALS_CONSTANTS,
+  DEALS_INPUT_NAME_ID,
+  DEALS_MENU_ID,
+  DEALS_MODAL_ADD_ID,
+  DEALS_PRICE_SELECT_ID,
+  DEALS_REMOVE_SELECT_ID,
+} from "../domain/deals.constants.js";
+import { formatEur, getSteamAppDetails, getSteamUrl, searchSteamGames } from "./deals.api.js";
 import { getITADDeals, lookupITADGame } from "./itad.api.js";
 import {
   deleteGame,
   getGameByAppId,
   getGamesForChannel,
-  getSteamChannelConfig,
+  getDealsChannelConfig,
   insertGame,
-} from "./steam.repository.js";
+} from "./deals.repository.js";
 
 // ── UI helpers ────────────────────────────────────────────────────────────────
 
 function buildMainMenu() {
   const select = new StringSelectMenuBuilder()
-    .setCustomId(STEAM_MENU_ID)
+    .setCustomId(DEALS_MENU_ID)
     .setPlaceholder("Choisir une action…")
     .addOptions(
       new StringSelectMenuOptionBuilder()
@@ -62,7 +62,7 @@ function buildMainMenu() {
     );
 
   return {
-    content: "🎮 **Steam** — Que veux-tu faire ?",
+    content: "🎮 **Deals** — Que veux-tu faire ?",
     embeds: [] as EmbedBuilder[],
     components: [new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select)],
   };
@@ -82,7 +82,7 @@ async function postToChannel(
 function buildBackRow() {
   return new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
-      .setCustomId(STEAM_BACK_BTN_ID)
+      .setCustomId(DEALS_BACK_BTN_ID)
       .setLabel("↩ Revenir au menu")
       .setStyle(ButtonStyle.Secondary),
   );
@@ -109,8 +109,7 @@ async function checkPermission(interaction: ChatInputCommandInteraction): Promis
   const guildId = interaction.guildId;
   if (!guildId) return true;
 
-  // Chaque salon a sa propre config — on vérifie uniquement la restriction de rôle
-  const config = await getSteamChannelConfig(guildId, interaction.channelId);
+  const config = await getDealsChannelConfig(guildId, interaction.channelId);
   if (!config?.notifRoleId) return true;
 
   const member = interaction.member as GuildMember | null;
@@ -118,15 +117,14 @@ async function checkPermission(interaction: ChatInputCommandInteraction): Promis
   return member.roles.cache.has(config.notifRoleId);
 }
 
-// ── Commande /steam ───────────────────────────────────────────────────────────
+// ── Commande /deals ───────────────────────────────────────────────────────────
 
-export async function handleSteamCommand(interaction: ChatInputCommandInteraction): Promise<void> {
+export async function handleDealsCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   if (!interaction.guildId) {
     await interaction.reply({ content: "❌ Commande disponible uniquement dans un serveur.", flags: MessageFlags.Ephemeral });
     return;
   }
 
-  // Defer first to avoid the 3-second Discord timeout while the DB query runs.
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
   const allowed = await checkPermission(interaction);
@@ -142,7 +140,7 @@ export async function handleSteamCommand(interaction: ChatInputCommandInteractio
 
 // ── Menu principal (StringSelectMenu) ────────────────────────────────────────
 
-export async function handleSteamMenu(interaction: StringSelectMenuInteraction): Promise<void> {
+export async function handleDealsMenu(interaction: StringSelectMenuInteraction): Promise<void> {
   const guildId = interaction.guildId;
   if (!guildId) return;
 
@@ -151,13 +149,13 @@ export async function handleSteamMenu(interaction: StringSelectMenuInteraction):
   // ── Ajouter : ouvre un modal de saisie ──────────────────────────────────────
   if (value === "add") {
     const modal = new ModalBuilder()
-      .setCustomId(STEAM_MODAL_ADD_ID)
-      .setTitle("Ajouter un jeu Steam");
+      .setCustomId(DEALS_MODAL_ADD_ID)
+      .setTitle("Ajouter un jeu");
 
     modal.addComponents(
       new ActionRowBuilder<TextInputBuilder>().addComponents(
         new TextInputBuilder()
-          .setCustomId(STEAM_INPUT_NAME_ID)
+          .setCustomId(DEALS_INPUT_NAME_ID)
           .setLabel("Nom du jeu à rechercher")
           .setStyle(TextInputStyle.Short)
           .setPlaceholder("Ex: Portal 2, Elden Ring, Cyberpunk…")
@@ -195,7 +193,7 @@ export async function handleSteamMenu(interaction: StringSelectMenuInteraction):
 
     const description = lines.join("\n").slice(0, 3800);
     const embed = new EmbedBuilder()
-      .setColor(STEAM_CONSTANTS.EMBED_COLOR)
+      .setColor(DEALS_CONSTANTS.EMBED_COLOR)
       .setTitle(`🎮 Jeux trackés (${games.length})`)
       .setDescription(description);
 
@@ -216,7 +214,7 @@ export async function handleSteamMenu(interaction: StringSelectMenuInteraction):
     await interaction.update({
       content: "💰 **Comparer les prix** — Choisis un jeu :",
       embeds: [],
-      components: [buildGameSelectRow(STEAM_PRICE_SELECT_ID, games, "Choisir un jeu…"), buildBackRow()],
+      components: [buildGameSelectRow(DEALS_PRICE_SELECT_ID, games, "Choisir un jeu…"), buildBackRow()],
     });
     return;
   }
@@ -233,7 +231,7 @@ export async function handleSteamMenu(interaction: StringSelectMenuInteraction):
     await interaction.update({
       content: "🗑️ **Retirer un jeu** — Choisis le jeu à supprimer :",
       embeds: [],
-      components: [buildGameSelectRow(STEAM_REMOVE_SELECT_ID, games, "Choisir un jeu…"), buildBackRow()],
+      components: [buildGameSelectRow(DEALS_REMOVE_SELECT_ID, games, "Choisir un jeu…"), buildBackRow()],
     });
     return;
   }
@@ -259,7 +257,7 @@ export async function handleSteamMenu(interaction: StringSelectMenuInteraction):
     );
 
     const embed = new EmbedBuilder()
-      .setColor(STEAM_CONSTANTS.EMBED_COLOR_SALE)
+      .setColor(DEALS_CONSTANTS.EMBED_COLOR_SALE)
       .setTitle(`🔥 Promos en cours (${onSale.length})`)
       .setDescription(lines.join("\n"))
       .setFooter({ text: "Mis à jour toutes les 6h" });
@@ -272,14 +270,14 @@ export async function handleSteamMenu(interaction: StringSelectMenuInteraction):
 
 // ── Bouton Revenir ────────────────────────────────────────────────────────────
 
-export async function handleSteamBack(interaction: ButtonInteraction): Promise<void> {
+export async function handleDealsBack(interaction: ButtonInteraction): Promise<void> {
   await interaction.update(buildMainMenu());
 }
 
 // ── Modal — saisie du nom ─────────────────────────────────────────────────────
 
-export async function handleSteamAddModal(interaction: ModalSubmitInteraction): Promise<void> {
-  const query = interaction.fields.getTextInputValue(STEAM_INPUT_NAME_ID);
+export async function handleDealsAddModal(interaction: ModalSubmitInteraction): Promise<void> {
+  const query = interaction.fields.getTextInputValue(DEALS_INPUT_NAME_ID);
 
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
@@ -292,7 +290,6 @@ export async function handleSteamAddModal(interaction: ModalSubmitInteraction): 
     }
 
     const options = results.map((r) => {
-      // final_formatted peut être vide pour certains jeux Steam — Discord.js exige 1-100 chars
       const priceLabel = r.price
         ? r.price.discount_percent > 0
           ? `En promo — ${r.price.final_formatted || formatEur(r.price.final)} (-${r.price.discount_percent}%)`
@@ -307,21 +304,21 @@ export async function handleSteamAddModal(interaction: ModalSubmitInteraction): 
 
     const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
       new StringSelectMenuBuilder()
-        .setCustomId(STEAM_ADD_SELECT_ID)
+        .setCustomId(DEALS_ADD_SELECT_ID)
         .setPlaceholder("Sélectionne le jeu à ajouter…")
         .addOptions(options),
     );
 
     await interaction.editReply({ content: `🔍 Résultats pour **${query}** :`, components: [row] });
   } catch (err) {
-    logger.error("[steam] handleSteamAddModal error", { err });
+    logger.error("[deals] handleDealsAddModal error", { err });
     await interaction.editReply("❌ Une erreur est survenue lors de la recherche. Réessaie.").catch(() => null);
   }
 }
 
 // ── StringSelectMenu — confirme l'ajout ──────────────────────────────────────
 
-export async function handleSteamAddSelect(interaction: StringSelectMenuInteraction): Promise<void> {
+export async function handleDealsAddSelect(interaction: StringSelectMenuInteraction): Promise<void> {
   const guildId = interaction.guildId;
   if (!guildId) return;
 
@@ -360,12 +357,12 @@ export async function handleSteamAddSelect(interaction: StringSelectMenuInteract
 
   await interaction.editReply({ content: `✅ **${title}** ajouté à la liste. (${priceStr})` });
 
-  logger.info("[steam] jeu ajouté", { guildId, title, steamAppId, userId: interaction.user.id });
+  logger.info("[deals] jeu ajouté", { guildId, title, steamAppId, userId: interaction.user.id });
 }
 
 // ── StringSelectMenu — comparaison de prix ────────────────────────────────────
 
-export async function handleSteamPriceSelect(interaction: StringSelectMenuInteraction): Promise<void> {
+export async function handleDealsPriceSelect(interaction: StringSelectMenuInteraction): Promise<void> {
   const guildId = interaction.guildId;
   if (!guildId) return;
 
@@ -414,7 +411,7 @@ export async function handleSteamPriceSelect(interaction: StringSelectMenuIntera
   }
 
   const embed = new EmbedBuilder()
-    .setColor(STEAM_CONSTANTS.EMBED_COLOR_PRICES)
+    .setColor(DEALS_CONSTANTS.EMBED_COLOR_PRICES)
     .setTitle(`💰 Prix — ${game.title}`)
     .setThumbnail(game.headerImage ?? null)
     .setDescription(lines.join("\n") + itadFooter);
@@ -425,7 +422,7 @@ export async function handleSteamPriceSelect(interaction: StringSelectMenuIntera
 
 // ── StringSelectMenu — suppression ───────────────────────────────────────────
 
-export async function handleSteamRemoveSelect(interaction: StringSelectMenuInteraction): Promise<void> {
+export async function handleDealsRemoveSelect(interaction: StringSelectMenuInteraction): Promise<void> {
   const guildId = interaction.guildId;
   if (!guildId) return;
 
@@ -443,5 +440,5 @@ export async function handleSteamRemoveSelect(interaction: StringSelectMenuInter
     components: [buildBackRow()],
   });
 
-  logger.info("[steam] jeu retiré", { guildId, title: game.title, steamAppId });
+  logger.info("[deals] jeu retiré", { guildId, title: game.title, steamAppId });
 }

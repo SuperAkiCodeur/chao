@@ -69,7 +69,7 @@ export default async function HomePage() {
             {[
               { n: "01", title: "Cinéma",   sub: `${activeCinema} actif${activeCinema !== 1 ? "s" : ""}`, bg: "#fff", fg: "#111", muted: "#888", delay: 300 },
               { n: "02", title: "Valorant", sub: `${totalValorant} comptes`,                               bg: "#fff", fg: "#111", muted: "#888", delay: 380 },
-              { n: "03", title: "Steam",    sub: "Catalogue",                                              bg: "#161616", fg: "#fff", muted: "rgba(255,255,255,0.28)", delay: 460 },
+              { n: "03", title: "Deals",    sub: "Catalogue",                                              bg: "#161616", fg: "#fff", muted: "rgba(255,255,255,0.28)", delay: 460 },
             ].map(({ n, title, sub, bg, fg, muted, delay }) => (
               <div key={n} className="anim-scale-in hover-tilt" style={{ width: 110, borderRadius: 10, padding: "14px", background: bg, border: "1px solid rgba(255,255,255,0.06)", display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 140, animationDelay: `${delay}ms` }}>
                 <span style={{ fontSize: 11, fontWeight: 700, color: muted, letterSpacing: "0.05em" }}>{n}</span>

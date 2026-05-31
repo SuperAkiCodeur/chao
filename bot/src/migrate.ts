@@ -99,6 +99,16 @@ async function main(): Promise<void> {
   await sql`ALTER TABLE cinema_parties ADD COLUMN IF NOT EXISTS created_by TEXT`;
   console.log("✓ cinema_parties.created_by");
 
+  // Renommer les tables steam_* → deals_*
+  await sql`ALTER TABLE IF EXISTS steam_games                RENAME TO deals_games`;
+  console.log("✓ steam_games → deals_games");
+
+  await sql`ALTER TABLE IF EXISTS steam_config               RENAME TO deals_config`;
+  console.log("✓ steam_config → deals_config");
+
+  await sql`ALTER TABLE IF EXISTS steam_channel_permissions  RENAME TO deals_channel_permissions`;
+  console.log("✓ steam_channel_permissions → deals_channel_permissions");
+
   await sql.end();
   console.log("Migration terminée.");
 }

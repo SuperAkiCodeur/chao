@@ -2,10 +2,10 @@
 
 import { useState, useTransition, useRef, useEffect } from "react";
 import { Trash, CaretDown, MagnifyingGlass, Check, GearSix, FloppyDisk, Hash, SpeakerHigh } from "@phosphor-icons/react";
-import { saveSteamConfig, removeSteamGame } from "./actions";
+import { saveDealsConfig, removeDealsGame } from "./actions";
 import type { DiscordChannel, DiscordRole } from "@/components/FeatureSettings";
 
-export type SteamGame = {
+export type DealsGame = {
   id: number;
   steamAppId: number;
   title: string;
@@ -18,7 +18,7 @@ export type SteamGame = {
   lastCheckedAt: string | null;
 };
 
-export type SteamConfigData = {
+export type DealsConfigData = {
   notifChannelId: string | null;
   notifRoleId: string | null;
 };
@@ -140,13 +140,13 @@ function SelectDropdown({
 
 // ── GamesList ─────────────────────────────────────────────────────────────────
 
-function GamesList({ games }: { games: SteamGame[] }) {
+function GamesList({ games }: { games: DealsGame[] }) {
   const [pending, start] = useTransition();
   const [removing, setRemoving] = useState<number | null>(null);
 
   function handleRemove(id: number) {
     setRemoving(id);
-    start(async () => { await removeSteamGame(id); setRemoving(null); });
+    start(async () => { await removeDealsGame(id); setRemoving(null); });
   }
 
   if (games.length === 0) {
@@ -154,7 +154,7 @@ function GamesList({ games }: { games: SteamGame[] }) {
       <p style={{ fontSize: 14, color: "rgba(255,255,255,0.35)", padding: "8px 0" }}>
         Aucun jeu tracké. Utilise{" "}
         <code style={{ fontSize: 12, background: "rgba(255,255,255,0.08)", padding: "1px 6px", borderRadius: 4 }}>
-          /steam add
+          /deals add
         </code>{" "}
         dans Discord.
       </p>
@@ -232,10 +232,10 @@ function GamesList({ games }: { games: SteamGame[] }) {
   );
 }
 
-// ── SteamConfig ───────────────────────────────────────────────────────────────
+// ── DealsConfig ───────────────────────────────────────────────────────────────
 
-function SteamConfig({ config, channels, roles }: {
-  config: SteamConfigData; channels: DiscordChannel[]; roles: DiscordRole[];
+function DealsConfig({ config, channels, roles }: {
+  config: DealsConfigData; channels: DiscordChannel[]; roles: DiscordRole[];
 }) {
   const [open, setOpen]     = useState(false);
   const [vals, setVals]     = useState({ notifChannelId: config.notifChannelId ?? "", notifRoleId: config.notifRoleId ?? "" });
@@ -265,7 +265,7 @@ function SteamConfig({ config, channels, roles }: {
     const fd = new FormData(e.currentTarget);
     setError(null); setSaved(false);
     start(async () => {
-      const res = await saveSteamConfig(fd);
+      const res = await saveDealsConfig(fd);
       if (res.success) { setSaved(true); setTimeout(() => setSaved(false), 2500); }
       else setError(res.error);
     });
@@ -293,7 +293,7 @@ function SteamConfig({ config, channels, roles }: {
                 <p style={{ fontSize: 14, fontWeight: 600, color: "#fff" }}>Salon autorisé</p>
                 <p style={{ fontSize: 12, color: "rgba(255,255,255,0.40)", marginTop: 4 }}>
                   Seul ce salon peut utiliser{" "}
-                  <code style={{ fontSize: 11, background: "rgba(255,255,255,0.08)", padding: "1px 5px", borderRadius: 4 }}>/steam</code>{" "}
+                  <code style={{ fontSize: 11, background: "rgba(255,255,255,0.08)", padding: "1px 5px", borderRadius: 4 }}>/deals</code>{" "}
                   et reçoit les alertes
                 </p>
               </div>
@@ -334,13 +334,13 @@ function SteamConfig({ config, channels, roles }: {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
-export function SteamClient({ games, config, channels, roles }: {
-  games: SteamGame[]; config: SteamConfigData; channels: DiscordChannel[]; roles: DiscordRole[];
+export function DealsClient({ games, config, channels, roles }: {
+  games: DealsGame[]; config: DealsConfigData; channels: DiscordChannel[]; roles: DiscordRole[];
 }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       <GamesList games={games} />
-      <SteamConfig config={config} channels={channels} roles={roles} />
+      <DealsConfig config={config} channels={channels} roles={roles} />
     </div>
   );
 }

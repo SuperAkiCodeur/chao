@@ -46,21 +46,21 @@ import {
   ROULETTE_BACK_BTN_ID,
 } from "../../../features/roulette/domain/roulette.constants.js";
 import {
-  handleSteamMenu,
-  handleSteamBack,
-  handleSteamAddModal,
-  handleSteamAddSelect,
-  handleSteamPriceSelect,
-  handleSteamRemoveSelect,
-} from "../../../features/steam/services/steam.service.js";
+  handleDealsMenu,
+  handleDealsBack,
+  handleDealsAddModal,
+  handleDealsAddSelect,
+  handleDealsPriceSelect,
+  handleDealsRemoveSelect,
+} from "../../../features/deals/services/deals.service.js";
 import {
-  STEAM_MENU_ID,
-  STEAM_ADD_SELECT_ID,
-  STEAM_PRICE_SELECT_ID,
-  STEAM_REMOVE_SELECT_ID,
-  STEAM_MODAL_ADD_ID,
-  STEAM_BACK_BTN_ID,
-} from "../../../features/steam/domain/steam.constants.js";
+  DEALS_MENU_ID,
+  DEALS_ADD_SELECT_ID,
+  DEALS_PRICE_SELECT_ID,
+  DEALS_REMOVE_SELECT_ID,
+  DEALS_MODAL_ADD_ID,
+  DEALS_BACK_BTN_ID,
+} from "../../../features/deals/domain/deals.constants.js";
 import {
   handleValorantMenu,
   handleValorantBack,
@@ -81,8 +81,8 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
     // ── Modal submit ───────────────────────────────────────────────────────────
     if (interaction.isModalSubmit()) {
       try {
-        if (interaction.customId === STEAM_MODAL_ADD_ID) {
-          await handleSteamAddModal(interaction);
+        if (interaction.customId === DEALS_MODAL_ADD_ID) {
+          await handleDealsAddModal(interaction);
         } else if (interaction.customId.startsWith(CINEMA_MODAL_START_PREFIX)) {
           await handleCinemaStartModal(interaction);
         } else if (interaction.customId === VALORANT_MODAL_LINK_ID) {
@@ -109,14 +109,14 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
 
     // ── String select menus ────────────────────────────────────────────────────
     if (interaction.isStringSelectMenu()) {
-      if (interaction.customId === STEAM_MENU_ID) {
-        await handleSteamMenu(interaction);
-      } else if (interaction.customId === STEAM_ADD_SELECT_ID) {
-        await handleSteamAddSelect(interaction);
-      } else if (interaction.customId === STEAM_PRICE_SELECT_ID) {
-        await handleSteamPriceSelect(interaction);
-      } else if (interaction.customId === STEAM_REMOVE_SELECT_ID) {
-        await handleSteamRemoveSelect(interaction);
+      if (interaction.customId === DEALS_MENU_ID) {
+        await handleDealsMenu(interaction);
+      } else if (interaction.customId === DEALS_ADD_SELECT_ID) {
+        await handleDealsAddSelect(interaction);
+      } else if (interaction.customId === DEALS_PRICE_SELECT_ID) {
+        await handleDealsPriceSelect(interaction);
+      } else if (interaction.customId === DEALS_REMOVE_SELECT_ID) {
+        await handleDealsRemoveSelect(interaction);
       } else if (interaction.customId === ROULETTE_MENU_ID) {
         await handleRouletteMenu(interaction);
       } else if (interaction.customId === CINEMA_TYPE_SELECT_START_ID) {
@@ -151,8 +151,8 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
         await handleRouletteRetry(interaction);
       } else if (interaction.customId === "roulette:cancel") {
         await handleRouletteCancel(interaction);
-      } else if (interaction.customId === STEAM_BACK_BTN_ID) {
-        await handleSteamBack(interaction);
+      } else if (interaction.customId === DEALS_BACK_BTN_ID) {
+        await handleDealsBack(interaction);
       } else if (interaction.customId === ROULETTE_BACK_BTN_ID) {
         await handleRouletteBack(interaction);
       } else if (interaction.customId === CINEMA_BACK_BTN_ID) {
