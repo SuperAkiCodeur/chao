@@ -48,15 +48,15 @@ const btnGhost: React.CSSProperties = {
 };
 const btnSuccess: React.CSSProperties = {
   display: "flex", alignItems: "center", gap: 5,
-  background: "transparent", color: "rgba(74,222,128,0.65)",
-  border: "1px solid rgba(74,222,128,0.20)", borderRadius: 6,
-  padding: "5px 10px", fontSize: 12, fontWeight: 500, cursor: "pointer",
+  background: "rgba(74,222,128,0.10)", color: "#4ade80",
+  border: "1px solid rgba(74,222,128,0.18)", borderRadius: 6,
+  padding: "5px 10px", fontSize: 12, fontWeight: 600, cursor: "pointer",
 };
 const btnDanger: React.CSSProperties = {
   display: "flex", alignItems: "center", gap: 5,
-  background: "transparent", color: "rgba(239,68,68,0.60)",
+  background: "rgba(239,68,68,0.10)", color: "#ef4444",
   border: "1px solid rgba(239,68,68,0.18)", borderRadius: 6,
-  padding: "5px 10px", fontSize: 12, fontWeight: 500, cursor: "pointer",
+  padding: "5px 10px", fontSize: 12, fontWeight: 600, cursor: "pointer",
 };
 const inputStyle: React.CSSProperties = {
   background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)",
