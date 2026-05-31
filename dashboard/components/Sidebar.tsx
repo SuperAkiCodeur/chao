@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   LayoutDashboard, Users, Clapperboard,
-  ScrollText, Crosshair, Gamepad2, Settings,
+  ScrollText, Crosshair, Gamepad2, Settings, LogOut,
 } from "lucide-react";
 
 const NAV = [
@@ -26,7 +26,7 @@ export function Sidebar() {
 
       {/* Logo */}
       <div style={{ padding: "32px 28px 24px" }}>
-        <span style={{ fontSize: 28, fontWeight: 800, color: "#C8FF47", letterSpacing: "-0.05em", fontFamily: "inherit" }}>
+        <span style={{ fontSize: 28, fontWeight: 800, color: "#ffffff", letterSpacing: "-0.05em" }}>
           chao
         </span>
       </div>
@@ -51,27 +51,19 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Bottom promo card — style "Level Up with Plus" */}
-      <div style={{ margin: "16px 14px 20px", borderRadius: 16, background: "#C8FF47", padding: "20px 18px", position: "relative", overflow: "hidden" }}>
-        {/* Decorative circle */}
-        <div style={{ position: "absolute", top: -20, right: -20, width: 80, height: 80, borderRadius: "50%", background: "rgba(0,0,0,0.08)" }} />
-        <p style={{ fontSize: 15, fontWeight: 800, color: "#000", lineHeight: 1.3, marginBottom: 6, position: "relative" }}>
-          Bot actif ✓
-        </p>
-        <p style={{ fontSize: 11, color: "rgba(0,0,0,0.50)", lineHeight: 1.5, marginBottom: 16, position: "relative" }}>
-          Tous les services fonctionnent normalement.
-        </p>
+      {/* Logout */}
+      <div style={{ padding: "16px 14px 20px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
           style={{
-            width: "100%", background: "#000", color: "#fff",
-            border: "none", borderRadius: 8, padding: "9px 14px",
-            fontSize: 12, fontWeight: 700, cursor: "pointer",
+            width: "100%", background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.50)",
+            border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, padding: "10px 14px",
+            fontSize: 13, fontWeight: 600, cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "space-between",
-            position: "relative",
           }}
         >
-          Déconnexion <span>→</span>
+          <span>Déconnexion</span>
+          <LogOut size={14} />
         </button>
       </div>
 

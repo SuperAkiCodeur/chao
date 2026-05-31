@@ -13,7 +13,7 @@
   --color-popover:             #2a2a2a;
   --color-popover-foreground:  #ffffff;
 
-  --color-primary:             #C8FF47;
+  --color-primary:             #ffffff;
   --color-primary-foreground:  #000000;
 
   --color-secondary:           #2a2a2a;
@@ -30,7 +30,7 @@
 
   --color-border:              rgba(255,255,255,0.08);
   --color-input:               #2a2a2a;
-  --color-ring:                #C8FF47;
+  --color-ring:                #ffffff;
 
   --radius-sm:   0.5rem;
   --radius-md:   0.75rem;
@@ -53,6 +53,6 @@ html, body {
 a { text-decoration: none; }
 button { cursor: pointer; }
 
-::selection { background: #C8FF47; color: #000; }
+::selection { background: #fff; color: #000; }
 ::-webkit-scrollbar { width: 3px; height: 3px; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); border-radius: 99px; }
