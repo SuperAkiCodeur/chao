@@ -114,7 +114,7 @@ export function Sidebar() {
         })}
 
         {/* Features group */}
-        <div className="anim-slide-left" style={{ animationDelay: `${NAV_TOP.length * 45}ms`, marginBottom: 2 }}>
+        <div className="anim-fade-in" style={{ animationDelay: `${NAV_TOP.length * 45}ms`, marginBottom: 2 }}>
 
           {/* Group trigger */}
           <button
@@ -244,7 +244,7 @@ function NavLink({ href, label, Icon, active, delay, iconClass = "" }: {
   return (
     <Link
       href={href}
-      className="anim-slide-left"
+      className="anim-fade-in"
       style={{
         ...linkBase,
         color: active ? "#fff" : "rgba(255,255,255,0.38)",

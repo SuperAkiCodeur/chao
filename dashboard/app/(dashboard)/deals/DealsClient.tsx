@@ -42,7 +42,6 @@ function ChannelSelect({ value, onChange, channels, placeholder = "Choisir un sa
           background: value ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.04)",
           border: value ? BDI : BD, borderRadius: 8,
           paddingLeft: 10, paddingRight: 8, fontSize: 13, cursor: "pointer",
-          transition: "border-color 0.15s, background 0.15s",
         }}
       >
         {selected ? (
@@ -64,8 +63,9 @@ function ChannelSelect({ value, onChange, channels, placeholder = "Choisir un sa
         <div style={{
           position: "absolute", left: 0, top: "calc(100% + 4px)", zIndex: 100,
           width: "max-content", minWidth: "100%", borderRadius: 10, border: BDI,
-          background: "#2a2a2a", boxShadow: "0 12px 36px rgba(0,0,0,0.55)",
+          background: "#2a2a2a", boxShadow: "0 8px 24px rgba(0,0,0,0.45)",
           maxHeight: 220, overflowY: "auto", padding: "4px 0",
+          animation: "fade-in 0.1s ease-out both",
         }}>
           <button type="button" onClick={() => { onChange(""); setOpen(false); }}
             style={{ width: "100%", display: "flex", alignItems: "center", gap: 7, padding: "7px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 12, color: "rgba(255,255,255,0.35)" }}>
