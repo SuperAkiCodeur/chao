@@ -75,33 +75,13 @@ export const valorantLinks = pgTable(
 );
 
 // ---------------------------------------------------------------------------
-// Deals — listes de jeux par utilisateur
+// Deals — liste de jeux par salon
 // ---------------------------------------------------------------------------
-
-export const dealsLists = pgTable("deals_lists", {
-  id: serial("id").primaryKey(),
-  guildId: text("guild_id").notNull(),
-  ownerId: text("owner_id").notNull(),
-  ownerName: text("owner_name").notNull(),
-  name: text("name").notNull(),
-  notifChannelId: text("notif_channel_id"),
-  createdAt: text("created_at").notNull(),
-});
-
-export const dealsListMembers = pgTable(
-  "deals_list_members",
-  {
-    listId: integer("list_id").notNull(),
-    userId: text("user_id").notNull(),
-    userName: text("user_name").notNull(),
-    addedAt: text("added_at").notNull(),
-  },
-  (t) => [primaryKey({ columns: [t.listId, t.userId] })],
-);
 
 export const dealsGames = pgTable("deals_games", {
   id: serial("id").primaryKey(),
-  listId: integer("list_id").notNull(),
+  guildId: text("guild_id").notNull(),
+  channelId: text("channel_id").notNull(),
   steamAppId: integer("steam_app_id").notNull(),
   title: text("title").notNull(),
   headerImage: text("header_image"),
@@ -113,3 +93,13 @@ export const dealsGames = pgTable("deals_games", {
   lastCheckedAt: text("last_checked_at"),
   isOnSale: integer("is_on_sale").default(0).notNull(),
 });
+
+export const dealsConfig = pgTable(
+  "deals_config",
+  {
+    guildId: text("guild_id").notNull(),
+    channelId: text("channel_id").notNull(),
+    notifChannelId: text("notif_channel_id"),
+  },
+  (t) => [primaryKey({ columns: [t.guildId, t.channelId] })],
+);

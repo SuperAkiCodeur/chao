@@ -5,20 +5,12 @@ export const DEALS_CONSTANTS = {
   TRACKER_INTERVAL_MS: 6 * 60 * 60 * 1000, // 6h
 } as const;
 
-// ── Custom IDs fixes ───────────────────────────────────────────────────────────
+// ── Custom IDs ─────────────────────────────────────────────────────────────────
 export const DEALS_MAIN_MENU_ID      = "deals:main";
-export const DEALS_LISTS_SELECT_ID   = "deals:lists";
-export const DEALS_CREATE_MODAL_ID   = "deals:modal:create";
-export const DEALS_CREATE_NAME_INPUT = "deals:input:name";
-export const DEALS_SEARCH_NAME_INPUT = "deals:input:search";
-export const DEALS_BACK_MAIN_BTN_ID  = "deals:back";
-
-// ── Préfixes (suffixe = listId) ────────────────────────────────────────────────
-export const DEALS_ACTION_PREFIX      = "deals:act:";
-export const DEALS_SEARCH_MODAL_PFX   = "deals:modal:s:";
-export const DEALS_ADD_RESULT_PFX     = "deals:add:";
-export const DEALS_REMOVE_PFX         = "deals:rm:";
-export const DEALS_PRICE_PFX          = "deals:px:";
-export const DEALS_SHARE_PFX          = "deals:share:";
-export const DEALS_BACK_LIST_PFX      = "deals:bk:";
-export const DEALS_DELETE_PFX         = "deals:del:";
+export const DEALS_SEARCH_MODAL_ID   = "deals:modal:search";
+export const DEALS_SEARCH_INPUT      = "deals:input:search";
+export const DEALS_ADD_SELECT_ID     = "deals:add:select";
+export const DEALS_REMOVE_SELECT_ID  = "deals:remove:select";
+export const DEALS_PRICE_SELECT_ID   = "deals:price:select";
+export const DEALS_CONFIG_CHAN_ID    = "deals:config:channel";
+export const DEALS_BACK_BTN_ID      = "deals:btn:back";

@@ -46,32 +46,23 @@ import {
   ROULETTE_BACK_BTN_ID,
 } from "../../../features/roulette/domain/roulette.constants.js";
 import {
-  handleDealsMainMenu,
-  handleDealsListSelect,
-  handleDealsActionMenu,
-  handleDealsAddResult,
+  handleDealsCommand as _handleDealsCommand,
+  handleDealsMenu,
+  handleDealsBack,
+  handleDealsSearchModal,
+  handleDealsAddSelect,
   handleDealsRemoveSelect,
   handleDealsPriceSelect,
-  handleDealsShareSelect,
-  handleDealsCreateModal,
-  handleDealsSearchModal,
-  handleDealsBackMain,
-  handleDealsBackList,
-  handleDealsDeleteConfirm,
+  handleDealsConfigChannel,
 } from "../../../features/deals/services/deals.service.js";
 import {
   DEALS_MAIN_MENU_ID,
-  DEALS_LISTS_SELECT_ID,
-  DEALS_CREATE_MODAL_ID,
-  DEALS_BACK_MAIN_BTN_ID,
-  DEALS_ACTION_PREFIX,
-  DEALS_ADD_RESULT_PFX,
-  DEALS_REMOVE_PFX,
-  DEALS_PRICE_PFX,
-  DEALS_SHARE_PFX,
-  DEALS_SEARCH_MODAL_PFX,
-  DEALS_BACK_LIST_PFX,
-  DEALS_DELETE_PFX,
+  DEALS_SEARCH_MODAL_ID,
+  DEALS_ADD_SELECT_ID,
+  DEALS_REMOVE_SELECT_ID,
+  DEALS_PRICE_SELECT_ID,
+  DEALS_CONFIG_CHAN_ID,
+  DEALS_BACK_BTN_ID,
 } from "../../../features/deals/domain/deals.constants.js";
 import {
   handleValorantMenu,
@@ -95,9 +86,7 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
     // ── Modal submit ───────────────────────────────────────────────────────────
     if (interaction.isModalSubmit()) {
       try {
-        if (id === DEALS_CREATE_MODAL_ID) {
-          await handleDealsCreateModal(interaction);
-        } else if (id.startsWith(DEALS_SEARCH_MODAL_PFX)) {
+        if (id === DEALS_SEARCH_MODAL_ID) {
           await handleDealsSearchModal(interaction);
         } else if (id.startsWith(CINEMA_MODAL_START_PREFIX)) {
           await handleCinemaStartModal(interaction);
@@ -115,11 +104,17 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
       return;
     }
 
+    // ── Channel select menus ───────────────────────────────────────────────────
+    if (interaction.isChannelSelectMenu()) {
+      if (id === DEALS_CONFIG_CHAN_ID) {
+        await handleDealsConfigChannel(interaction);
+      }
+      return;
+    }
+
     // ── User select menus ──────────────────────────────────────────────────────
     if (interaction.isUserSelectMenu()) {
-      if (id.startsWith(DEALS_SHARE_PFX)) {
-        await handleDealsShareSelect(interaction);
-      } else if (id === ROULETTE_SELECT_ID) {
+      if (id === ROULETTE_SELECT_ID) {
         await handleRouletteSelect(interaction);
       }
       return;
@@ -128,16 +123,12 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
     // ── String select menus ────────────────────────────────────────────────────
     if (interaction.isStringSelectMenu()) {
       if (id === DEALS_MAIN_MENU_ID) {
-        await handleDealsMainMenu(interaction);
-      } else if (id === DEALS_LISTS_SELECT_ID) {
-        await handleDealsListSelect(interaction);
-      } else if (id.startsWith(DEALS_ACTION_PREFIX)) {
-        await handleDealsActionMenu(interaction);
-      } else if (id.startsWith(DEALS_ADD_RESULT_PFX)) {
-        await handleDealsAddResult(interaction);
-      } else if (id.startsWith(DEALS_REMOVE_PFX)) {
+        await handleDealsMenu(interaction);
+      } else if (id === DEALS_ADD_SELECT_ID) {
+        await handleDealsAddSelect(interaction);
+      } else if (id === DEALS_REMOVE_SELECT_ID) {
         await handleDealsRemoveSelect(interaction);
-      } else if (id.startsWith(DEALS_PRICE_PFX)) {
+      } else if (id === DEALS_PRICE_SELECT_ID) {
         await handleDealsPriceSelect(interaction);
       } else if (id === ROULETTE_MENU_ID) {
         await handleRouletteMenu(interaction);
@@ -157,12 +148,8 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
 
     // ── Buttons ────────────────────────────────────────────────────────────────
     if (interaction.isButton()) {
-      if (id === DEALS_BACK_MAIN_BTN_ID) {
-        await handleDealsBackMain(interaction);
-      } else if (id.startsWith(DEALS_BACK_LIST_PFX)) {
-        await handleDealsBackList(interaction);
-      } else if (id.startsWith(DEALS_DELETE_PFX)) {
-        await handleDealsDeleteConfirm(interaction);
+      if (id === DEALS_BACK_BTN_ID) {
+        await handleDealsBack(interaction);
       } else if (id === CINEMA_CONSTANTS.TICKET_BUTTON_ID) {
         await handleCinemaTicketButton(interaction);
       } else if (id === CINEMA_CONSTANTS.LAUNCH_BUTTON_ID) {

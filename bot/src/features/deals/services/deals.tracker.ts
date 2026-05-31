@@ -2,7 +2,7 @@ import { EmbedBuilder, type Client } from "discord.js";
 import { logger } from "../../../core/app/logger.js";
 import { DEALS_CONSTANTS } from "../domain/deals.constants.js";
 import { formatEur, getSteamAppDetails, getSteamUrl } from "./deals.api.js";
-import { getAllGames, getListById, getMembersForList, updateGamePrice } from "./deals.repository.js";
+import { getAllConfigs, getAllGames, updateGamePrice } from "./deals.repository.js";
 
 async function checkPromos(client: Client): Promise<void> {
   logger.info("[deals.tracker] démarrage de la vérification des promos");
@@ -10,16 +10,17 @@ async function checkPromos(client: Client): Promise<void> {
   const games = await getAllGames();
   if (games.length === 0) return;
 
-  // Cache des listes pour éviter les requêtes répétées
-  const listCache = new Map<number, Awaited<ReturnType<typeof getListById>>>();
+  // Cache des configs (guildId:channelId → notifChannelId)
+  const configs = await getAllConfigs();
+  const configMap = new Map(configs.map((c) => [`${c.guildId}:${c.channelId}`, c.notifChannelId]));
 
   for (const game of games) {
     try {
       const details = await getSteamAppDetails(game.steamAppId);
       if (!details) continue;
 
-      const price = details.price_overview;
-      const wasOnSale = game.isOnSale === 1;
+      const price       = details.price_overview;
+      const wasOnSale   = game.isOnSale === 1;
       const isNowOnSale = !details.is_free && price ? price.discount_percent > 0 : false;
 
       await updateGamePrice(game.id, {
@@ -29,39 +30,29 @@ async function checkPromos(client: Client): Promise<void> {
         lastCheckedAt: new Date().toISOString(),
       });
 
-      // Notification uniquement si le jeu vient de passer en promo
       if (!wasOnSale && isNowOnSale && price) {
-        if (!listCache.has(game.listId)) {
-          listCache.set(game.listId, await getListById(game.listId));
-        }
-        const list = listCache.get(game.listId);
-        if (!list?.notifChannelId) continue;
+        const notifChannelId = configMap.get(`${game.guildId}:${game.channelId}`);
+        if (!notifChannelId) continue;
 
-        const channel = await client.channels.fetch(list.notifChannelId).catch(() => null);
+        const channel = await client.channels.fetch(notifChannelId).catch(() => null);
         if (!channel?.isSendable()) continue;
-
-        // Mention du propriétaire + membres
-        const members = await getMembersForList(game.listId);
-        const mentions = [list.ownerId, ...members.map((m) => m.userId)]
-          .map((id) => `<@${id}>`).join(" ");
 
         const embed = new EmbedBuilder()
           .setColor(DEALS_CONSTANTS.EMBED_COLOR_SALE)
           .setTitle("🔥 Nouvelle promo !")
           .setDescription(
             `**[${game.title}](${getSteamUrl(game.steamAppId)})**\n\n` +
-            `~~${formatEur(price.initial)}~~ → **${formatEur(price.final)}** (-${price.discount_percent}%)\n\n` +
-            `📋 Liste : **${list.name}**`,
+            `~~${formatEur(price.initial)}~~ → **${formatEur(price.final)}** (-${price.discount_percent}%)`,
           )
           .setThumbnail(game.headerImage ?? null)
           .setFooter({ text: "Tracker Chao • Deals" });
 
-        await channel.send({ content: mentions, embeds: [embed] });
+        await channel.send({ embeds: [embed] });
 
         logger.info("[deals.tracker] notification envoyée", {
-          listId: game.listId,
           title: game.title,
           discount: price.discount_percent,
+          notifChannelId,
         });
       }
     } catch (error) {
@@ -81,6 +72,5 @@ export function startDealsTracker(client: Client): void {
 
   setTimeout(run, 30_000);
   setInterval(run, DEALS_CONSTANTS.TRACKER_INTERVAL_MS);
-
   logger.info("[deals.tracker] démarré", { intervalHours: 6 });
 }

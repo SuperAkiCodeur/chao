@@ -99,47 +99,18 @@ async function main(): Promise<void> {
   await sql`ALTER TABLE cinema_parties ADD COLUMN IF NOT EXISTS created_by TEXT`;
   console.log("✓ cinema_parties.created_by");
 
-  // Renommer les tables steam_* → deals_* (ancienne structure, déjà faite en prod via SSH)
-  await sql`ALTER TABLE IF EXISTS steam_games                RENAME TO deals_games_old`;
-  await sql`ALTER TABLE IF EXISTS steam_config               RENAME TO deals_config_old`;
-  await sql`ALTER TABLE IF EXISTS steam_channel_permissions  RENAME TO deals_permissions_old`;
-
-  // Supprimer les anciennes tables deals_* (structure channel-based)
-  await sql`DROP TABLE IF EXISTS deals_config_old`;
-  await sql`DROP TABLE IF EXISTS deals_permissions_old`;
-  console.log("✓ anciennes tables deals nettoyées");
-
-  // Nouvelle structure : listes par utilisateur
-  await sql`
-    CREATE TABLE IF NOT EXISTS deals_lists (
-      id               SERIAL PRIMARY KEY,
-      guild_id         TEXT NOT NULL,
-      owner_id         TEXT NOT NULL,
-      owner_name       TEXT NOT NULL,
-      name             TEXT NOT NULL,
-      notif_channel_id TEXT,
-      created_at       TEXT NOT NULL
-    )
-  `;
-  console.log("✓ deals_lists");
-
-  await sql`
-    CREATE TABLE IF NOT EXISTS deals_list_members (
-      list_id   INTEGER NOT NULL,
-      user_id   TEXT    NOT NULL,
-      user_name TEXT    NOT NULL,
-      added_at  TEXT    NOT NULL,
-      PRIMARY KEY (list_id, user_id)
-    )
-  `;
-  console.log("✓ deals_list_members");
-
+  // Nettoyage des structures intermédiaires
+  await sql`DROP TABLE IF EXISTS deals_list_members`;
+  await sql`DROP TABLE IF EXISTS deals_lists`;
   await sql`DROP TABLE IF EXISTS deals_games`;
-  await sql`DROP TABLE IF EXISTS deals_games_old`;
+  console.log("✓ anciennes tables deals supprimées");
+
+  // Structure finale : une liste par salon
   await sql`
     CREATE TABLE IF NOT EXISTS deals_games (
       id                   SERIAL PRIMARY KEY,
-      list_id              INTEGER NOT NULL,
+      guild_id             TEXT    NOT NULL,
+      channel_id           TEXT    NOT NULL,
       steam_app_id         INTEGER NOT NULL,
       title                TEXT    NOT NULL,
       header_image         TEXT,
@@ -152,7 +123,17 @@ async function main(): Promise<void> {
       is_on_sale           INTEGER NOT NULL DEFAULT 0
     )
   `;
-  console.log("✓ deals_games (nouvelle structure)");
+  console.log("✓ deals_games");
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS deals_config (
+      guild_id         TEXT NOT NULL,
+      channel_id       TEXT NOT NULL,
+      notif_channel_id TEXT,
+      PRIMARY KEY (guild_id, channel_id)
+    )
+  `;
+  console.log("✓ deals_config");
 
   await sql.end();
   console.log("Migration terminée.");
