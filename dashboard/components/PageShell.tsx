@@ -13,19 +13,19 @@ export function PageShell({
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
 
-      {/* Header 60px — aligne avec logo sidebar */}
+      {/* Header — hauteur adaptée au grand titre */}
       <div className="anim-fade-in" style={{
-        height: 60, flexShrink: 0,
-        display: "flex", alignItems: "center",
-        padding: "0 20px",
+        flexShrink: 0,
+        display: "flex", alignItems: "flex-end",
+        padding: "24px 28px 20px",
         borderBottom: BD,
       }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", letterSpacing: "0.01em", lineHeight: 1 }}>
+          <h1 style={{ fontSize: "clamp(36px, 4vw, 56px)", fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", letterSpacing: "-0.01em", lineHeight: 1 }}>
             {title}
           </h1>
           {description && (
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 5, lineHeight: 1, fontStyle: "italic", fontFamily: "var(--font-serif)" }}>
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", marginTop: 8, lineHeight: 1, fontStyle: "italic", fontFamily: "var(--font-serif)" }}>
               {description}
             </p>
           )}
