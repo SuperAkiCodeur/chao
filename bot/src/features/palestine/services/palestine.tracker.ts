@@ -2,59 +2,98 @@ import type { Client } from "discord.js";
 import { EmbedBuilder } from "discord.js";
 import { logger } from "../../../core/app/logger.js";
 
-const WP_API_URL      = "https://agencemediapalestine.fr/wp-json/wp/v2/posts";
+const RSS_URL         = "https://agencemediapalestine.fr/feed/";
 const NEWS_CHANNEL_ID = "1510242757627609178";
 const POST_HOUR_PARIS = 9;
 const EMBED_COLOR     = 0x009736; // vert du drapeau palestinien
 
-type WpPost = {
-  id:      number;
-  link:    string;
-  title:   { rendered: string };
-  excerpt: { rendered: string };
-  date:    string;
+// ── RSS parser ────────────────────────────────────────────────────────────────
+
+type RssItem = {
+  title:       string;
+  link:        string;
+  description: string;
+  pubDate:     string;
 };
 
-// ── API WordPress ─────────────────────────────────────────────────────────────
+function parseCdata(raw: string): string {
+  const m = raw.match(/^<!\[CDATA\[([\s\S]*?)\]\]>$/s);
+  return m ? m[1] : raw;
+}
 
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]+>/g, "").replace(/&[a-z]+;/gi, (e) => {
-    const entities: Record<string, string> = { "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#039;": "'", "&nbsp;": " " };
-    return entities[e] ?? e;
-  }).trim();
+  return html
+    .replace(/<[^>]+>/g, "")
+    .replace(/&[a-z#0-9]+;/gi, (e) => {
+      const map: Record<string, string> = {
+        "&amp;": "&", "&lt;": "<", "&gt;": ">",
+        "&quot;": '"', "&#039;": "'", "&nbsp;": " ",
+      };
+      return map[e] ?? e;
+    })
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-async function fetchRecentPosts(): Promise<WpPost[]> {
-  const after = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const url   = `${WP_API_URL}?per_page=100&after=${encodeURIComponent(after)}&_fields=id,link,title,excerpt,date`;
+function parseRss(xml: string): RssItem[] {
+  const items: RssItem[] = [];
 
-  const res   = await fetch(url, { signal: AbortSignal.timeout(10_000) });
+  for (const itemMatch of xml.matchAll(/<item>([\s\S]*?)<\/item>/g)) {
+    const block = itemMatch[1];
 
-  if (!res.ok) {
-    throw new Error(`WP API error: ${res.status}`);
+    const titleRaw = block.match(/<title>([\s\S]*?)<\/title>/)?.[1]?.trim() ?? "";
+    const link     = block.match(/<link>\s*(https?:[^\s<]+)\s*<\/link>/)?.[1]?.trim()
+                  ?? block.match(/<guid[^>]*>\s*(https?:[^\s<]+)\s*<\/guid>/)?.[1]?.trim()
+                  ?? "";
+    const descRaw  = block.match(/<description>([\s\S]*?)<\/description>/)?.[1]?.trim() ?? "";
+    const pubDate  = block.match(/<pubDate>([\s\S]*?)<\/pubDate>/)?.[1]?.trim() ?? "";
+
+    if (!link) continue;
+
+    items.push({
+      title:       stripHtml(parseCdata(titleRaw)),
+      link,
+      description: stripHtml(parseCdata(descRaw)),
+      pubDate,
+    });
   }
 
-  return res.json() as Promise<WpPost[]>;
+  return items;
 }
 
-function pickRandom(posts: WpPost[]): WpPost {
-  return posts[Math.floor(Math.random() * posts.length)];
+async function fetchRecentItems(): Promise<RssItem[]> {
+  const res = await fetch(RSS_URL, { signal: AbortSignal.timeout(10_000) });
+  if (!res.ok) throw new Error(`RSS fetch error: ${res.status}`);
+
+  const xml   = await res.text();
+  const items = parseRss(xml);
+  const after = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+  return items.filter((item) => {
+    if (!item.pubDate) return true;
+    const d = new Date(item.pubDate);
+    return !isNaN(d.getTime()) && d >= after;
+  });
+}
+
+function pickRandom<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
 }
 
 // ── Embed ─────────────────────────────────────────────────────────────────────
 
-function buildEmbed(post: WpPost): EmbedBuilder {
-  const title   = stripHtml(post.title.rendered);
-  const excerpt = stripHtml(post.excerpt.rendered);
-  const snippet = excerpt.slice(0, 350) + (excerpt.length > 350 ? " […]" : "");
+function buildEmbed(item: RssItem): EmbedBuilder {
+  const snippet = item.description.length > 350
+    ? item.description.slice(0, 350) + " […]"
+    : item.description;
 
   return new EmbedBuilder()
     .setColor(EMBED_COLOR)
     .setAuthor({ name: "Agence Média Palestine", url: "https://agencemediapalestine.fr" })
-    .setTitle(title.slice(0, 256))
-    .setURL(post.link)
-    .setDescription(snippet)
-    .setTimestamp(new Date(post.date));
+    .setTitle(item.title.slice(0, 256))
+    .setURL(item.link)
+    .setDescription(snippet || "​")
+    .setTimestamp(item.pubDate ? new Date(item.pubDate) : new Date());
 }
 
 // ── Post ──────────────────────────────────────────────────────────────────────
@@ -67,29 +106,29 @@ async function postDailyNews(client: Client): Promise<void> {
     return;
   }
 
-  let posts: WpPost[];
+  let items: RssItem[];
 
   try {
-    posts = await fetchRecentPosts();
+    items = await fetchRecentItems();
   } catch (error) {
-    logger.error("[palestine] Impossible de récupérer les articles", { error });
+    logger.error("[palestine] Impossible de récupérer le flux RSS", { error });
     return;
   }
 
-  if (posts.length === 0) {
+  if (items.length === 0) {
     logger.info("[palestine] Aucun article dans les dernières 24h, post annulé");
     return;
   }
 
-  const post  = pickRandom(posts);
-  const embed = buildEmbed(post);
+  const item  = pickRandom(items);
+  const embed = buildEmbed(item);
 
   await (channel as { send: Function }).send({ embeds: [embed] });
 
   logger.info("[palestine] Article du jour posté", {
-    title:         post.title.rendered,
-    link:          post.link,
-    totalArticles: posts.length,
+    title:         item.title,
+    link:          item.link,
+    totalArticles: items.length,
   });
 }
 
@@ -101,10 +140,7 @@ function msUntilNext9hParis(): number {
 
   const target = new Date(nowParis);
   target.setHours(POST_HOUR_PARIS, 0, 0, 0);
-
-  if (nowParis >= target) {
-    target.setDate(target.getDate() + 1);
-  }
+  if (nowParis >= target) target.setDate(target.getDate() + 1);
 
   return target.getTime() - nowParis.getTime();
 }
@@ -117,9 +153,7 @@ function scheduleNext(client: Client): void {
   });
 
   setTimeout(() => {
-    void postDailyNews(client).finally(() => {
-      scheduleNext(client);
-    });
+    void postDailyNews(client).finally(() => scheduleNext(client));
   }, delay);
 }
 

@@ -10,24 +10,70 @@ const BOT_TOKEN          = process.env.DISCORD_BOT_TOKEN!;
 const DEFAULT_CHANNEL_ID = "1510242757627609178";
 const AMP_AUTHOR         = "Agence Média Palestine";
 const AMP_HOME           = "https://agencemediapalestine.fr";
-const DEFAULT_SOURCE_URL = "https://agencemediapalestine.fr/wp-json/wp/v2/posts";
+const DEFAULT_RSS_URL    = "https://agencemediapalestine.fr/feed/";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// ── RSS parser ────────────────────────────────────────────────────────────────
 
-type WpPost = {
-  id:      number;
-  link:    string;
-  title:   { rendered: string };
-  excerpt: { rendered: string };
-  date:    string;
+type RssItem = {
+  title:       string;
+  link:        string;
+  description: string;
+  pubDate:     string;
 };
 
+function parseCdata(raw: string): string {
+  const m = raw.match(/^<!\[CDATA\[([\s\S]*?)\]\]>$/s);
+  return m ? m[1] : raw;
+}
+
+function stripHtml(html: string): string {
+  return html
+    .replace(/<[^>]+>/g, "")
+    .replace(/&[a-z#0-9]+;/gi, (e) => {
+      const map: Record<string, string> = {
+        "&amp;": "&", "&lt;": "<", "&gt;": ">",
+        "&quot;": '"', "&#039;": "'", "&nbsp;": " ",
+      };
+      return map[e] ?? e;
+    })
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function parseRss(xml: string): RssItem[] {
+  const items: RssItem[] = [];
+
+  for (const itemMatch of xml.matchAll(/<item>([\s\S]*?)<\/item>/g)) {
+    const block = itemMatch[1];
+
+    const titleRaw = block.match(/<title>([\s\S]*?)<\/title>/)?.[1]?.trim()       ?? "";
+    const link     = block.match(/<link>\s*(https?:[^\s<]+)\s*<\/link>/)?.[1]?.trim()
+                  ?? block.match(/<guid[^>]*>\s*(https?:[^\s<]+)\s*<\/guid>/)?.[1]?.trim()
+                  ?? "";
+    const descRaw  = block.match(/<description>([\s\S]*?)<\/description>/)?.[1]?.trim() ?? "";
+    const pubDate  = block.match(/<pubDate>([\s\S]*?)<\/pubDate>/)?.[1]?.trim()    ?? "";
+
+    if (!link) continue;
+
+    items.push({
+      title:       stripHtml(parseCdata(titleRaw)),
+      link,
+      description: stripHtml(parseCdata(descRaw)),
+      pubDate,
+    });
+  }
+
+  return items;
+}
+
+// ── Data fetchers ─────────────────────────────────────────────────────────────
+
 type DiscordEmbed = {
-  title?:       string;
-  url?:         string;
+  title?:      string;
+  url?:        string;
   description?: string;
-  timestamp?:   string;
-  author?:      { name: string; url?: string };
+  timestamp?:  string;
+  author?:     { name: string; url?: string };
 };
 
 type DiscordMessage = {
@@ -44,23 +90,6 @@ type BotPost = {
   timestamp:   string;
 };
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function stripHtml(html: string): string {
-  return html
-    .replace(/<[^>]+>/g, "")
-    .replace(/&[a-z]+;/gi, (e) => {
-      const map: Record<string, string> = {
-        "&amp;": "&", "&lt;": "<", "&gt;": ">",
-        "&quot;": '"', "&#039;": "'", "&nbsp;": " ",
-      };
-      return map[e] ?? e;
-    })
-    .trim();
-}
-
-// ── Data ──────────────────────────────────────────────────────────────────────
-
 async function fetchBotPosts(channelId: string): Promise<BotPost[]> {
   try {
     const res = await fetch(
@@ -76,10 +105,10 @@ async function fetchBotPosts(channelId: string): Promise<BotPost[]> {
         const embed = m.embeds!.find((e) => e.author?.name === AMP_AUTHOR)!;
         return {
           id:          m.id,
-          title:       embed.title       ?? "(sans titre)",
-          url:         embed.url         ?? AMP_HOME,
-          description: embed.description ?? "",
-          timestamp:   embed.timestamp   ?? m.timestamp,
+          title:       embed.title        ?? "(sans titre)",
+          url:         embed.url          ?? AMP_HOME,
+          description: embed.description  ?? "",
+          timestamp:   embed.timestamp    ?? m.timestamp,
         };
       });
   } catch {
@@ -87,26 +116,32 @@ async function fetchBotPosts(channelId: string): Promise<BotPost[]> {
   }
 }
 
-async function fetchTodayArticles(sourceUrl: string): Promise<TodayArticle[]> {
+async function fetchTodayArticles(rssUrl: string): Promise<TodayArticle[]> {
   try {
+    const res = await fetch(rssUrl, { cache: "no-store" });
+    if (!res.ok) return [];
+    const xml   = await res.text();
+    const items = parseRss(xml);
+
     // Start of today in Paris time
     const now   = new Date();
     const paris = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Paris" }));
     const start = new Date(paris);
     start.setHours(0, 0, 0, 0);
 
-    const url = `${sourceUrl}?per_page=20&after=${encodeURIComponent(start.toISOString())}&_fields=id,link,title,excerpt,date&orderby=date&order=desc`;
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) return [];
-
-    const posts: WpPost[] = await res.json();
-    return posts.map((p) => ({
-      id:          p.id,
-      title:       stripHtml(p.title.rendered),
-      url:         p.link,
-      description: stripHtml(p.excerpt.rendered),
-      date:        p.date,
-    }));
+    return items
+      .filter((item) => {
+        if (!item.pubDate) return false;
+        const d = new Date(item.pubDate);
+        return !isNaN(d.getTime()) && d >= start;
+      })
+      .map((item, idx) => ({
+        id:          idx,
+        title:       item.title,
+        url:         item.link,
+        description: item.description,
+        date:        item.pubDate,
+      }));
   } catch {
     return [];
   }
@@ -141,24 +176,24 @@ export default async function PalestinePage() {
   const [settings, channels] = await Promise.all([getAllSettings(), getChannels()]);
 
   const channelId = settings["palestine_channel_id"] ?? DEFAULT_CHANNEL_ID;
-  const sourceUrl = settings["palestine_source_url"]  ?? DEFAULT_SOURCE_URL;
+  const rssUrl    = settings["palestine_source_url"]  ?? DEFAULT_RSS_URL;
 
   const [botPosts, todayArticles] = await Promise.all([
     fetchBotPosts(channelId),
-    fetchTodayArticles(sourceUrl),
+    fetchTodayArticles(rssUrl),
   ]);
 
   const countdown = nextPost9h();
 
-  // Pre-fill defaults so the input shows the actual URL even if not saved yet
+  // Pre-fill default so the input shows the URL even before first save
   const settingsWithDefaults = {
     ...settings,
-    palestine_source_url: settings["palestine_source_url"] ?? DEFAULT_SOURCE_URL,
+    palestine_source_url: settings["palestine_source_url"] ?? DEFAULT_RSS_URL,
   };
 
-  // Derive link domain from source URL
+  // Derive display link from RSS URL
   let sourceDomain = AMP_HOME;
-  try { sourceDomain = new URL(sourceUrl).origin; } catch { /* keep default */ }
+  try { sourceDomain = new URL(rssUrl).origin; } catch { /* keep default */ }
 
   const countdownLabel = countdown.hours > 0
     ? `${countdown.hours}h ${String(countdown.minutes).padStart(2, "0")}min`
@@ -196,7 +231,7 @@ export default async function PalestinePage() {
         </a>
       </div>
 
-      {/* Today's articles (client — has post button) */}
+      {/* Today's articles */}
       <TodayArticlesClient articles={todayArticles} />
 
       {/* Bot post history */}
@@ -270,10 +305,10 @@ export default async function PalestinePage() {
           },
           {
             key:         "palestine_source_url",
-            label:       "Flux RSS / API",
-            description: "URL de l'API WordPress utilisée par le bot pour récupérer les articles",
+            label:       "Flux RSS",
+            description: "URL du flux RSS utilisée par le bot pour récupérer les articles",
             kind:        "text",
-            placeholder: DEFAULT_SOURCE_URL,
+            placeholder: DEFAULT_RSS_URL,
           },
         ]}
       />
