@@ -74,7 +74,7 @@ function SelectDropdown({
             onAnimationEnd={onAnimEnd}
             style={{
               position: "absolute", left: 0, top: "calc(100% + 4px)", zIndex: 50,
-              width: "100%", minWidth: 200, borderRadius: 10,
+              width: "100%", minWidth: 200, borderRadius: 12,
               border: LINE2, background: "#2c2c2c", boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
             }}
           >

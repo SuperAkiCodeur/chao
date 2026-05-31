@@ -192,7 +192,7 @@ function DetailDialog({
       <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
 
         {/* Info rows — premier sans borderTop pour éviter le double trait */}
-        <div style={{ borderRadius: 10, border: BD, overflow: "hidden" }}>
+        <div style={{ borderRadius: 12, border: BD, overflow: "hidden" }}>
           {infoRows.map((row, i) => (
             <InfoRow key={row.label} label={row.label} value={row.value} color={row.color} divider={i > 0} />
           ))}
@@ -487,7 +487,7 @@ function RoleDropdown({ roles, value, onChange }: { roles: DiscordRole[]; value:
         <div
           className={animClass}
           onAnimationEnd={handleAnimEnd}
-          style={{ position: "absolute", right: 0, top: "calc(100% + 6px)", zIndex: 50, minWidth: 180, borderRadius: 10, border: BDI, background: "#2a2a2a", boxShadow: "0 12px 36px rgba(0,0,0,0.40)", padding: "4px 0" }}
+          style={{ position: "absolute", right: 0, top: "calc(100% + 6px)", zIndex: 50, minWidth: 180, borderRadius: 12, border: BDI, background: "#2a2a2a", boxShadow: "0 12px 36px rgba(0,0,0,0.40)", padding: "4px 0" }}
         >
           <button type="button" onClick={() => { onChange(""); doClose(); }}
             style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "rgba(255,255,255,0.45)" }}

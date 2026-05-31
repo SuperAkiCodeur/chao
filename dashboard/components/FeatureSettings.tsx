@@ -20,7 +20,7 @@ function roleColor(color: number) {
 }
 
 const BD  = "1px solid rgba(255,255,255,0.08)";
-const BDI = "1px solid rgba(255,255,255,0.10)"; // input / dropdown
+const BDI = "1px solid rgba(255,255,255,0.12)"; // input / dropdown
 
 // ── SelectDropdown ────────────────────────────────────────────────────────────
 type Option = { id: string; label: string; sub?: string; color?: string; icon?: React.ReactNode };
@@ -86,7 +86,7 @@ function SelectDropdown({
           <div className={animClass} onAnimationEnd={onAnimEnd}
             style={{
               position: "absolute", left: 0, top: "calc(100% + 4px)", zIndex: 50,
-              width: "100%", minWidth: 180, borderRadius: 10,
+              width: "100%", minWidth: 180, borderRadius: 12,
               border: BDI, background: "#2a2a2a", boxShadow: "0 12px 36px rgba(0,0,0,0.45)",
             }}
           >
@@ -237,7 +237,7 @@ export function FeatureSettings({ fields, channels, roles, settings }: {
                 <button type="submit" disabled={pending}
                   style={{
                     display: "flex", alignItems: "center", gap: 6,
-                    background: "#fff", color: "#000", border: "none", borderRadius: 7,
+                    background: "#fff", color: "#000", border: "none", borderRadius: 8,
                     padding: "7px 14px", fontSize: 12, fontWeight: 600,
                     cursor: pending ? "not-allowed" : "pointer", opacity: pending ? 0.6 : 1,
                   }}

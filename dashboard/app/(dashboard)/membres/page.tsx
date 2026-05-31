@@ -54,7 +54,7 @@ export default async function MembresPage() {
       <div className="anim-scale-in" style={{
         display: "flex", alignSelf: "flex-start",
         background: "#242424", border: "1px solid rgba(255,255,255,0.08)",
-        borderRadius: 14, overflow: "hidden",
+        borderRadius: 12, overflow: "hidden",
       }}>
         {[
           { value: members.length, label: "Membres",   sub: "affichés · max 100",   icon: "👥" },

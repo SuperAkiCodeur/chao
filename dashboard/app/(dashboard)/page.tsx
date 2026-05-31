@@ -136,7 +136,7 @@ export default async function HomePage() {
                   { label: "Comptes Valorant", value: totalValorant, sub: "Discord liés",   delay: 380 },
                   { label: "Disponibilité",    value: "100%",        sub: "aucune coupure", delay: 460 },
                 ].map(({ label, value, sub, delay }) => (
-                  <div key={label} className="anim-fade-up hover-lift" style={{ background: "#282828", borderRadius: 9, padding: "10px 14px", animationDelay: `${delay}ms` }}>
+                  <div key={label} className="anim-fade-up hover-lift" style={{ background: "#282828", borderRadius: 8, padding: "10px 14px", animationDelay: `${delay}ms` }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                       <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.45)" }}>{label}</p>
                       <span style={{ fontSize: 10, color: "rgba(255,255,255,0.20)" }}>{sub}</span>
@@ -156,7 +156,7 @@ export default async function HomePage() {
                 { href: "/parametres", label: "Paramètres", sub: "Config du bot",     icon: "⚙️" },
               ].map(({ href, label, sub, icon }, i) => (
                 <a key={href} href={href} className="hover-slide" style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 0", borderBottom: i < 2 ? BD : undefined, textDecoration: "none", transition: "transform 0.18s cubic-bezier(0.16,1,0.3,1)" }}>
-                  <div style={{ width: 30, height: 30, borderRadius: 7, background: "#282828", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>{icon}</div>
+                  <div style={{ width: 30, height: 30, borderRadius: 8, background: "#282828", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>{icon}</div>
                   <div style={{ flex: 1 }}>
                     <p style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.60)" }}>{label}</p>
                     <p style={{ fontSize: 11, color: "rgba(255,255,255,0.22)", marginTop: 1 }}>{sub}</p>

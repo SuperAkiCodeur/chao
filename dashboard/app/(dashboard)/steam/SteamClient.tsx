@@ -96,7 +96,7 @@ function SelectDropdown({
             onAnimationEnd={onAnimEnd}
             style={{
               position: "absolute", left: 0, top: "calc(100% + 4px)", zIndex: 50,
-              width: "100%", minWidth: 200, borderRadius: 10,
+              width: "100%", minWidth: 200, borderRadius: 12,
               border: LINE2, background: "#2c2c2c", boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
             }}
           >
@@ -173,7 +173,7 @@ function GamesList({ games }: { games: SteamGame[] }) {
         return (
           <div
             key={g.id}
-            style={{ display: "flex", alignItems: "center", gap: 12, background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: "10px 14px", transition: "background 0.15s, transform 0.2s cubic-bezier(0.16,1,0.3,1), box-shadow 0.2s" }}
+            style={{ display: "flex", alignItems: "center", gap: 12, background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "10px 14px", transition: "background 0.15s, transform 0.2s cubic-bezier(0.16,1,0.3,1), box-shadow 0.2s" }}
             onMouseEnter={(e) => {
               (e.currentTarget.querySelector(".remove-btn") as HTMLElement | null)?.style.setProperty("opacity", "1");
               e.currentTarget.style.background = "rgba(255,255,255,0.07)";

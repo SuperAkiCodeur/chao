@@ -59,7 +59,7 @@ export function CommandsReference({ commands }: { commands: BotCommand[] }) {
                     <code style={{
                       fontSize: 12, fontFamily: "ui-monospace, monospace", fontWeight: 700,
                       color: "#fff", background: "rgba(255,255,255,0.08)",
-                      padding: "3px 8px", borderRadius: 5,
+                      padding: "3px 8px", borderRadius: 4,
                     }}>
                       {cmd.name}
                     </code>
