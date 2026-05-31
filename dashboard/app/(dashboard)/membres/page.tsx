@@ -1,7 +1,5 @@
-import { Users, Activity } from "lucide-react";
 import { MembresClient, type DiscordMember, type DiscordRole } from "./MembresClient";
 import { FeatureSettings } from "@/components/FeatureSettings";
-import { CommandsReference } from "@/components/CommandsReference";
 import { getAllSettings } from "@/lib/settings";
 import { PageShell, SectionCard } from "@/components/PageShell";
 
@@ -101,27 +99,6 @@ export default async function MembresPage() {
           { key: "member_role_id", label: "Rôle automatique", description: "Attribué dès qu'un membre rejoint le serveur", kind: "role" },
         ]}
       />
-
-      <CommandsReference commands={[
-        {
-          name: "Auto-rôle à l'arrivée",
-          description: "À chaque fois qu'un nouveau membre rejoint le serveur, le bot lui attribue automatiquement le rôle configuré dans la section Configuration ci-dessus.",
-          note: "Ce n'est pas une commande slash — c'est un comportement automatique déclenché par l'événement guildMemberAdd de Discord.",
-        },
-        {
-          name: "/selfrole create",
-          description: "Poste un message interactif dans un salon avec des boutons permettant aux membres de s'attribuer ou de retirer eux-mêmes un rôle d'un simple clic.",
-          adminOnly: true,
-          params: [
-            { name: "channel", description: "Salon texte où le message de sélection de rôles sera posté.", required: true },
-            { name: "title", description: "Titre affiché en haut de l'embed du message.", required: true },
-            { name: "role1", description: "Premier rôle à proposer (au moins un requis).", required: true },
-            { name: "role2 … role5", description: "Rôles supplémentaires à proposer (jusqu'à 5 au total).", required: false },
-            { name: "description", description: "Texte affiché sous le titre dans l'embed.", required: false },
-            { name: "color", description: "Couleur de la barre latérale de l'embed en hexadécimal — ex : #ff4655.", required: false },
-          ],
-        },
-      ]} />
 
     </PageShell>
   );

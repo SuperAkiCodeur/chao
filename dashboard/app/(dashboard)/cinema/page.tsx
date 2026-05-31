@@ -4,7 +4,6 @@ import { eq, desc, count, avg } from "drizzle-orm";
 import { Clapperboard } from "lucide-react";
 import { CinemaClient } from "./CinemaClient";
 import { FeatureSettings, type DiscordChannel, type DiscordRole } from "@/components/FeatureSettings";
-import { CommandsReference } from "@/components/CommandsReference";
 import { ApiAttribution } from "@/components/ApiAttribution";
 import { getAllSettings } from "@/lib/settings";
 import { PageShell, StatCard, SectionCard } from "@/components/PageShell";
@@ -104,15 +103,6 @@ export default async function CinemaPage() {
         { key: "cinema_channel_id",         label: "Salon d'annonces", description: "Salon où les séances sont publiées",   kind: "channel" },
         { key: "cinema_spectator_role_id",  label: "Rôle spectateur",  description: "Rôle attribué aux participants",       kind: "role"    },
       ]} />
-
-      <CommandsReference commands={[{
-        name: "/cinema", description: "Ouvre un menu éphémère avec trois actions :", adminOnly: true,
-        params: [
-          { name: "🎬 Programmer une diffusion", description: "Ouvre un formulaire : type, titre, date et heure. Le bot recherche les métadonnées sur TMDB puis publie l'annonce.", required: false },
-          { name: "⏹ Terminer une diffusion",    description: "Clôt une diffusion active et ouvre un vote de notation pendant 1 heure.",                                          required: false },
-          { name: "❓ Aide",                      description: "Affiche la liste de toutes les actions disponibles.",                                                               required: false },
-        ],
-      }]} />
 
       <ApiAttribution name="The Movie Database (TMDB)" url="https://www.themoviedb.org/" description="métadonnées des films et séries" />
 

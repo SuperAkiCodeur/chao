@@ -5,17 +5,18 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   LayoutDashboard, Users, Clapperboard,
-  ScrollText, Crosshair, Gamepad2, Settings, LogOut,
+  ScrollText, Crosshair, Gamepad2, Settings, LogOut, BookOpen,
 } from "lucide-react";
 
 const NAV = [
-  { href: "/",           label: "Dashboard",  Icon: LayoutDashboard },
-  { href: "/membres",    label: "Membres",    Icon: Users           },
-  { href: "/cinema",     label: "Cinéma",     Icon: Clapperboard    },
-  { href: "/logs",       label: "Logs",       Icon: ScrollText      },
-  { href: "/valorant",   label: "Valorant",   Icon: Crosshair       },
-  { href: "/steam",      label: "Steam",      Icon: Gamepad2        },
-  { href: "/parametres", label: "Paramètres", Icon: Settings        },
+  { href: "/",            label: "Dashboard",  Icon: LayoutDashboard },
+  { href: "/membres",     label: "Membres",    Icon: Users           },
+  { href: "/cinema",      label: "Cinéma",     Icon: Clapperboard    },
+  { href: "/logs",        label: "Logs",       Icon: ScrollText      },
+  { href: "/valorant",    label: "Valorant",   Icon: Crosshair       },
+  { href: "/steam",       label: "Steam",      Icon: Gamepad2        },
+  { href: "/commandes",   label: "Commandes",  Icon: BookOpen        },
+  { href: "/parametres",  label: "Paramètres", Icon: Settings        },
 ];
 
 export function Sidebar() {

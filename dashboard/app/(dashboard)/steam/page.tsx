@@ -2,7 +2,6 @@ import { db } from "@/lib/db";
 import { steamGames, steamConfig } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { SteamClient } from "./SteamClient";
-import { CommandsReference } from "@/components/CommandsReference";
 import type { DiscordChannel, DiscordRole } from "@/components/FeatureSettings";
 import { PageShell, StatCard, SectionCard } from "@/components/PageShell";
 
@@ -46,12 +45,6 @@ export default async function SteamPage() {
           <SteamClient games={games} config={config} channels={channels} roles={roles} />
         </div>
       </SectionCard>
-
-      <CommandsReference commands={[{
-        name: "/steam",
-        description: "Ouvre un menu interactif éphémère avec 5 actions : 🔍 Ajouter un jeu, 📋 Voir la liste, 💰 Comparer les prix, 🗑️ Retirer un jeu, 🔥 Voir les promos en cours.",
-        note: "La comparaison de prix multi-boutiques nécessite une clé ITAD_API_KEY.",
-      }]} />
 
     </PageShell>
   );

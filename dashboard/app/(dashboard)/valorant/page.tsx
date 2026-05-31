@@ -3,7 +3,6 @@ import { valorantLinks } from "@/lib/schema";
 import { desc } from "drizzle-orm";
 import { ValorantClient } from "./ValorantClient";
 import { FeatureSettings, type DiscordChannel, type DiscordRole } from "@/components/FeatureSettings";
-import { CommandsReference } from "@/components/CommandsReference";
 import { ApiAttribution } from "@/components/ApiAttribution";
 import { getAllSettings } from "@/lib/settings";
 import { PageShell, StatCard, SectionCard } from "@/components/PageShell";
@@ -43,17 +42,6 @@ export default async function ValorantPage() {
       <FeatureSettings channels={channels} roles={[] as DiscordRole[]} settings={settings} fields={[
         { key: "valorant_channel_id", label: "Salon Valorant", description: "Salon où le bot poste les résultats", kind: "channel" },
       ]} />
-
-      <CommandsReference commands={[{
-        name: "/valorant", description: "Ouvre un menu éphémère avec cinq actions :",
-        params: [
-          { name: "🔗 Lier mon compte",   description: "Associe ton Riot ID (format Pseudo#Tag) à ton profil Discord.",                            required: false },
-          { name: "📊 Mes résultats",     description: "Affiche tes derniers matchs : mode, résultat, K/D/A et évolution de rang.",                required: false },
-          { name: "📈 Mes stats",         description: "Statistiques détaillées : Global, Par agent, Par map, Temps de jeu.",                      required: false },
-          { name: "🏆 Classement",        description: "Classement des membres du serveur ayant lié leur compte, triés par rang.",                  required: false },
-          { name: "❓ Aide",               description: "Affiche la liste de toutes les actions disponibles.",                                      required: false },
-        ],
-      }]} />
 
       <ApiAttribution name="HenrikDev API" url="https://henrikdev.xyz/" description="statistiques et résultats Valorant via l'API Riot Games" />
 

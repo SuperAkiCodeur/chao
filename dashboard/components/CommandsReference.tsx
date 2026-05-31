@@ -9,19 +9,8 @@ export type BotCommand   = { name: string; description: string; params?: Command
 const BD = "1px solid rgba(255,255,255,0.08)";
 
 export function CommandsReference({ commands }: { commands: BotCommand[] }) {
-  const [panelVisible, setPanelVisible] = useState(false);
-  const [panelAnimClass, setPanelAnimClass] = useState("");
-
-  const panelOpen = panelVisible && panelAnimClass !== "animate-accordion-up";
-
-  function togglePanel() {
-    if (panelVisible) { setPanelAnimClass("animate-accordion-up"); }
-    else { setPanelVisible(true); setPanelAnimClass("animate-accordion-down"); }
-  }
-  function onAnimEnd() {
-    if (panelAnimClass === "animate-accordion-up") setPanelVisible(false);
-    setPanelAnimClass("");
-  }
+  const [panelOpen, setPanelOpen] = useState(false);
+  function togglePanel() { setPanelOpen(o => !o); }
 
   return (
     <div style={{ background: "#202020", borderRadius: 12, border: BD, overflow: "hidden" }}>
@@ -41,12 +30,17 @@ export function CommandsReference({ commands }: { commands: BotCommand[] }) {
         <ChevronDown size={13} style={{ color: "rgba(255,255,255,0.35)", transform: panelOpen ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
       </button>
 
-      {/* Body */}
-      {panelVisible && (
-        <div className={panelAnimClass} onAnimationEnd={onAnimEnd}>
-          <div className="min-h-0">
-            <div style={{ borderTop: BD }}>
-              {commands.map((cmd, i) => (
+      {/* Body — CSS Grid slide animation */}
+      <div style={{
+        display: "grid",
+        gridTemplateRows: panelOpen ? "1fr" : "0fr",
+        transition: "grid-template-rows 0.38s cubic-bezier(0.16,1,0.3,1), opacity 0.28s ease",
+        opacity: panelOpen ? 1 : 0,
+        overflow: "hidden",
+      }}>
+        <div style={{ minHeight: 0 }}>
+          <div style={{ borderTop: BD }}>
+            {commands.map((cmd, i) => (
                 <div
                   key={cmd.name}
                   style={{ padding: "14px 20px", borderTop: i > 0 ? BD : undefined, transition: "background 0.12s, transform 0.18s cubic-bezier(0.16,1,0.3,1)" }}
@@ -115,10 +109,9 @@ export function CommandsReference({ commands }: { commands: BotCommand[] }) {
                   )}
                 </div>
               ))}
-            </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

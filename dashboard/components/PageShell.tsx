@@ -36,7 +36,7 @@ export function PageShell({
       <div
         className="anim-fade-up d-50"
         style={{
-          flex: 1, overflowY: "auto",
+          flex: 1, minHeight: 0, overflowY: "auto",
           padding: "20px",
           display: "flex", flexDirection: "column", gap: 10,
         }}
