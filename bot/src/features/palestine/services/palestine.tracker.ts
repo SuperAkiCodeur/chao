@@ -17,7 +17,7 @@ type RssItem = {
 };
 
 function parseCdata(raw: string): string {
-  const m = raw.match(/^<!\[CDATA\[([\s\S]*?)\]\]>$/s);
+  const m = raw.match(/^<!\[CDATA\[([\s\S]*?)\]\]>$/);
   return m ? m[1] : raw;
 }
 

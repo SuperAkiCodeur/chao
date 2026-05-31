@@ -183,7 +183,7 @@ function DetailDialog({
             onError={(e) => { (e.target as HTMLImageElement).src = "https://cdn.discordapp.com/embed/avatars/0.png"; }}
           />
           <div style={{ minWidth: 0 }}>
-            <DialogTitle style={{ fontSize: 15, fontWeight: 700 }}>{displayName(member)}</DialogTitle>
+            <DialogTitle style={{ fontSize: 17, fontWeight: 400, fontFamily: "var(--font-serif)" }}>{displayName(member)}</DialogTitle>
             <DialogDescription style={{ fontSize: 12, marginTop: 4 }}>@{member.user.username}</DialogDescription>
           </div>
         </div>
@@ -598,7 +598,7 @@ export function MembresClient({ members, roles }: { members: DiscordMember[]; ro
                 />
                 <div style={{ minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <p style={{ fontSize: 14, fontWeight: 600, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1 }}>{displayName(m)}</p>
+                    <p style={{ fontSize: 15, fontWeight: 400, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1, fontFamily: "var(--font-serif)" }}>{displayName(m)}</p>
                     {timedOut && (
                       <span style={{ fontSize: 11, fontWeight: 700, color: "#fbbf24", background: "rgba(251,191,36,0.12)", padding: "1px 6px", borderRadius: 99, flexShrink: 0 }}>sourdine</span>
                     )}

@@ -38,7 +38,7 @@ export default async function HomePage() {
         ].map(({ icon, value, label }) => (
           <div key={label} className="anim-scale-in hover-glow" style={{ display: "flex", alignItems: "center", gap: 6, background: "#242424", border: BD, borderRadius: 99, padding: "5px 12px" }}>
             <span style={{ fontSize: 12 }}>{icon}</span>
-            <span style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{value}</span>
+            <span style={{ fontSize: 15, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)" }}>{value}</span>
             <span style={{ fontSize: 12, color: "rgba(255,255,255,0.30)" }}>{label}</span>
           </div>
         ))}
@@ -74,7 +74,7 @@ export default async function HomePage() {
               <div key={n} className="anim-scale-in hover-lift" style={{ width: 110, borderRadius: 10, padding: "14px", background: bg, border: "1px solid rgba(255,255,255,0.06)", display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 140, animationDelay: `${delay}ms` }}>
                 <span style={{ fontSize: 11, fontWeight: 700, color: muted, letterSpacing: "0.05em" }}>{n}</span>
                 <div>
-                  <p style={{ fontSize: 15, fontWeight: 800, color: fg, letterSpacing: "-0.02em", lineHeight: 1.2 }}>{title}</p>
+                  <p style={{ fontSize: 16, fontWeight: 400, color: fg, lineHeight: 1.2, fontFamily: "var(--font-serif)" }}>{title}</p>
                   <p style={{ fontSize: 12, color: muted, marginTop: 3 }}>{sub}</p>
                 </div>
               </div>
@@ -111,7 +111,7 @@ export default async function HomePage() {
                     {party.status === "active" ? "▶" : "✓"}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 14, fontWeight: 600, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{party.title}</p>
+                    <p style={{ fontSize: 15, fontWeight: 400, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "var(--font-serif)" }}>{party.title}</p>
                     <p style={{ fontSize: 12, color: "rgba(255,255,255,0.28)", marginTop: 2 }}>
                       {party.viewingAt ? new Date(party.viewingAt).toLocaleDateString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "—"}
                     </p>
