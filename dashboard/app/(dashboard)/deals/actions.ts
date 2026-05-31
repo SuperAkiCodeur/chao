@@ -9,6 +9,26 @@ const GUILD_ID = process.env.DISCORD_GUILD_ID!;
 
 export type ActionResult = { success: true } | { success: false; error: string };
 
+export async function createDealsList(data: {
+  channelId: string; name: string; notifChannelId?: string;
+}): Promise<ActionResult> {
+  try {
+    const existing = await db.select().from(dealsConfig)
+      .where(and(eq(dealsConfig.guildId, GUILD_ID), eq(dealsConfig.channelId, data.channelId)));
+    if (existing.length > 0) return { success: false, error: "Une liste existe déjà pour ce salon." };
+    await db.insert(dealsConfig).values({
+      guildId: GUILD_ID,
+      channelId: data.channelId,
+      name: data.name.trim() || null,
+      notifChannelId: data.notifChannelId || null,
+    });
+    revalidatePath("/deals");
+    return { success: true };
+  } catch {
+    return { success: false, error: "Erreur lors de la création." };
+  }
+}
+
 export async function saveDealsNotifChannel(channelId: string, notifChannelId: string): Promise<ActionResult> {
   try {
     const existing = await db.select().from(dealsConfig)

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import { Trash, FloppyDisk, CaretDown, Hash, SpeakerHigh, ArrowRight, PencilSimple, Check } from "@phosphor-icons/react";
 import { saveDealsNotifChannel, removeDealsGame, renameDeals } from "./actions";
 import type { DiscordChannel } from "@/components/FeatureSettings";
@@ -16,11 +16,78 @@ type Game = {
 
 function formatEur(cents: number) { return `${(cents / 100).toFixed(2)} €`; }
 
-function ChannelIcon({ type }: { type: number }) {
-  return type === 2 || type === 13
-    ? <SpeakerHigh size={11} style={{ color: "rgba(255,255,255,0.30)", flexShrink: 0 }} />
-    : <Hash        size={11} style={{ color: "rgba(255,255,255,0.30)", flexShrink: 0 }} />;
+// ── Dropdown stylisé ──────────────────────────────────────────────────────────
+
+function ChannelSelect({ value, onChange, channels, placeholder = "Choisir un salon…" }: {
+  value: string; onChange: (v: string) => void;
+  channels: DiscordChannel[]; placeholder?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref             = useRef<HTMLDivElement>(null);
+  const selected        = channels.find((c) => c.id === value);
+
+  useEffect(() => {
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
+
+  return (
+    <div ref={ref} style={{ position: "relative", flex: 1 }}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        style={{
+          height: 32, width: "100%", display: "flex", alignItems: "center", gap: 7,
+          background: value ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.04)",
+          border: value ? BDI : BD, borderRadius: 8,
+          paddingLeft: 10, paddingRight: 8, fontSize: 13, cursor: "pointer",
+        }}
+      >
+        {selected ? (
+          <span style={{ display: "flex", alignItems: "center", gap: 6, flex: 1, minWidth: 0 }}>
+            {selected.type === 2 || selected.type === 13
+              ? <SpeakerHigh size={11} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />
+              : <Hash        size={11} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />}
+            <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#fff" }}>
+              {selected.name}
+            </span>
+          </span>
+        ) : (
+          <span style={{ flex: 1, textAlign: "left", color: "rgba(255,255,255,0.28)" }}>{placeholder}</span>
+        )}
+        <CaretDown size={11} style={{ color: "rgba(255,255,255,0.30)", flexShrink: 0, transform: open ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
+      </button>
+
+      {open && (
+        <div style={{
+          position: "absolute", left: 0, top: "calc(100% + 4px)", zIndex: 50,
+          width: "max-content", minWidth: "100%", borderRadius: 10, border: BDI,
+          background: "#2a2a2a", boxShadow: "0 12px 36px rgba(0,0,0,0.45)",
+          maxHeight: 220, overflowY: "auto", padding: "4px 0",
+        }}>
+          <button type="button" onClick={() => { onChange(""); setOpen(false); }}
+            style={{ width: "100%", display: "flex", alignItems: "center", gap: 7, padding: "7px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 12, color: "rgba(255,255,255,0.35)" }}>
+            <span style={{ flex: 1, textAlign: "left" }}>— Aucun —</span>
+            {!value && <Check size={11} style={{ color: "#fff" }} />}
+          </button>
+          {channels.map((c) => (
+            <button key={c.id} type="button" onClick={() => { onChange(c.id); setOpen(false); }}
+              style={{ width: "100%", display: "flex", alignItems: "center", gap: 7, padding: "7px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 12 }}>
+              {c.type === 2 || c.type === 13
+                ? <SpeakerHigh size={11} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />
+                : <Hash        size={11} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />}
+              <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#fff" }}>{c.name}</span>
+              {value === c.id && <Check size={11} style={{ color: "#fff", flexShrink: 0 }} />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
+
+// ── DealsClient ───────────────────────────────────────────────────────────────
 
 export function DealsClient({ channelId, channelName, notifChannelId, listName, games, channels }: {
   channelId: string;
@@ -30,24 +97,20 @@ export function DealsClient({ channelId, channelName, notifChannelId, listName, 
   games: Game[];
   channels: DiscordChannel[];
 }) {
-  const [notifVal, setNotifVal]         = useState(notifChannelId ?? "");
-  const [saved, setSaved]               = useState(false);
-  const [error, setError]               = useState<string | null>(null);
-  const [gamesOpen, setGamesOpen]       = useState(false);
-  const [removing, setRemoving]         = useState<number | null>(null);
-  const [nameEditing, setNameEditing]   = useState(false);
-  const [nameVal, setNameVal]           = useState(listName ?? "");
-  const [nameSaved, setNameSaved]       = useState(false);
-  const [pending, startSave]            = useTransition();
-  const [removePending, startRemove]    = useTransition();
-  const [namePending, startNameSave]    = useTransition();
+  const [notifVal, setNotifVal]       = useState(notifChannelId ?? "");
+  const [saved, setSaved]             = useState(false);
+  const [error, setError]             = useState<string | null>(null);
+  const [gamesOpen, setGamesOpen]     = useState(false);
+  const [removing, setRemoving]       = useState<number | null>(null);
+  const [nameEditing, setNameEditing] = useState(false);
+  const [nameVal, setNameVal]         = useState(listName ?? "");
+  const [nameSaved, setNameSaved]     = useState(false);
+  const [pending, startSave]          = useTransition();
+  const [removePending, startRemove]  = useTransition();
+  const [namePending, startNameSave]  = useTransition();
 
-  const textChannels = channels
-    .filter((c) => c.type !== 4)
-    .sort((a, b) => a.position - b.position);
-
-  const notifChannel  = textChannels.find((c) => c.id === notifVal) ?? null;
-  const onSaleCount   = games.filter((g) => g.isOnSale === 1).length;
+  const textChannels = channels.filter((c) => c.type !== 4).sort((a, b) => a.position - b.position);
+  const onSaleCount  = games.filter((g) => g.isOnSale === 1).length;
 
   function handleSaveName() {
     startNameSave(async () => {
@@ -73,12 +136,13 @@ export function DealsClient({ channelId, channelName, notifChannelId, listName, 
   return (
     <div className="card-glow anim-fade-up" style={{ background: "#202020", borderRadius: 12, border: BD, overflow: "hidden" }}>
 
-      {/* ── Ligne principale : salon source → salon notifs ── */}
+      {/* ── Ligne principale ── */}
       <div style={{
         display: "grid", gridTemplateColumns: "1fr auto 1fr auto auto",
         alignItems: "center", gap: 12, padding: "14px 20px",
       }}>
-        {/* Nom de la liste (éditable) */}
+
+        {/* Nom (éditable) + salon source */}
         <div style={{ display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}>
           {nameEditing ? (
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -102,7 +166,12 @@ export function DealsClient({ channelId, channelName, notifChannelId, listName, 
             </div>
           ) : (
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: 20, fontWeight: 400, color: nameVal ? "#fff" : "rgba(255,255,255,0.28)", fontFamily: "var(--font-serif)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontStyle: nameVal ? "normal" : "italic" }}>
+              <span style={{
+                fontSize: 20, fontWeight: 400, fontFamily: "var(--font-serif)",
+                color: nameVal ? "#fff" : "rgba(255,255,255,0.28)",
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                fontStyle: nameVal ? "normal" : "italic",
+              }}>
                 {nameVal || "Sans nom"}
               </span>
               {nameSaved && <Check size={12} style={{ color: "#4ade80", flexShrink: 0 }} />}
@@ -112,43 +181,27 @@ export function DealsClient({ channelId, channelName, notifChannelId, listName, 
                 </span>
               )}
               <button type="button" onClick={() => setNameEditing(true)}
-                style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.25)", display: "flex", padding: 2, flexShrink: 0 }}
-                title="Renommer">
+                style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.25)", display: "flex", padding: 2, flexShrink: 0 }}>
                 <PencilSimple size={12} />
               </button>
             </div>
           )}
-          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", gap: 3 }}>
-            <Hash size={10} style={{ flexShrink: 0 }} />{channelName}
+          {/* Salon source — sans icône # redondante */}
+          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.25)" }}>
+            #{channelName}
           </span>
         </div>
 
         {/* Flèche */}
         <ArrowRight size={13} style={{ color: "rgba(255,255,255,0.20)" }} />
 
-        {/* Select salon notifs */}
-        <div style={{ position: "relative" }}>
-          <select
-            value={notifVal}
-            onChange={(e) => { setNotifVal(e.target.value); setSaved(false); }}
-            style={{
-              width: "100%", height: 32,
-              background: notifVal ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.04)",
-              border: notifVal ? BDI : BD,
-              borderRadius: 8, padding: "0 28px 0 10px",
-              fontSize: 13, color: notifVal ? "#fff" : "rgba(255,255,255,0.35)",
-              outline: "none", cursor: "pointer", appearance: "none",
-            }}
-          >
-            <option value="">— Salon de notifs —</option>
-            {textChannels.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.type === 2 || c.type === 13 ? "🔊 " : "# "}{c.name}
-              </option>
-            ))}
-          </select>
-          <CaretDown size={11} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.30)", pointerEvents: "none" }} />
-        </div>
+        {/* Dropdown stylisé — salon de notifs */}
+        <ChannelSelect
+          value={notifVal}
+          onChange={(v) => { setNotifVal(v); setSaved(false); }}
+          channels={textChannels}
+          placeholder="Salon de notifs…"
+        />
 
         {/* Bouton save */}
         <button
@@ -169,7 +222,7 @@ export function DealsClient({ channelId, channelName, notifChannelId, listName, 
           {pending ? "…" : saved ? "Sauvegardé" : "Sauvegarder"}
         </button>
 
-        {/* Jeux toggle */}
+        {/* Toggle jeux */}
         <button
           type="button"
           onClick={() => setGamesOpen((v) => !v)}
@@ -185,16 +238,14 @@ export function DealsClient({ channelId, channelName, notifChannelId, listName, 
         </button>
       </div>
 
-      {error && (
-        <p style={{ padding: "0 20px 12px", fontSize: 12, color: "#ef4444" }}>{error}</p>
-      )}
+      {error && <p style={{ padding: "0 20px 12px", fontSize: 12, color: "#ef4444", margin: 0 }}>{error}</p>}
 
-      {/* ── Jeux (dépliables) ── */}
+      {/* ── Jeux ── */}
       {gamesOpen && (
         <div style={{ borderTop: BD }}>
           {games.length === 0 ? (
             <p style={{ padding: "14px 20px", fontSize: 13, color: "rgba(255,255,255,0.28)", fontStyle: "italic" }}>
-              Aucun jeu dans cette liste.
+              Aucun jeu — utilise <code>/deals</code> dans <strong>#{channelName}</strong> pour en ajouter.
             </p>
           ) : games.map((g, i) => {
             const priceStr = g.lastKnownPriceEur !== null
@@ -223,11 +274,8 @@ export function DealsClient({ channelId, channelName, notifChannelId, listName, 
                   <div style={{ width: 56, height: 34, borderRadius: 6, background: "rgba(255,255,255,0.06)", flexShrink: 0 }} />
                 )}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <a
-                    href={`https://store.steampowered.com/app/${g.steamAppId}`}
-                    target="_blank" rel="noreferrer"
-                    style={{ fontSize: 17, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", textDecoration: "none", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-                  >
+                  <a href={`https://store.steampowered.com/app/${g.steamAppId}`} target="_blank" rel="noreferrer"
+                    style={{ fontSize: 17, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", textDecoration: "none", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {g.title}
                   </a>
                   <p style={{ fontSize: 12, color: g.isOnSale === 1 ? "#4ade80" : "rgba(255,255,255,0.38)", marginTop: 2 }}>
@@ -235,16 +283,11 @@ export function DealsClient({ channelId, channelName, notifChannelId, listName, 
                   </p>
                 </div>
                 <span style={{ fontSize: 11, color: "rgba(255,255,255,0.22)", flexShrink: 0 }}>{g.addedByName}</span>
-                <button
-                  className="rm-btn"
-                  type="button"
-                  onClick={() => handleRemove(g.id)}
+                <button className="rm-btn" type="button" onClick={() => handleRemove(g.id)}
                   disabled={removePending && removing === g.id}
                   style={{ padding: 6, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.28)", borderRadius: 6, display: "flex", opacity: 0, transition: "opacity 0.15s, color 0.15s", flexShrink: 0 }}
                   onMouseEnter={(e) => (e.currentTarget.style.color = "#ef4444")}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.28)")}
-                  title="Retirer"
-                >
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.28)")}>
                   <Trash size={13} />
                 </button>
               </div>

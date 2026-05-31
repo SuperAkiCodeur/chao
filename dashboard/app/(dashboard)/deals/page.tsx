@@ -3,6 +3,7 @@ import { dealsGames, dealsConfig } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { PageShell, SectionCard, StatCard } from "@/components/PageShell";
 import { DealsClient } from "./DealsClient";
+import { DealsCreator } from "./DealsCreator";
 import type { DiscordChannel } from "@/components/FeatureSettings";
 
 export const dynamic = "force-dynamic";
@@ -58,28 +59,22 @@ export default async function DealsPage() {
         <StatCard value={onSale}      label="En promo"        sub="actuellement" />
       </div>
 
-      {data.size === 0 ? (
-        <SectionCard title="Listes">
-          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.35)", fontStyle: "italic" }}>
-            Aucune liste créée. Utilise <code>/deals</code> dans un salon Discord pour commencer.
-          </p>
-        </SectionCard>
-      ) : (
-        [...data.entries()].map(([channelId, { games, notifChannelId, listName }]) => {
-          const channel = channels.find((c) => c.id === channelId);
-          return (
-            <DealsClient
-              key={channelId}
-              channelId={channelId}
-              channelName={channel?.name ?? channelId}
-              notifChannelId={notifChannelId}
-              listName={listName}
-              games={games}
-              channels={channels}
-            />
-          );
-        })
-      )}
+      {[...data.entries()].map(([channelId, { games, notifChannelId, listName }]) => {
+        const channel = channels.find((c) => c.id === channelId);
+        return (
+          <DealsClient
+            key={channelId}
+            channelId={channelId}
+            channelName={channel?.name ?? channelId}
+            notifChannelId={notifChannelId}
+            listName={listName}
+            games={games}
+            channels={channels}
+          />
+        );
+      })}
+
+      <DealsCreator channels={channels} usedChannelIds={[...data.keys()]} />
 
     </PageShell>
   );
