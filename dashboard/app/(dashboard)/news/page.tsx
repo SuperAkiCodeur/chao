@@ -67,16 +67,40 @@ function nextPost9h(): string {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function NewsPage() {
-  const [feeds, channels] = await Promise.all([
-    db.select().from(newsFeeds).where(eq(newsFeeds.guildId, GUILD_ID)),
-    fetchGuildChannels(),
-  ]);
+  type Feed = typeof newsFeeds.$inferSelect;
+  let feeds: Feed[] = [];
+  let channels: Awaited<ReturnType<typeof fetchGuildChannels>> = [];
+  let dbError = false;
+
+  try {
+    [feeds, channels] = await Promise.all([
+      db.select().from(newsFeeds).where(eq(newsFeeds.guildId, GUILD_ID)),
+      fetchGuildChannels(),
+    ]);
+  } catch {
+    dbError = true;
+  }
 
   const feedsWithArticles = await Promise.all(
     feeds.map(async (feed) => ({ ...feed, articles: await fetchArticles(feed.rssUrl) })),
   );
 
   const countdown = nextPost9h();
+
+  if (dbError) {
+    return (
+      <PageShell title="News" description="Flux RSS postés quotidiennement à 9h dans les salons Discord">
+        <div style={{
+          padding: "20px 24px", borderRadius: 10,
+          background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.18)",
+          fontSize: 14, color: "rgba(255,255,255,0.55)",
+        }}>
+          Impossible de charger les flux. La table <code style={{ fontFamily: "monospace", color: "#ef4444" }}>news_feeds</code> n&apos;existe peut-être pas encore —
+          lance <code style={{ fontFamily: "monospace" }}>npm run db:push</code> depuis le dossier <code style={{ fontFamily: "monospace" }}>bot/</code>.
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell title="News" description="Flux RSS postés quotidiennement à 9h dans les salons Discord">
