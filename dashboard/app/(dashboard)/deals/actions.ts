@@ -4,9 +4,8 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { dealsConfig, dealsGames } from "@/lib/schema";
 import { and, eq } from "drizzle-orm";
+import { GUILD_ID } from "@/lib/discord";
 import type { ActionResult } from "@/lib/types";
-
-const GUILD_ID = process.env.DISCORD_GUILD_ID!;
 
 export type { ActionResult };
 

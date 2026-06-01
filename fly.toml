@@ -1,6 +1,3 @@
-# DÉPRÉCIÉ — utilise le fly.toml à la racine du projet.
-# Commande de déploiement : fly deploy (depuis C:\Users\Akash\Documents\chao)
-
 app            = "chao-bot"
 primary_region = "cdg"
 
@@ -12,7 +9,7 @@ primary_region = "cdg"
   NODE_ENV   = "production"
 
 [processes]
-  app = "node dist/main.js"
+  app = "node_modules/.bin/tsx bot/src/main.ts"
 
 [[vm]]
   memory   = "256mb"

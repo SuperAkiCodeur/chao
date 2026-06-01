@@ -6,12 +6,10 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { addLog } from "@/lib/logger";
 import { getSetting, SETTING_KEYS } from "@/lib/settings";
-import { discordHeaders } from "@/lib/discord";
+import { GUILD_ID, discordHeaders } from "@/lib/discord";
 import type { ActionResult } from "@/lib/types";
 
 export type { ActionResult };
-
-const GUILD_ID = process.env.DISCORD_GUILD_ID!;
 const TMDB_KEY = process.env.TMDB_API_KEY;
 const TMDB_BASE = "https://api.themoviedb.org/3";
 const POSTER_BASE = "https://image.tmdb.org/t/p/w500";

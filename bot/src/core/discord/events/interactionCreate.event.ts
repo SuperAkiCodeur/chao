@@ -46,7 +46,6 @@ import {
   ROULETTE_BACK_BTN_ID,
 } from "../../../features/roulette/domain/roulette.constants.js";
 import {
-  handleDealsCommand as _handleDealsCommand,
   handleDealsMenu,
   handleDealsBack,
   handleDealsSearchModal,

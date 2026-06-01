@@ -27,7 +27,7 @@ export function DealsCreator({ channels, usedChannelIds }: {
     if (!channelId) { setError("Choisis un salon."); return; }
     setError(null);
     start(async () => {
-      const res = await createDealsList({ channelId, name, notifChannelId: channelId });
+      const res = await createDealsList({ channelId, name });
       if (res.success) { setOpen(false); setName(""); setChannelId(""); }
       else setError(res.error ?? "Erreur.");
     });

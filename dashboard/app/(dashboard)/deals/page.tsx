@@ -4,12 +4,9 @@ import { eq } from "drizzle-orm";
 import { PageShell } from "@/components/PageShell";
 import { DealsClient } from "./DealsClient";
 import { DealsCreator } from "./DealsCreator";
-import type { DiscordChannel } from "@/components/FeatureSettings";
+import { GUILD_ID, fetchGuildChannels } from "@/lib/discord";
 
 export const dynamic = "force-dynamic";
-
-const GUILD_ID  = process.env.DISCORD_GUILD_ID!;
-const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN!;
 
 async function getData() {
   const [games, configs] = await Promise.all([
@@ -35,16 +32,8 @@ async function getData() {
   return byChannel;
 }
 
-async function getChannels(): Promise<DiscordChannel[]> {
-  const res = await fetch(
-    `https://discord.com/api/v10/guilds/${GUILD_ID}/channels`,
-    { headers: { Authorization: `Bot ${BOT_TOKEN}` }, cache: "no-store" },
-  );
-  return res.ok ? res.json() : [];
-}
-
 export default async function DealsPage() {
-  const [data, channels] = await Promise.all([getData(), getChannels()]);
+  const [data, channels] = await Promise.all([getData(), fetchGuildChannels()]);
 
   return (
     <PageShell title="Deals" description="Suivi de prix et alertes promotions Steam par salon">

@@ -1,13 +1,12 @@
 import { PageShell } from "@/components/PageShell";
+import { discordHeaders } from "@/lib/discord";
 
 export const dynamic = "force-dynamic";
-
-const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN!;
 
 async function getBotStatus(): Promise<"online" | "offline"> {
   try {
     const res = await fetch("https://discord.com/api/v10/users/@me", {
-      headers: { Authorization: `Bot ${BOT_TOKEN}` },
+      headers: discordHeaders(),
       cache: "no-store",
     });
     return res.ok ? "online" : "offline";

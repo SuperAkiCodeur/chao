@@ -7,14 +7,14 @@ import { signOut } from "next-auth/react";
 import {
   SquaresFour, Users, Popcorn,
   Scroll, Sword, Fire, SignOut,
-  BookOpen, Stack, CaretDown, Globe, type IconWeight,
+  BookOpen, Stack, CaretDown, Newspaper, type IconWeight,
 } from "@phosphor-icons/react";
 
 const FEATURES = [
   { href: "/cinema",    label: "Cinéma",    Icon: Popcorn },
   { href: "/valorant",  label: "Valorant",  Icon: Sword   },
   { href: "/deals",     label: "Deals",     Icon: Fire    },
-  { href: "/palestine", label: "Palestine", Icon: Globe   },
+  { href: "/news",      label: "News",      Icon: Newspaper },
 ];
 
 const FEATURE_HREFS = new Set(FEATURES.map((f) => f.href));
@@ -25,8 +25,8 @@ const NAV_TOP = [
 ];
 
 const NAV_BOTTOM = [
-  { href: "/commandes", label: "Commandes", Icon: BookOpen, iconClass: "" },
-  { href: "/logs",      label: "Logs",      Icon: Scroll,   iconClass: "" },
+  { href: "/commandes", label: "Commandes", Icon: BookOpen },
+  { href: "/logs",      label: "Logs",      Icon: Scroll   },
 ];
 
 const linkBase: React.CSSProperties = {
@@ -189,12 +189,11 @@ export function Sidebar() {
         </div>
 
         {/* Bottom items — no separator */}
-        {NAV_BOTTOM.map(({ href, label, Icon, iconClass }, i) => {
+        {NAV_BOTTOM.map(({ href, label, Icon }, i) => {
           const active = path === href;
           return (
             <NavLink key={href} href={href} label={label} Icon={Icon}
-              active={active} delay={(NAV_TOP.length + 1 + i) * 45}
-              iconClass={iconClass} />
+              active={active} delay={(NAV_TOP.length + 1 + i) * 45} />
           );
         })}
 
@@ -236,10 +235,10 @@ export function Sidebar() {
 
 // ── Shared nav link ───────────────────────────────────────────────────────────
 
-function NavLink({ href, label, Icon, active, delay, iconClass = "" }: {
+function NavLink({ href, label, Icon, active, delay }: {
   href: string; label: string;
-  Icon: React.ComponentType<{ size?: number; weight?: IconWeight; strokeWidth?: number; style?: React.CSSProperties }>;
-  active: boolean; delay: number; iconClass?: string;
+  Icon: React.ComponentType<{ size?: number; weight?: IconWeight; style?: React.CSSProperties }>;
+  active: boolean; delay: number;
 }) {
   return (
     <Link
@@ -258,7 +257,7 @@ function NavLink({ href, label, Icon, active, delay, iconClass = "" }: {
         if (!active) e.currentTarget.style.color = "rgba(255,255,255,0.38)";
       }}
     >
-      <span className={iconClass || undefined}><Icon size={17} weight={active ? "bold" : "regular"} /></span>
+      <Icon size={17} weight={active ? "bold" : "regular"} />
       {label}
     </Link>
   );

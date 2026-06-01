@@ -315,7 +315,7 @@ async function cleanupCinemaParty(
   await cleanupSpectatorRolesForCinemaParty(guild, cinemaParty);
 
   if (!options?.preserveCinemaParty) {
-    deleteCinemaParty(cinemaParty.messageId);
+    await deleteCinemaParty(cinemaParty.messageId);
   }
 }
 
@@ -686,13 +686,6 @@ function buildCinemaBackRow() {
       .setLabel("↩ Revenir au menu")
       .setStyle(ButtonStyle.Secondary),
   );
-}
-
-function parseContentType(input: string): "movie" | "tv" | null {
-  const n = input.toLowerCase().trim().normalize("NFD").replace(/[̀-ͯ]/g, "");
-  if (n === "film" || n === "movie") return "movie";
-  if (n === "serie" || n === "series" || n === "tv") return "tv";
-  return null;
 }
 
 // ── Shared end-party helpers ──────────────────────────────────────────────────

@@ -1,5 +1,4 @@
-import type { ChatInputCommandInteraction } from "discord.js";
-import { EmbedBuilder } from "discord.js";
+import type { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 import { CINEMA_CONSTANTS } from "./cinema.constants.js";
 
 export type CinemaContentType =

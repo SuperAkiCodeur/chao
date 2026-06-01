@@ -29,7 +29,6 @@ export const CINEMA_MODAL_START_PREFIX     = "cinema:modal:start:";
 export const CINEMA_INPUT_TITLE_ID         = "cinema:input:title";
 export const CINEMA_INPUT_DATE_ID          = "cinema:input:date";
 export const CINEMA_INPUT_TIME_ID          = "cinema:input:time";
-export const CINEMA_INPUT_END_TITLE_ID     = "cinema:input:end:title";
 
 // Panel button IDs (persistent embed in the text channel)
 export const CINEMA_PANEL_START_BTN_ID     = "cinema:panel:start";

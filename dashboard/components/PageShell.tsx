@@ -44,35 +44,6 @@ export function PageShell({
   );
 }
 
-/* ── Stat card ── */
-export function StatCard({
-  value, label, sub, delay = 0,
-}: {
-  value: string | number; label: string; sub?: string; delay?: number;
-}) {
-  return (
-    <div
-      className="anim-scale-in hover-lift"
-      style={{
-        background: "#242424", borderRadius: 12, padding: "18px 20px", border: BD,
-        animationDelay: `${delay}ms`,
-      }}
-    >
-      <p style={{ fontSize: 34, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", letterSpacing: "0", lineHeight: 1 }}>
-        {value}
-      </p>
-      <p style={{ fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.55)", marginTop: 8 }}>
-        {label}
-      </p>
-      {sub && (
-        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.25)", marginTop: 3 }}>
-          {sub}
-        </p>
-      )}
-    </div>
-  );
-}
-
 /* ── Section card ── */
 export function SectionCard({
   title, badge, action, children, noPadding = false, delay = 0,

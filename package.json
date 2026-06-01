@@ -1,0 +1,5 @@
+{
+  "name": "chao",
+  "private": true,
+  "workspaces": ["packages/db", "bot", "dashboard"]
+}

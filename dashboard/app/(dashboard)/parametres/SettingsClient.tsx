@@ -5,8 +5,8 @@ import { Check, CaretDown, FloppyDisk, Hash, SpeakerHigh } from "@phosphor-icons
 import { saveSection } from "./actions";
 import type { ActionResult } from "./actions";
 
-export type DiscordChannel = { id: string; name: string; type: number; parent_id: string | null; position: number };
-export type DiscordRole    = { id: string; name: string; color: number; position: number };
+import type { DiscordChannel, DiscordRole } from "@/lib/discord";
+export type { DiscordChannel, DiscordRole };
 
 const LINE  = "1px solid rgba(255,255,255,0.08)";
 const LINE2 = "1px solid rgba(255,255,255,0.12)";

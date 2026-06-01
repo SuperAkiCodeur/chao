@@ -451,6 +451,3 @@ export function scheduleCinemaRatingClosure(
   });
 }
 
-export function cancelCinemaRatingClosure(messageId: string): void {
-  clearScheduledCinemaRatingClosure(messageId);
-}

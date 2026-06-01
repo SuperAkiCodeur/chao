@@ -2,12 +2,10 @@
 
 import { addLog } from "@/lib/logger";
 import { revalidatePath } from "next/cache";
-import { discordHeaders } from "@/lib/discord";
+import { GUILD_ID, discordHeaders } from "@/lib/discord";
 import type { ActionResult } from "@/lib/types";
 
 export type { ActionResult };
-
-const GUILD_ID = process.env.DISCORD_GUILD_ID!;
 
 export async function kickMember(userId: string, userName: string, reason: string): Promise<ActionResult> {
   try {

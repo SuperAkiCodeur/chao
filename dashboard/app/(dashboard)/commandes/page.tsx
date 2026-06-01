@@ -10,6 +10,21 @@ const BDI = "1px solid rgba(255,255,255,0.12)";
 type Param   = { name: string; description: string; required: boolean };
 type Command = { name: string; description: string; adminOnly?: boolean; auto?: boolean; params?: Param[]; note?: string };
 
+type AutoBehavior = { name: string; description: string; note?: string };
+
+const AUTO_BEHAVIORS: AutoBehavior[] = [
+  {
+    name: "News tracker",
+    description: "Chaque jour à 9h (heure de Paris), le bot poste un article aléatoire des dernières 24h pour chaque flux RSS configuré. Les flux sont gérés depuis la page News du dashboard.",
+    note: "Si aucun article n'a été publié dans les 24h sur un flux, le post est annulé pour ce flux.",
+  },
+  {
+    name: "Deals tracker",
+    description: "Toutes les 6h, le bot vérifie les prix Steam de chaque jeu suivi et envoie une alerte dans le salon de notifications si un jeu passe en promotion.",
+    note: "Nécessite une ITAD_API_KEY pour la comparaison multi-boutiques.",
+  },
+];
+
 const COMMANDS: Command[] = [
   {
     name: "/cinema", adminOnly: true,
@@ -65,6 +80,39 @@ export default function CommandesPage() {
 
   return (
     <PageShell title="Commandes" description="Référence complète des commandes et comportements du bot">
+
+      {/* Automatic behaviors */}
+      <div className="anim-fade-up" style={{ background: "#202020", borderRadius: 12, border: BD, overflow: "hidden" }}>
+        <div style={{ padding: "14px 20px", borderBottom: BD }}>
+          <p style={{ fontSize: 15, fontWeight: 700, color: "#fff" }}>Comportements automatiques</p>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.40)", marginTop: 3 }}>
+            Actions déclenchées par le bot sans intervention — configurables via le dashboard
+          </p>
+        </div>
+        {AUTO_BEHAVIORS.map((b, i) => (
+          <div key={b.name} style={{ padding: "16px 20px", borderTop: i > 0 ? BD : undefined }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <code style={{
+                fontSize: 14, fontFamily: "ui-monospace, monospace", fontWeight: 700,
+                color: "#fff", background: "rgba(255,255,255,0.08)", padding: "3px 9px", borderRadius: 4,
+              }}>
+                {b.name}
+              </code>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#38bdf8", background: "rgba(56,189,248,0.10)", border: "1px solid rgba(56,189,248,0.18)", padding: "2px 8px", borderRadius: 99 }}>
+                Automatique
+              </span>
+            </div>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.52)", lineHeight: 1.6, marginBottom: b.note ? 8 : 0 }}>
+              {b.description}
+            </p>
+            {b.note && (
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.28)", fontStyle: "italic", lineHeight: 1.5 }}>
+                {b.note}
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
 
       {/* Search */}
       <div className="anim-fade-in" style={{ position: "relative" }}>
