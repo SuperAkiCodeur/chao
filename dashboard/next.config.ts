@@ -1,7 +1,5 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  transpilePackages: ["@chao/db"],
-};
+const nextConfig: NextConfig = {};
 
 export default nextConfig;
