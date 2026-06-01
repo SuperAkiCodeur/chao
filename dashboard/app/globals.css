@@ -60,6 +60,14 @@ input:focus, input:focus-visible { outline: none; }
   from { opacity: 1; transform: translateY(0); }
   to   { opacity: 0; transform: translateY(-10px); }
 }
+@keyframes expand-down {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+@keyframes expand-up {
+  from { opacity: 1; transform: translateY(0)   scale(1); }
+  to   { opacity: 0; transform: translateY(-6px) scale(0.98); }
+}
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(18px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -96,6 +104,8 @@ input:focus, input:focus-visible { outline: none; }
 /* ── Utility classes ── */
 .animate-accordion-down { animation: accordion-down 0.28s cubic-bezier(0.16,1,0.3,1) both; }
 .animate-accordion-up   { animation: accordion-up   0.20s ease-in both; }
+.animate-expand-down    { animation: expand-down    0.14s cubic-bezier(0.16,1,0.3,1) both; }
+.animate-expand-up      { animation: expand-up      0.10s ease-in both; }
 .anim-fade-up    { animation: fade-up   0.50s cubic-bezier(0.16,1,0.3,1) both; }
 .anim-fade-in    { animation: fade-in   0.30s ease-out both; }
 .anim-scale-in   { animation: scale-in  0.40s cubic-bezier(0.16,1,0.3,1) both; }

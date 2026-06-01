@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useRef, useEffect } from "react";
-import { Check, CaretDown, FloppyDisk, Hash, SpeakerHigh } from "@phosphor-icons/react";
+import { Check, CaretDown, FloppyDisk, Hash, SpeakerHigh, MagnifyingGlass } from "@phosphor-icons/react";
 import { saveSection } from "./actions";
 import type { ActionResult } from "./actions";
 
@@ -25,13 +25,18 @@ function SelectDropdown({
 }) {
   const [open, setOpen]           = useState(false);
   const [animClass, setAnimClass] = useState("");
-  const ref = useRef<HTMLDivElement>(null);
-  const selected = options.find((o) => o.id === value);
+  const [query, setQuery]         = useState("");
+  const ref       = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const selected  = options.find((o) => o.id === value);
   const isVisible = open && animClass !== "animate-expand-up";
+  const filtered  = query.trim()
+    ? options.filter((o) => o.label.toLowerCase().includes(query.toLowerCase()))
+    : options;
 
-  function doOpen()  { setOpen(true);  setAnimClass("animate-expand-down"); }
+  function doOpen()  { setOpen(true);  setAnimClass("animate-expand-down"); setTimeout(() => searchRef.current?.focus(), 10); }
   function doClose() { if (!open) return; setAnimClass("animate-expand-up"); }
-  function onAnimEnd() { if (animClass === "animate-expand-up") setOpen(false); setAnimClass(""); }
+  function onAnimEnd() { if (animClass === "animate-expand-up") { setOpen(false); setQuery(""); } setAnimClass(""); }
 
   useEffect(() => {
     const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) doClose(); };
@@ -68,24 +73,44 @@ function SelectDropdown({
         </button>
 
         {open && (
-          <div
-            className={animClass}
-            onAnimationEnd={onAnimEnd}
+          <div className={animClass} onAnimationEnd={onAnimEnd}
             style={{
               position: "absolute", left: 0, top: "calc(100% + 4px)", zIndex: 50,
               width: "100%", minWidth: 200, borderRadius: 12,
               border: LINE2, background: "#2c2c2c", boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
             }}
           >
-            <div style={{ maxHeight: 220, overflowY: "auto", padding: "4px 0" }}>
-              <button type="button" onClick={() => { onChange(""); doClose(); }}
-                style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "rgba(255,255,255,0.35)" }}>
-                <span style={{ flex: 1, textAlign: "left" }}>— Aucun —</span>
-                {!value && <Check size={13} style={{ color: "#fff" }} />}
-              </button>
-              {options.map((o) => (
+            {/* Search */}
+            <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 10px", borderBottom: LINE }}>
+              <MagnifyingGlass size={12} style={{ color: "rgba(255,255,255,0.28)", flexShrink: 0 }} />
+              <input ref={searchRef} type="text" value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Escape" && doClose()}
+                placeholder="Rechercher…"
+                style={{ flex: 1, background: "transparent", border: "none", outline: "none", fontSize: 13, color: "#fff" }}
+              />
+              {query && (
+                <button type="button" onClick={() => setQuery("")}
+                  style={{ color: "rgba(255,255,255,0.28)", background: "none", border: "none", cursor: "pointer", fontSize: 12, lineHeight: 1 }}>✕</button>
+              )}
+            </div>
+
+            {/* Options */}
+            <div style={{ maxHeight: 200, overflowY: "auto", padding: "3px 0" }}>
+              {!query && (
+                <button type="button" onClick={() => { onChange(""); doClose(); }}
+                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "rgba(255,255,255,0.35)" }}>
+                  <span style={{ flex: 1, textAlign: "left" }}>— Aucun —</span>
+                  {!value && <Check size={13} style={{ color: "#fff" }} />}
+                </button>
+              )}
+              {filtered.length === 0 ? (
+                <p style={{ padding: "8px 12px", fontSize: 13, color: "rgba(255,255,255,0.28)", fontStyle: "italic" }}>
+                  Aucun résultat pour « {query} »
+                </p>
+              ) : filtered.map((o) => (
                 <button key={o.id} type="button" onClick={() => { onChange(o.id); doClose(); }}
-                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 14 }}>
+                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "none", border: "none", cursor: "pointer", fontSize: 13 }}>
                   {o.icon}
                   {o.color && <span style={{ width: 8, height: 8, borderRadius: "50%", background: o.color, flexShrink: 0 }} />}
                   <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: o.color ?? "#fff" }}>{o.label}</span>
