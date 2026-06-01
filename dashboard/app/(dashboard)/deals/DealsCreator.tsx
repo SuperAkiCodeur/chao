@@ -115,6 +115,7 @@ export function DealsCreator({ channels, usedChannelIds }: {
         style={{
           width: "100%", background: "transparent", border: "none", cursor: "pointer",
           display: "flex", alignItems: "center", gap: 10, padding: "14px 20px",
+          outline: "none",
         }}
       >
         <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>

@@ -52,7 +52,9 @@ html, body {
 }
 
 a { text-decoration: none; }
-button { cursor: pointer; }
+button { cursor: pointer; outline: none; }
+button:focus, button:focus-visible { outline: none; }
+input:focus, input:focus-visible { outline: none; }
 
 ::selection { background: #fff; color: #000; }
 ::-webkit-scrollbar { width: 3px; height: 3px; }
