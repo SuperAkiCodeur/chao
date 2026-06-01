@@ -33,8 +33,8 @@ function stripHtml(html: string): string {
       const map: Record<string, string> = {
         "&amp;": "&", "&lt;": "<", "&gt;": ">",
         "&quot;": '"', "&apos;": "'", "&nbsp;": " ",
-        "&rsquo;": "'", "&lsquo;": "'",
-        "&rdquo;": """, "&ldquo;": """,
+        "&rsquo;": "’", "&lsquo;": "‘",
+        "&rdquo;": "”", "&ldquo;": "“",
         "&mdash;": "—", "&ndash;": "–",
         "&hellip;": "…",
       };
@@ -79,9 +79,9 @@ async function fetchRecentItems(rssUrl: string): Promise<RssItem[]> {
   const after = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
   return items.filter((item) => {
-    if (!item.pubDate) return true;          // pas de date → on inclut
+    if (!item.pubDate) return true;          // pas de date -> on inclut
     const d = new Date(item.pubDate);
-    if (isNaN(d.getTime())) return true;     // date illisible → on inclut
+    if (isNaN(d.getTime())) return true;     // date illisible -> on inclut
     return d >= after;
   });
 }
@@ -94,12 +94,12 @@ function pickRandom<T>(arr: T[]): T {
 
 function buildEmbed(item: RssItem): EmbedBuilder {
   const snippet = item.description.length > 350
-    ? item.description.slice(0, 350) + " […]"
+    ? item.description.slice(0, 350) + " [...]"
     : item.description;
 
   return new EmbedBuilder()
     .setColor(EMBED_COLOR)
-    .setAuthor({ name: "Agence Média Palestine", url: "https://agencemediapalestine.fr" })
+    .setAuthor({ name: "Agence Media Palestine", url: "https://agencemediapalestine.fr" })
     .setTitle(item.title.slice(0, 256))
     .setURL(item.link)
     .setDescription(snippet || "​")
@@ -129,12 +129,12 @@ async function postDailyNews(client: Client): Promise<void> {
   try {
     items = await fetchRecentItems(resolvedRssUrl);
   } catch (error) {
-    logger.error("[palestine] Impossible de récupérer le flux RSS", { error });
+    logger.error("[palestine] Impossible de recuperer le flux RSS", { error });
     return;
   }
 
   if (items.length === 0) {
-    logger.info("[palestine] Aucun article dans les dernières 24h, post annulé");
+    logger.info("[palestine] Aucun article dans les dernieres 24h, post annule");
     return;
   }
 
@@ -143,7 +143,7 @@ async function postDailyNews(client: Client): Promise<void> {
 
   const sent = await (channel as { send: Function }).send({ embeds: [embed] });
 
-  // Mémorise la source pour l'affichage dashboard
+  // Memorise la source pour l'affichage dashboard
   try {
     const now = new Date().toISOString();
     await db.insert(dashboardSettings)
@@ -151,7 +151,7 @@ async function postDailyNews(client: Client): Promise<void> {
       .onConflictDoUpdate({ target: dashboardSettings.key, set: { value: "auto", updatedAt: now } });
   } catch { /* non bloquant */ }
 
-  logger.info("[palestine] Article du jour posté", {
+  logger.info("[palestine] Article du jour poste", {
     title:         item.title,
     link:          item.link,
     totalArticles: items.length,
@@ -174,7 +174,7 @@ function msUntilNext9hParis(): number {
 function scheduleNext(client: Client): void {
   const delay = msUntilNext9hParis();
 
-  logger.info("[palestine] Prochain post planifié", {
+  logger.info("[palestine] Prochain post planifie", {
     dans: `${(delay / 1000 / 60 / 60).toFixed(1)}h`,
   });
 
@@ -187,5 +187,5 @@ function scheduleNext(client: Client): void {
 
 export function startPalestineTracker(client: Client): void {
   scheduleNext(client);
-  logger.info("[palestine] Tracker démarré — post quotidien à 9h (Paris)");
+  logger.info("[palestine] Tracker demarre -- post quotidien a 9h (Paris)");
 }
