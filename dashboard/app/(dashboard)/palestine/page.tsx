@@ -85,6 +85,7 @@ type DiscordEmbed = {
   description?: string;
   timestamp?:  string;
   author?:     { name: string; url?: string };
+  footer?:     { text: string };
 };
 
 type DiscordMessage = {
@@ -99,6 +100,7 @@ type BotPost = {
   url:         string;
   description: string;
   timestamp:   string;
+  source:      "auto" | "manuel" | "unknown";
 };
 
 async function fetchBotPosts(channelId: string): Promise<BotPost[]> {
@@ -114,12 +116,14 @@ async function fetchBotPosts(channelId: string): Promise<BotPost[]> {
       .filter((m) => m.embeds?.some((e) => e.author?.name === AMP_AUTHOR))
       .map((m) => {
         const embed = m.embeds!.find((e) => e.author?.name === AMP_AUTHOR)!;
+        const footer = embed.footer?.text;
         return {
           id:          m.id,
           title:       embed.title        ?? "(sans titre)",
           url:         embed.url          ?? AMP_HOME,
           description: embed.description  ?? "",
           timestamp:   embed.timestamp    ?? m.timestamp,
+          source:      footer === "auto" ? "auto" : footer === "manuel" ? "manuel" : "unknown",
         };
       });
   } catch {
@@ -324,12 +328,22 @@ export default async function PalestinePage() {
                         </p>
                       )}
                     </div>
-                    <span style={{
-                      fontSize: 11, color: "rgba(255,255,255,0.30)",
-                      flexShrink: 0, marginTop: 2, whiteSpace: "nowrap",
-                    }}>
-                      {date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
-                    </span>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0 }}>
+                      <span style={{ fontSize: 11, color: "rgba(255,255,255,0.30)", whiteSpace: "nowrap" }}>
+                        {date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+                      </span>
+                      {post.source !== "unknown" && (
+                        <span style={{
+                          fontSize: 10, fontWeight: 600, whiteSpace: "nowrap",
+                          color:       post.source === "auto" ? "rgba(74,222,128,0.7)"  : "rgba(148,163,184,0.7)",
+                          background:  post.source === "auto" ? "rgba(74,222,128,0.08)" : "rgba(148,163,184,0.08)",
+                          border:      post.source === "auto" ? "1px solid rgba(74,222,128,0.15)" : "1px solid rgba(148,163,184,0.15)",
+                          padding: "2px 7px", borderRadius: 99,
+                        }}>
+                          {post.source === "auto" ? "🤖 automatique" : "✋ manuel"}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               );

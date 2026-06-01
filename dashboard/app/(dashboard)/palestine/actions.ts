@@ -31,6 +31,7 @@ export async function postArticleNow(article: {
       title:       article.title.slice(0, 256),
       url:         article.url,
       description: snippet,
+      footer:      { text: "manuel" },
       timestamp:   article.date,
     };
 

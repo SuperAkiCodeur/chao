@@ -101,6 +101,7 @@ function buildEmbed(item: RssItem): EmbedBuilder {
     .setTitle(item.title.slice(0, 256))
     .setURL(item.link)
     .setDescription(snippet || "​")
+    .setFooter({ text: "auto" })
     .setTimestamp(item.pubDate ? new Date(item.pubDate) : new Date());
 }
 
