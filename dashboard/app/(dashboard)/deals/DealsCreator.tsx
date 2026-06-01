@@ -8,8 +8,6 @@ import type { DiscordChannel } from "@/components/FeatureSettings";
 const BD  = "1px solid rgba(255,255,255,0.08)";
 const BDI = "1px solid rgba(255,255,255,0.12)";
 
-// ── Dropdown stylisé ──────────────────────────────────────────────────────────
-
 function ChannelSelect({ value, onChange, channels, placeholder = "Choisir un salon…" }: {
   value: string; onChange: (v: string) => void;
   channels: DiscordChannel[]; placeholder?: string;
@@ -39,7 +37,7 @@ function ChannelSelect({ value, onChange, channels, placeholder = "Choisir un sa
           <span style={{ display: "flex", alignItems: "center", gap: 6, flex: 1, minWidth: 0 }}>
             {selected.type === 2 || selected.type === 13
               ? <SpeakerHigh size={12} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />
-              : <Hash        size={12} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />}
+              : <Hash size={12} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />}
             <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#fff" }}>
               {selected.name}
             </span>
@@ -47,7 +45,11 @@ function ChannelSelect({ value, onChange, channels, placeholder = "Choisir un sa
         ) : (
           <span style={{ flex: 1, textAlign: "left", color: "rgba(255,255,255,0.35)" }}>{placeholder}</span>
         )}
-        <CaretDown size={13} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0, transform: open ? "rotate(180deg)" : undefined }} />
+        <CaretDown size={13} style={{
+          color: "rgba(255,255,255,0.35)", flexShrink: 0,
+          transform: open ? "rotate(180deg)" : undefined,
+          transition: "transform 0.15s ease",
+        }} />
       </button>
 
       {open && (
@@ -61,7 +63,7 @@ function ChannelSelect({ value, onChange, channels, placeholder = "Choisir un sa
           <button type="button" onClick={() => { onChange(""); setOpen(false); }}
             style={{ width: "100%", display: "flex", alignItems: "center", gap: 7, padding: "7px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "rgba(255,255,255,0.35)" }}>
             <span style={{ width: 12, height: 12, flexShrink: 0 }} />
-            <span style={{ flex: 1 }}>— Aucun —</span>
+            <span style={{ flex: 1 }}>-- Aucun --</span>
             {!value && <Check size={12} style={{ color: "#fff" }} />}
           </button>
           {channels.map((c) => (
@@ -69,7 +71,7 @@ function ChannelSelect({ value, onChange, channels, placeholder = "Choisir un sa
               style={{ width: "100%", display: "flex", alignItems: "center", gap: 7, padding: "7px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 13 }}>
               {c.type === 2 || c.type === 13
                 ? <SpeakerHigh size={12} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />
-                : <Hash        size={12} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />}
+                : <Hash size={12} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />}
               <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#fff" }}>{c.name}</span>
               {value === c.id && <Check size={12} style={{ color: "#fff", flexShrink: 0 }} />}
             </button>
@@ -79,8 +81,6 @@ function ChannelSelect({ value, onChange, channels, placeholder = "Choisir un sa
     </div>
   );
 }
-
-// ── DealsCreator ──────────────────────────────────────────────────────────────
 
 export function DealsCreator({ channels, usedChannelIds }: {
   channels: DiscordChannel[];
@@ -100,7 +100,6 @@ export function DealsCreator({ channels, usedChannelIds }: {
     if (!channelId) { setError("Choisis un salon."); return; }
     setError(null);
     start(async () => {
-      // Le salon sélectionné sert à la fois de salon source et de salon notif par défaut
       const res = await createDealsList({ channelId, name, notifChannelId: channelId });
       if (res.success) { setOpen(false); setName(""); setChannelId(""); }
       else setError(res.error ?? "Erreur.");
@@ -109,30 +108,39 @@ export function DealsCreator({ channels, usedChannelIds }: {
 
   return (
     <div style={{ background: "#202020", borderRadius: 12, border: BD }}>
+
+      {/* Header */}
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         style={{
           width: "100%", background: "transparent", border: "none", cursor: "pointer",
           display: "flex", alignItems: "center", gap: 10, padding: "14px 20px",
-          outline: "none",
         }}
       >
-        <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <Plus size={14} style={{ color: "rgba(255,255,255,0.55)" }} />
+        <div style={{
+          width: 26, height: 26, borderRadius: 7,
+          background: "rgba(255,255,255,0.06)",
+          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+        }}>
+          <Plus size={13} style={{ color: "rgba(255,255,255,0.45)" }} />
         </div>
-        <span style={{ fontSize: 15, fontWeight: 500, color: "rgba(255,255,255,0.55)" }}>
+        <span style={{ fontSize: 14, fontWeight: 500, color: "rgba(255,255,255,0.45)", flex: 1, textAlign: "left" }}>
           Créer une liste
         </span>
-        <CaretDown size={12} style={{ color: "rgba(255,255,255,0.25)", marginLeft: "auto", transform: open ? "rotate(180deg)" : undefined }} />
+        <CaretDown size={12} style={{
+          color: "rgba(255,255,255,0.22)",
+          transform: open ? "rotate(180deg)" : undefined,
+          transition: "transform 0.15s ease",
+        }} />
       </button>
 
+      {/* Form */}
       {open && (
-        <div style={{ borderTop: BD, padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
+        <div style={{ borderTop: BD, padding: "16px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
 
-          {/* Nom */}
-          <div style={{ display: "grid", gridTemplateColumns: "90px 1fr", gap: 12, alignItems: "center" }}>
-            <label style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", fontWeight: 600 }}>Nom</label>
+          <div style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: 12, alignItems: "center" }}>
+            <label style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", fontWeight: 500 }}>Nom</label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -140,14 +148,13 @@ export function DealsCreator({ channels, usedChannelIds }: {
               maxLength={50}
               style={{
                 height: 34, background: "rgba(255,255,255,0.05)", border: BDI,
-                borderRadius: 8, padding: "0 12px", fontSize: 13, color: "#fff", outline: "none",
+                borderRadius: 8, padding: "0 12px", fontSize: 13, color: "#fff",
               }}
             />
           </div>
 
-          {/* Salon */}
-          <div style={{ display: "grid", gridTemplateColumns: "90px 1fr", gap: 12, alignItems: "center" }}>
-            <label style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", fontWeight: 600 }}>Salon</label>
+          <div style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: 12, alignItems: "center" }}>
+            <label style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", fontWeight: 500 }}>Salon</label>
             <ChannelSelect
               value={channelId}
               onChange={setChannelId}
@@ -158,19 +165,19 @@ export function DealsCreator({ channels, usedChannelIds }: {
 
           {error && <p style={{ fontSize: 12, color: "#ef4444", margin: 0 }}>{error}</p>}
 
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, paddingTop: 2 }}>
             <button type="button" onClick={() => { setOpen(false); setError(null); }}
-              style={{ height: 34, padding: "0 16px", background: "none", border: BD, borderRadius: 8, fontSize: 13, color: "rgba(255,255,255,0.45)", cursor: "pointer" }}>
+              style={{ height: 32, padding: "0 14px", background: "none", border: BD, borderRadius: 8, fontSize: 13, color: "rgba(255,255,255,0.40)", cursor: "pointer" }}>
               Annuler
             </button>
             <button type="button" onClick={handleCreate} disabled={pending}
               style={{
-                height: 34, padding: "0 16px", display: "flex", alignItems: "center", gap: 6,
+                height: 32, padding: "0 14px", display: "flex", alignItems: "center", gap: 6,
                 background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.16)",
                 borderRadius: 8, fontSize: 13, fontWeight: 600, color: "#fff",
                 cursor: pending ? "not-allowed" : "pointer", opacity: pending ? 0.6 : 1,
               }}>
-              <Plus size={13} />
+              <Plus size={12} />
               {pending ? "Création…" : "Créer"}
             </button>
           </div>

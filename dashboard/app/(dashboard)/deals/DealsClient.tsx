@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useRef, useEffect } from "react";
-import { Trash, FloppyDisk, CaretDown, Hash, SpeakerHigh, ArrowRight, PencilSimple, Check } from "@phosphor-icons/react";
+import { Trash, FloppyDisk, CaretDown, Hash, SpeakerHigh, PencilSimple, Check, ArrowRight } from "@phosphor-icons/react";
 import { saveDealsNotifChannel, removeDealsGame, renameDeals } from "./actions";
 import type { DiscordChannel } from "@/components/FeatureSettings";
 
@@ -16,7 +16,7 @@ type Game = {
 
 function formatEur(cents: number) { return `${(cents / 100).toFixed(2)} €`; }
 
-// ── Dropdown stylisé ──────────────────────────────────────────────────────────
+// ── Channel select ────────────────────────────────────────────────────────────
 
 function ChannelSelect({ value, onChange, channels, placeholder = "Choisir un salon…" }: {
   value: string; onChange: (v: string) => void;
@@ -48,7 +48,7 @@ function ChannelSelect({ value, onChange, channels, placeholder = "Choisir un sa
           <span style={{ display: "flex", alignItems: "center", gap: 6, flex: 1, minWidth: 0 }}>
             {selected.type === 2 || selected.type === 13
               ? <SpeakerHigh size={11} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />
-              : <Hash        size={11} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />}
+              : <Hash size={11} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />}
             <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#fff" }}>
               {selected.name}
             </span>
@@ -56,7 +56,11 @@ function ChannelSelect({ value, onChange, channels, placeholder = "Choisir un sa
         ) : (
           <span style={{ flex: 1, textAlign: "left", color: "rgba(255,255,255,0.28)" }}>{placeholder}</span>
         )}
-        <CaretDown size={11} style={{ color: "rgba(255,255,255,0.30)", flexShrink: 0, transform: open ? "rotate(180deg)" : undefined }} />
+        <CaretDown size={11} style={{
+          color: "rgba(255,255,255,0.30)", flexShrink: 0,
+          transform: open ? "rotate(180deg)" : undefined,
+          transition: "transform 0.15s ease",
+        }} />
       </button>
 
       {open && (
@@ -70,7 +74,7 @@ function ChannelSelect({ value, onChange, channels, placeholder = "Choisir un sa
           <button type="button" onClick={() => { onChange(""); setOpen(false); }}
             style={{ width: "100%", display: "flex", alignItems: "center", gap: 7, padding: "7px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 12, color: "rgba(255,255,255,0.35)" }}>
             <span style={{ width: 11, height: 11, flexShrink: 0 }} />
-            <span style={{ flex: 1 }}>— Aucun —</span>
+            <span style={{ flex: 1 }}>-- Aucun --</span>
             {!value && <Check size={11} style={{ color: "#fff" }} />}
           </button>
           {channels.map((c) => (
@@ -78,7 +82,7 @@ function ChannelSelect({ value, onChange, channels, placeholder = "Choisir un sa
               style={{ width: "100%", display: "flex", alignItems: "center", gap: 7, padding: "7px 10px", background: "none", border: "none", cursor: "pointer", fontSize: 12 }}>
               {c.type === 2 || c.type === 13
                 ? <SpeakerHigh size={11} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />
-                : <Hash        size={11} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />}
+                : <Hash size={11} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />}
               <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#fff" }}>{c.name}</span>
               {value === c.id && <Check size={11} style={{ color: "#fff", flexShrink: 0 }} />}
             </button>
@@ -92,12 +96,9 @@ function ChannelSelect({ value, onChange, channels, placeholder = "Choisir un sa
 // ── DealsClient ───────────────────────────────────────────────────────────────
 
 export function DealsClient({ channelId, channelName, notifChannelId, listName, games, channels }: {
-  channelId: string;
-  channelName: string;
-  notifChannelId: string | null;
-  listName: string | null;
-  games: Game[];
-  channels: DiscordChannel[];
+  channelId: string; channelName: string;
+  notifChannelId: string | null; listName: string | null;
+  games: Game[]; channels: DiscordChannel[];
 }) {
   const [notifVal, setNotifVal]       = useState(notifChannelId ?? "");
   const [saved, setSaved]             = useState(false);
@@ -136,64 +137,91 @@ export function DealsClient({ channelId, channelName, notifChannelId, listName, 
   }
 
   return (
-    <div className="card-glow" style={{ background: "#202020", borderRadius: 12, border: BD, position: "relative", zIndex: 1 }}>
+    <div className="card-glow" style={{ background: "#202020", borderRadius: 12, border: BD, position: "relative" }}>
 
-      {/* ── Ligne principale ── */}
-      <div style={{
-        display: "grid", gridTemplateColumns: "1fr auto 1fr auto auto",
-        alignItems: "center", gap: 12, padding: "14px 20px",
-      }}>
+      {/* ── Ligne 1 : nom + badges + toggle jeux ── */}
+      <div style={{ padding: "14px 20px", display: "flex", alignItems: "center", gap: 10 }}>
 
-        {/* Nom (éditable) + salon source */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}>
-          {nameEditing ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <input
-                autoFocus
-                value={nameVal}
-                onChange={(e) => setNameVal(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") handleSaveName(); if (e.key === "Escape") setNameEditing(false); }}
-                maxLength={50}
-                style={{
-                  fontSize: 18, fontWeight: 400, fontFamily: "var(--font-serif)",
-                  color: "#fff", background: "rgba(255,255,255,0.06)",
-                  border: "1px solid rgba(255,255,255,0.16)", borderRadius: 6,
-                  padding: "2px 8px", outline: "none", minWidth: 0, flex: 1,
-                }}
-              />
-              <button type="button" onClick={handleSaveName} disabled={namePending}
-                style={{ background: "none", border: "none", cursor: "pointer", color: "#4ade80", display: "flex", padding: 4 }}>
-                <Check size={14} />
-              </button>
-            </div>
-          ) : (
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{
-                fontSize: 20, fontWeight: 400, fontFamily: "var(--font-serif)",
-                color: nameVal ? "#fff" : "rgba(255,255,255,0.28)",
-                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                fontStyle: nameVal ? "normal" : "italic",
-              }}>
-                {nameVal || "Sans nom"}
-              </span>
-              {nameSaved && <Check size={12} style={{ color: "#4ade80", flexShrink: 0 }} />}
-              {onSaleCount > 0 && (
-                <span style={{ fontSize: 10, fontWeight: 700, color: "#4ade80", background: "rgba(74,222,128,0.12)", padding: "2px 7px", borderRadius: 99, flexShrink: 0 }}>
-                  🔥 {onSaleCount}
-                </span>
-              )}
-              <button type="button" onClick={() => setNameEditing(true)}
-                style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.25)", display: "flex", padding: 2, flexShrink: 0 }}>
-                <PencilSimple size={12} />
-              </button>
-            </div>
-          )}
-        </div>
+        {nameEditing ? (
+          <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+            <input
+              autoFocus
+              value={nameVal}
+              onChange={(e) => setNameVal(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") handleSaveName(); if (e.key === "Escape") setNameEditing(false); }}
+              maxLength={50}
+              style={{
+                flex: 1, minWidth: 0,
+                fontSize: 18, fontWeight: 400, fontFamily: "var(--font-serif)",
+                color: "#fff", background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.16)", borderRadius: 6,
+                padding: "3px 8px",
+              }}
+            />
+            <button type="button" onClick={handleSaveName} disabled={namePending}
+              style={{ background: "none", border: "none", cursor: "pointer", color: "#4ade80", display: "flex", padding: 4, flexShrink: 0 }}>
+              <Check size={14} />
+            </button>
+          </div>
+        ) : (
+          <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+            <span style={{
+              fontSize: 20, fontWeight: 400, fontFamily: "var(--font-serif)",
+              color: nameVal ? "#fff" : "rgba(255,255,255,0.25)",
+              fontStyle: nameVal ? "normal" : "italic",
+              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+            }}>
+              {nameVal || "Sans nom"}
+            </span>
+            {nameSaved && <Check size={12} style={{ color: "#4ade80", flexShrink: 0 }} />}
+            <button type="button" onClick={() => setNameEditing(true)}
+              style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.20)", display: "flex", padding: 2, flexShrink: 0 }}>
+              <PencilSimple size={13} />
+            </button>
+          </div>
+        )}
 
-        {/* Flèche */}
-        <ArrowRight size={13} style={{ color: "rgba(255,255,255,0.20)" }} />
+        {onSaleCount > 0 && (
+          <span style={{
+            fontSize: 11, fontWeight: 700, color: "#4ade80",
+            background: "rgba(74,222,128,0.10)", border: "1px solid rgba(74,222,128,0.18)",
+            padding: "2px 8px", borderRadius: 99, flexShrink: 0,
+          }}>
+            {"🔥"} {onSaleCount} en promo
+          </span>
+        )}
 
-        {/* Dropdown stylisé — salon de notifs */}
+        <button
+          type="button"
+          onClick={() => setGamesOpen((v) => !v)}
+          style={{
+            display: "flex", alignItems: "center", gap: 5, flexShrink: 0,
+            background: gamesOpen ? "rgba(255,255,255,0.08)" : "transparent",
+            border: BD, borderRadius: 8, padding: "0 10px", height: 30,
+            fontSize: 12, color: "rgba(255,255,255,0.45)", cursor: "pointer",
+            transition: "background 0.15s",
+          }}
+        >
+          <span>{games.length} jeu{games.length !== 1 ? "x" : ""}</span>
+          <CaretDown size={11} style={{
+            transform: gamesOpen ? "rotate(180deg)" : undefined,
+            transition: "transform 0.15s ease",
+          }} />
+        </button>
+      </div>
+
+      {/* ── Ligne 2 : #source -> notif + sauvegarder ── */}
+      <div style={{ borderTop: BD, padding: "10px 20px", display: "flex", alignItems: "center", gap: 8 }}>
+
+        <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, color: "rgba(255,255,255,0.35)", flexShrink: 0 }}>
+          <Hash size={12} style={{ flexShrink: 0 }} />
+          <span style={{ maxWidth: 130, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {channelName}
+          </span>
+        </span>
+
+        <ArrowRight size={12} style={{ color: "rgba(255,255,255,0.18)", flexShrink: 0 }} />
+
         <ChannelSelect
           value={notifVal}
           onChange={(v) => { setNotifVal(v); setSaved(false); }}
@@ -201,42 +229,30 @@ export function DealsClient({ channelId, channelName, notifChannelId, listName, 
           placeholder="Salon de notifs…"
         />
 
-        {/* Bouton save */}
         <button
           type="button"
           onClick={handleSave}
           disabled={pending}
           style={{
             display: "flex", alignItems: "center", gap: 5, flexShrink: 0,
-            background: saved ? "rgba(74,222,128,0.12)" : "rgba(255,255,255,0.08)",
-            color: saved ? "#4ade80" : "#fff",
-            border: `1px solid ${saved ? "rgba(74,222,128,0.22)" : "rgba(255,255,255,0.12)"}`,
-            borderRadius: 8, padding: "0 12px", height: 32, fontSize: 12, fontWeight: 600,
-            cursor: pending ? "not-allowed" : "pointer", opacity: pending ? 0.6 : 1,
-            transition: "background 0.2s, color 0.2s, border-color 0.2s",
+            background: saved ? "rgba(74,222,128,0.10)" : "rgba(255,255,255,0.06)",
+            color: saved ? "#4ade80" : "rgba(255,255,255,0.60)",
+            border: `1px solid ${saved ? "rgba(74,222,128,0.20)" : "rgba(255,255,255,0.10)"}`,
+            borderRadius: 8, padding: "0 12px", height: 32,
+            fontSize: 12, fontWeight: 600,
+            cursor: pending ? "not-allowed" : "pointer",
+            opacity: pending ? 0.5 : 1,
+            transition: "background 0.15s, color 0.15s, border-color 0.15s",
           }}
         >
           <FloppyDisk size={12} />
           {pending ? "…" : saved ? "Sauvegardé" : "Sauvegarder"}
         </button>
-
-        {/* Toggle jeux */}
-        <button
-          type="button"
-          onClick={() => setGamesOpen((v) => !v)}
-          style={{
-            display: "flex", alignItems: "center", gap: 5, flexShrink: 0,
-            background: "transparent", border: BD, borderRadius: 8,
-            padding: "0 10px", height: 32, fontSize: 12,
-            color: "rgba(255,255,255,0.40)", cursor: "pointer",
-          }}
-        >
-          <span>{games.length} jeu{games.length !== 1 ? "x" : ""}</span>
-          <CaretDown size={11} style={{ transform: gamesOpen ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
-        </button>
       </div>
 
-      {error && <p style={{ padding: "0 20px 12px", fontSize: 12, color: "#ef4444", margin: 0 }}>{error}</p>}
+      {error && (
+        <p style={{ padding: "0 20px 10px", fontSize: 12, color: "#ef4444", margin: 0 }}>{error}</p>
+      )}
 
       {/* ── Jeux ── */}
       {gamesOpen && (
@@ -248,14 +264,14 @@ export function DealsClient({ channelId, channelName, notifChannelId, listName, 
           ) : games.map((g, i) => {
             const priceStr = g.lastKnownPriceEur !== null
               ? g.isOnSale === 1
-                ? `En promo — ${formatEur(g.lastKnownPriceEur)} (-${g.lastKnownDiscount ?? 0}%)`
+                ? `${formatEur(g.lastKnownPriceEur)} (-${g.lastKnownDiscount ?? 0}%)`
                 : formatEur(g.lastKnownPriceEur)
-              : "Prix non vérifié";
+              : "Prix inconnu";
 
             return (
               <div
                 key={g.id}
-                style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 20px", borderTop: i > 0 ? BD : undefined, transition: "background 0.12s" }}
+                style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 20px", borderTop: i > 0 ? BD : undefined }}
                 onMouseEnter={(e) => {
                   (e.currentTarget.querySelector(".rm-btn") as HTMLElement | null)?.style.setProperty("opacity", "1");
                   e.currentTarget.style.background = "rgba(255,255,255,0.03)";
@@ -271,21 +287,24 @@ export function DealsClient({ channelId, channelName, notifChannelId, listName, 
                 ) : (
                   <div style={{ width: 56, height: 34, borderRadius: 6, background: "rgba(255,255,255,0.06)", flexShrink: 0 }} />
                 )}
+
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <a href={`https://store.steampowered.com/app/${g.steamAppId}`} target="_blank" rel="noreferrer"
-                    style={{ fontSize: 17, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", textDecoration: "none", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    style={{ fontSize: 15, fontWeight: 400, color: "#fff", fontFamily: "var(--font-serif)", textDecoration: "none", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {g.title}
                   </a>
-                  <p style={{ fontSize: 12, color: g.isOnSale === 1 ? "#4ade80" : "rgba(255,255,255,0.38)", marginTop: 2 }}>
-                    {priceStr}
+                  <p style={{ fontSize: 12, color: g.isOnSale === 1 ? "#4ade80" : "rgba(255,255,255,0.35)", marginTop: 2 }}>
+                    {g.isOnSale === 1 ? `En promo — ${priceStr}` : priceStr}
                   </p>
                 </div>
-                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.22)", flexShrink: 0 }}>{g.addedByName}</span>
+
+                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.20)", flexShrink: 0 }}>{g.addedByName}</span>
+
                 <button className="rm-btn" type="button" onClick={() => handleRemove(g.id)}
                   disabled={removePending && removing === g.id}
-                  style={{ padding: 6, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.28)", borderRadius: 6, display: "flex", opacity: 0, transition: "opacity 0.15s, color 0.15s", flexShrink: 0 }}
+                  style={{ padding: 6, background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.25)", borderRadius: 6, display: "flex", opacity: 0, transition: "opacity 0.15s, color 0.15s", flexShrink: 0 }}
                   onMouseEnter={(e) => (e.currentTarget.style.color = "#ef4444")}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.28)")}>
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.25)")}>
                   <Trash size={13} />
                 </button>
               </div>
