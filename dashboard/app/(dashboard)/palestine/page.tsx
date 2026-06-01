@@ -118,7 +118,7 @@ async function fetchBotPosts(channelId: string): Promise<BotPost[]> {
   }
 }
 
-async function fetchTodayArticles(rssUrl: string): Promise<TodayArticle[]> {
+async function fetchLatestArticles(rssUrl: string, limit = 10): Promise<TodayArticle[]> {
   try {
     const res = await fetch(rssUrl, {
       cache: "no-store",
@@ -128,23 +128,13 @@ async function fetchTodayArticles(rssUrl: string): Promise<TodayArticle[]> {
     const xml   = await res.text();
     const items = parseRss(xml);
 
-    // Dernières 24h — si la date est absente ou non parseable on inclut quand même
-    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
-
-    return items
-      .filter((item) => {
-        if (!item.pubDate) return true;           // pas de date → on inclut
-        const d = new Date(item.pubDate);
-        if (isNaN(d.getTime())) return true;      // date illisible → on inclut
-        return d >= cutoff;
-      })
-      .map((item, idx) => ({
-        id:          idx,
-        title:       item.title       || "(sans titre)",
-        url:         item.link        || rssUrl,
-        description: item.description,
-        date:        item.pubDate,
-      }));
+    return items.slice(0, limit).map((item, idx) => ({
+      id:          idx,
+      title:       item.title       || "(sans titre)",
+      url:         item.link        || rssUrl,
+      description: item.description,
+      date:        item.pubDate,
+    }));
   } catch {
     return [];
   }
@@ -183,7 +173,7 @@ export default async function PalestinePage() {
 
   const [botPosts, todayArticles] = await Promise.all([
     fetchBotPosts(channelId),
-    fetchTodayArticles(rssUrl),
+    fetchLatestArticles(rssUrl),
   ]);
 
   const countdown = nextPost9h();

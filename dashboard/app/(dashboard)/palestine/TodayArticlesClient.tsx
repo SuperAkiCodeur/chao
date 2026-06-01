@@ -37,13 +37,13 @@ export function TodayArticlesClient({ articles }: { articles: TodayArticle[] }) 
 
   return (
     <SectionCard
-      title="Dernières 24h"
+      title="Derniers articles"
       badge={articles.length > 0 ? `${articles.length} article${articles.length !== 1 ? "s" : ""}` : undefined}
       noPadding
     >
       {articles.length === 0 ? (
         <p style={{ padding: 20, fontSize: 14, color: "rgba(255,255,255,0.28)", fontStyle: "italic", textAlign: "center" }}>
-          Aucun article publié aujourd'hui.
+          Aucun article disponible.
         </p>
       ) : (
         <div style={{ display: "flex", flexDirection: "column" }}>
