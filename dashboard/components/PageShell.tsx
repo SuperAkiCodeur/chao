@@ -34,7 +34,7 @@ export function PageShell({
 
       {/* Contenu scrollable */}
       {/* scroll container séparé du layout — flex-shrink ne peut pas écraser les enfants */}
-      <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
+      <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarGutter: "stable" }}>
         <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 10 }}>
           {children}
         </div>
