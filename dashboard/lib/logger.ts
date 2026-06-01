@@ -2,7 +2,7 @@ import { db } from "./db";
 import { dashboardLogs } from "./schema";
 
 export async function addLog(params: {
-  type: "cinema" | "valorant" | "member" | "moderation";
+  type: "cinema" | "valorant" | "member" | "moderation" | "news";
   action: string;
   description: string;
   userId?: string | null;
