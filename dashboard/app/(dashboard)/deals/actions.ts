@@ -7,8 +7,6 @@ import { and, eq } from "drizzle-orm";
 import { GUILD_ID } from "@/lib/discord";
 import type { ActionResult } from "@/lib/types";
 
-export type { ActionResult };
-
 export async function createDealsList(data: {
   channelId: string; name: string; notifChannelId?: string;
 }): Promise<ActionResult> {

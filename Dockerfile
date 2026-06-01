@@ -2,11 +2,10 @@ FROM node:22-slim
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Copy workspace manifests (all three needed for npm to resolve the workspace graph)
+# Copy workspace manifests
 COPY package.json ./
 COPY packages/db/package.json ./packages/db/
 COPY bot/package.json ./bot/
-COPY dashboard/package.json ./dashboard/
 
 # Install only bot + shared package production deps
 RUN npm install --workspace=bot --workspace=packages/db --omit=dev
