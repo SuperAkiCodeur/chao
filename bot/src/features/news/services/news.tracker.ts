@@ -1,4 +1,4 @@
-import type { Client } from "discord.js";
+import type { Client, TextBasedChannel } from "discord.js";
 import { EmbedBuilder } from "discord.js";
 import { eq } from "drizzle-orm";
 import { logger } from "../../../core/app/logger.js";
@@ -100,7 +100,7 @@ async function postFeed(client: Client, feed: Feed): Promise<void> {
 
   const item  = items[Math.floor(Math.random() * items.length)];
   const embed = buildEmbed(item, feed);
-  const sent  = await (channel as { send: Function }).send({ embeds: [embed] });
+  const sent  = await (channel as TextBasedChannel).send({ embeds: [embed] });
 
   try {
     const now = new Date().toISOString();

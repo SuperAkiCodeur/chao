@@ -6,7 +6,6 @@ import { saveSection } from "./actions";
 import type { ActionResult } from "./actions";
 
 import type { DiscordChannel, DiscordRole } from "@/lib/discord";
-export type { DiscordChannel, DiscordRole };
 
 const LINE  = "1px solid rgba(255,255,255,0.08)";
 const LINE2 = "1px solid rgba(255,255,255,0.12)";
