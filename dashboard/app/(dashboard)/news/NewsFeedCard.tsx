@@ -4,9 +4,10 @@ import { useState, useTransition } from "react";
 import {
   ArrowSquareOut, PaperPlaneTilt, PencilSimple, Trash,
   Check, WarningCircle, X, CaretDown, ClockCounterClockwise,
-  Newspaper, CalendarBlank,
+  Newspaper, Clock,
 } from "@phosphor-icons/react";
 import { ChannelSelect } from "@/components/ChannelSelect";
+import { TimesPicker } from "./AddFeedForm";
 import { updateFeed, deleteFeed, postArticleNow, getFeedHistory } from "./actions";
 import type { HistoryEntry } from "./actions";
 import type { DiscordChannel } from "@/lib/discord";
@@ -16,7 +17,7 @@ import type { DiscordChannel } from "@/lib/discord";
 export type Article = { title: string; url: string; description: string; date: string };
 export type Feed    = {
   id: number; guildId: string; name: string; rssUrl: string;
-  channelId: string; color: number; createdAt: string;
+  channelId: string; color: number; postTimes: string; createdAt: string;
   articles: Article[];
 };
 
@@ -217,15 +218,20 @@ function HistorySection({ feedId }: { feedId: number }) {
 
 // ── EditForm ──────────────────────────────────────────────────────────────────
 
+function parseTimes(raw: string): number[] {
+  try { const a = JSON.parse(raw); return Array.isArray(a) ? a : [9]; } catch { return [9]; }
+}
+
 function EditForm({ feed, channels, onSave, onCancel }: {
   feed: Feed; channels: DiscordChannel[];
-  onSave: (data: { name: string; rssUrl: string; channelId: string; color: number }) => void;
+  onSave: (data: { name: string; rssUrl: string; channelId: string; color: number; postTimes: number[] }) => void;
   onCancel: () => void;
 }) {
   const [name,      setName]      = useState(feed.name);
   const [rssUrl,    setRssUrl]    = useState(feed.rssUrl);
   const [channelId, setChannelId] = useState(feed.channelId);
   const [color,     setColor]     = useState(toHex(feed.color));
+  const [postTimes, setPostTimes] = useState<number[]>(parseTimes(feed.postTimes));
   const [error,     setError]     = useState<string | null>(null);
   const [pending,   start]        = useTransition();
 
@@ -236,10 +242,11 @@ function EditForm({ feed, channels, onSave, onCancel }: {
 
   function handleSave() {
     if (!name.trim() || !rssUrl.trim() || !channelId) { setError("Tous les champs sont requis."); return; }
+    if (postTimes.length === 0) { setError("Au moins une heure requise."); return; }
     setError(null);
     start(async () => {
-      const res = await updateFeed(feed.id, { name: name.trim(), rssUrl: rssUrl.trim(), channelId, color: toInt(color) });
-      if (res.success) onSave({ name: name.trim(), rssUrl: rssUrl.trim(), channelId, color: toInt(color) });
+      const res = await updateFeed(feed.id, { name: name.trim(), rssUrl: rssUrl.trim(), channelId, color: toInt(color), postTimes });
+      if (res.success) onSave({ name: name.trim(), rssUrl: rssUrl.trim(), channelId, color: toInt(color), postTimes });
       else setError(res.error ?? "Erreur.");
     });
   }
@@ -263,6 +270,12 @@ function EditForm({ feed, channels, onSave, onCancel }: {
           {node}
         </div>
       ))}
+      <div style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: 12, alignItems: "flex-start" }}>
+        <label style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", fontWeight: 500, paddingTop: 5 }}>
+          <Clock size={11} style={{ marginRight: 4 }} />Horaires
+        </label>
+        <TimesPicker value={postTimes} onChange={setPostTimes} />
+      </div>
       {error && <p style={{ margin: 0, fontSize: 12, color: "#ef4444" }}>{error}</p>}
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
         <button onClick={onCancel} style={{ height: 32, padding: "0 14px", background: "none", border: BD, borderRadius: 8, fontSize: 13, color: "rgba(255,255,255,0.40)", cursor: "pointer" }}>
@@ -290,15 +303,8 @@ export function NewsFeedCard({ feed: initialFeed, channels }: { feed: Feed; chan
     start(async () => { await deleteFeed(feed.id); });
   }
 
-  // Sépare articles récents (< 24h, candidats bot) des archives
-  const now24h      = Date.now() - 24 * 60 * 60 * 1000;
-  const candidates  = feed.articles.filter(a => {
-    if (!a.date) return false;
-    const d = new Date(a.date).getTime();
-    return !isNaN(d) && d >= now24h;
-  });
-  const archives    = feed.articles.filter(a => !candidates.includes(a));
-  const ch          = channels.find(c => c.id === feed.channelId);
+  const ch        = channels.find(c => c.id === feed.channelId);
+  const schedule  = parseTimes(feed.postTimes).map(h => `${h}h`).join(" · ");
 
   return (
     <div className="anim-fade-up" style={{ background: "#202020", borderRadius: 12, border: BD, overflow: "hidden" }}>
@@ -314,6 +320,10 @@ export function NewsFeedCard({ feed: initialFeed, channels }: { feed: Feed; chan
             {feed.name}
           </span>
           {ch && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.25)", flexShrink: 0 }}>#{ch.name}</span>}
+          <span style={{ fontSize: 11, color: "rgba(56,189,248,0.60)", flexShrink: 0, display: "flex", alignItems: "center", gap: 3 }}>
+            <Clock size={10} />
+            {schedule}
+          </span>
           <span style={{ fontSize: 11, color: "rgba(255,255,255,0.18)", flexShrink: 0 }}>
             {feed.articles.length} art.
           </span>
@@ -339,7 +349,7 @@ export function NewsFeedCard({ feed: initialFeed, channels }: { feed: Feed; chan
         <EditForm
           feed={feed}
           channels={channels}
-          onSave={(data) => { setFeed(f => ({ ...f, ...data })); setEditing(false); }}
+          onSave={(data) => { setFeed(f => ({ ...f, ...data, postTimes: JSON.stringify(data.postTimes) })); setEditing(false); }}
           onCancel={() => setEditing(false)}
         />
       )}
@@ -347,40 +357,23 @@ export function NewsFeedCard({ feed: initialFeed, channels }: { feed: Feed; chan
       {/* ── Sections ── */}
       {open && !editing && (
         <>
-          {/* Section 1 : Candidats 9h */}
-          <div style={{ borderTop: BD }}>
-            <SectionHeader
-              icon={<CalendarBlank size={12} />}
-              label="Candidats 9h"
-              count={candidates.length}
-              accent={candidates.length > 0 ? "#38bdf8" : undefined}
-            />
-            {candidates.length === 0 ? (
-              <p style={{ padding: "6px 20px 12px", fontSize: 12, color: "rgba(255,255,255,0.22)", fontStyle: "italic" }}>
-                Aucun article dans les 24 dernières heures — pas de post automatique prévu ce soir.
-              </p>
-            ) : candidates.map((a, i) => (
-              <ArticleRow key={i} article={a} feed={feed} onPost={() => {}} />
-            ))}
-          </div>
-
-          {/* Section 2 : Derniers articles */}
+          {/* Section 1 : Derniers articles */}
           <div style={{ borderTop: BD }}>
             <SectionHeader
               icon={<Newspaper size={12} />}
               label="Derniers articles"
-              count={archives.length}
+              count={feed.articles.length}
             />
-            {archives.length === 0 ? (
+            {feed.articles.length === 0 ? (
               <p style={{ padding: "6px 20px 12px", fontSize: 12, color: "rgba(255,255,255,0.22)", fontStyle: "italic" }}>
-                Aucun article plus ancien disponible.
+                Aucun article disponible pour ce flux.
               </p>
             ) : (
-              <ArticlesWithMore articles={archives} feed={feed} />
+              <ArticlesWithMore articles={feed.articles} feed={feed} />
             )}
           </div>
 
-          {/* Section 3 : Historique */}
+          {/* Section 2 : Historique */}
           <HistorySection feedId={feed.id} />
         </>
       )}

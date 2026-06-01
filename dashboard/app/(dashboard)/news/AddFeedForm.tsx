@@ -1,13 +1,42 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, CaretDown } from "@phosphor-icons/react";
+import { Plus, CaretDown, Clock } from "@phosphor-icons/react";
 import { ChannelSelect } from "@/components/ChannelSelect";
 import { createFeed } from "./actions";
 import type { DiscordChannel } from "@/lib/discord";
 
 const BD  = "1px solid rgba(255,255,255,0.08)";
 const BDI = "1px solid rgba(255,255,255,0.12)";
+
+export function TimesPicker({ value, onChange }: { value: number[]; onChange: (v: number[]) => void }) {
+  function toggle(h: number) {
+    if (value.includes(h)) {
+      if (value.length <= 1) return; // au moins 1
+      onChange(value.filter((v) => v !== h));
+    } else {
+      onChange([...value, h].sort((a, b) => a - b));
+    }
+  }
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+      {Array.from({ length: 24 }, (_, h) => (
+        <button key={h} type="button" onClick={() => toggle(h)} style={{
+          width: 38, height: 26, borderRadius: 6, fontSize: 11, fontWeight: value.includes(h) ? 700 : 400,
+          color:       value.includes(h) ? "#38bdf8"                    : "rgba(255,255,255,0.32)",
+          background:  value.includes(h) ? "rgba(56,189,248,0.15)"     : "rgba(255,255,255,0.04)",
+          border:      value.includes(h) ? "1px solid rgba(56,189,248,0.40)" : BD,
+          cursor: "pointer",
+        }}>
+          {h}h
+        </button>
+      ))}
+      <span style={{ width: "100%", fontSize: 11, color: "rgba(255,255,255,0.22)", marginTop: 2 }}>
+        {value.length} post{value.length > 1 ? "s" : ""}/jour · {value.map(h => `${h}h`).join(", ")}
+      </span>
+    </div>
+  );
+}
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -24,6 +53,7 @@ export function AddFeedForm({ channels }: { channels: DiscordChannel[] }) {
   const [rssUrl, setRssUrl]       = useState("");
   const [channelId, setChannelId] = useState("");
   const [color, setColor]         = useState("#4ade80");
+  const [postTimes, setPostTimes] = useState<number[]>([9]);
   const [error, setError]         = useState<string | null>(null);
   const [pending, start]          = useTransition();
 
@@ -31,15 +61,17 @@ export function AddFeedForm({ channels }: { channels: DiscordChannel[] }) {
     if (!name.trim() || !rssUrl.trim() || !channelId) {
       setError("Nom, URL RSS et salon sont requis."); return;
     }
+    if (postTimes.length === 0) { setError("Au moins une heure requise."); return; }
     setError(null);
     start(async () => {
       const res = await createFeed({
         name, rssUrl, channelId,
         color: parseInt(color.replace("#", ""), 16),
+        postTimes,
       });
       if (res.success) {
         setOpen(false);
-        setName(""); setRssUrl(""); setChannelId(""); setColor("#4ade80");
+        setName(""); setRssUrl(""); setChannelId(""); setColor("#4ade80"); setPostTimes([9]);
       } else {
         setError(res.error ?? "Erreur.");
       }
@@ -92,6 +124,12 @@ export function AddFeedForm({ channels }: { channels: DiscordChannel[] }) {
               <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", fontFamily: "monospace" }}>{color}</span>
             </div>
           </Row>
+          <div style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: 12, alignItems: "flex-start" }}>
+            <label style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", fontWeight: 500, paddingTop: 6 }}>
+              <Clock size={11} style={{ marginRight: 4 }} />Horaires
+            </label>
+            <TimesPicker value={postTimes} onChange={setPostTimes} />
+          </div>
           {error && <p style={{ margin: 0, fontSize: 12, color: "#ef4444" }}>{error}</p>}
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, paddingTop: 2 }}>
             <button type="button" onClick={() => { setOpen(false); setError(null); }} style={{

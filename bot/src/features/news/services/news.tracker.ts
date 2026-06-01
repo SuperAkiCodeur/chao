@@ -7,12 +7,37 @@ import { newsFeeds, dashboardSettings } from "../../../core/db/schema.js";
 import { insertLog } from "../../../core/db/logger.js";
 import { env } from "../../../core/config/env.js";
 
-const POST_HOUR_PARIS = 9;
-
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type RssItem = { title: string; link: string; description: string; pubDate: string };
 type Feed    = typeof newsFeeds.$inferSelect;
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function parsePostTimes(raw: string | null | undefined): number[] {
+  try {
+    const arr = JSON.parse(raw ?? "[9]");
+    if (!Array.isArray(arr)) return [9];
+    return arr.filter((h): h is number => typeof h === "number" && h >= 0 && h < 24);
+  } catch {
+    return [9];
+  }
+}
+
+function currentHourParis(): number {
+  return new Date(
+    new Date().toLocaleString("en-US", { timeZone: "Europe/Paris" }),
+  ).getHours();
+}
+
+function msUntilNextHourParis(): number {
+  const now      = new Date();
+  const paris    = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Paris" }));
+  const nextHour = new Date(paris);
+  nextHour.setMinutes(0, 0, 0);
+  nextHour.setHours(nextHour.getHours() + 1);
+  return nextHour.getTime() - paris.getTime();
+}
 
 // ── RSS parser ────────────────────────────────────────────────────────────────
 
@@ -28,8 +53,8 @@ function stripHtml(html: string): string {
     .replace(/&#x([0-9a-f]+);/gi, (_, c) => String.fromCharCode(parseInt(c, 16)))
     .replace(/&[a-z]+;/gi, (e) => (
       { "&amp;":"&","&lt;":"<","&gt;":">","&quot;":'"',"&apos;":"'",
-        "&nbsp;":" ","&rsquo;":"'","&lsquo;":"'","&rdquo;":"”",
-        "&ldquo;":"“","&mdash;":"—","&ndash;":"–","&hellip;":"…" }[e] ?? e
+        "&nbsp;":" ","&rsquo;":"'","&lsquo;":"'","&rdquo;":""",
+        "&ldquo;":""","&mdash;":"—","&ndash;":"–","&hellip;":"…" }[e] ?? e
     ))
     .replace(/\s+/g, " ").trim();
 }
@@ -110,46 +135,44 @@ async function postFeed(client: Client, feed: Feed): Promise<void> {
   } catch { /* non bloquant */ }
 
   void insertLog({
-    type: "news",
-    action: "article_posted",
+    type:        "news",
+    action:      "article_posted",
     description: `📰 [${feed.name}] « ${item.title} »`,
-    metadata: { feedId: feed.id, feedName: feed.name, title: item.title, link: item.link },
+    metadata:    { feedId: feed.id, feedName: feed.name, title: item.title, link: item.link, source: "auto" },
   });
 
-  logger.info("[news] Article poste", { feed: feed.name, title: item.title });
+  logger.info("[news] Article posté", { feed: feed.name, title: item.title });
 }
 
-async function postAllFeeds(client: Client): Promise<void> {
+// ── Scheduler (check horaire) ─────────────────────────────────────────────────
+
+async function runHourlyCheck(client: Client): Promise<void> {
+  const hour = currentHourParis();
+
   const feeds = env.DISCORD_GUILD_ID
     ? await db.select().from(newsFeeds).where(eq(newsFeeds.guildId, env.DISCORD_GUILD_ID))
     : await db.select().from(newsFeeds);
 
-  if (feeds.length === 0) {
-    logger.info("[news] Aucun flux configure");
+  if (feeds.length === 0) return;
+
+  const due = feeds.filter((f) => parsePostTimes(f.postTimes).includes(hour));
+
+  if (due.length === 0) {
+    logger.info("[news] Aucun flux prévu à cette heure", { hour });
     return;
   }
 
-  for (const feed of feeds) {
+  logger.info("[news] Post planifié", { hour, feeds: due.map((f) => f.name) });
+  for (const feed of due) {
     await postFeed(client, feed);
   }
 }
 
-// ── Scheduler ─────────────────────────────────────────────────────────────────
-
-function msUntilNext9hParis(): number {
-  const now      = new Date();
-  const nowParis = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Paris" }));
-  const target   = new Date(nowParis);
-  target.setHours(POST_HOUR_PARIS, 0, 0, 0);
-  if (nowParis >= target) target.setDate(target.getDate() + 1);
-  return target.getTime() - nowParis.getTime();
-}
-
 function scheduleNext(client: Client): void {
-  const delay = msUntilNext9hParis();
-  logger.info("[news] Prochain post planifie", { dans: `${(delay / 3600000).toFixed(1)}h` });
+  const delay = msUntilNextHourParis();
+  logger.info("[news] Prochaine vérification", { dans: `${(delay / 60000).toFixed(0)}min` });
   setTimeout(() => {
-    void postAllFeeds(client).finally(() => scheduleNext(client));
+    void runHourlyCheck(client).finally(() => scheduleNext(client));
   }, delay);
 }
 
@@ -157,5 +180,5 @@ function scheduleNext(client: Client): void {
 
 export function startNewsTracker(client: Client): void {
   scheduleNext(client);
-  logger.info("[news] Tracker demarre -- post quotidien a 9h (Paris)");
+  logger.info("[news] Tracker démarré — vérification à chaque heure pile (Paris)");
 }

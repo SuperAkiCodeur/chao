@@ -97,6 +97,7 @@ export const newsFeeds = pgTable("news_feeds", {
   rssUrl:    text("rss_url").notNull(),
   channelId: text("channel_id").notNull(),
   color:     integer("color").default(0x4ade80).notNull(),
+  postTimes: text("post_times").default("[9]").notNull(), // JSON : heures Paris, ex. [9] ou [9,18]
   createdAt: text("created_at").notNull(),
 });
 

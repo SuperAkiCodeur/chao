@@ -9,10 +9,13 @@ import { addLog } from "@/lib/logger";
 import type { ActionResult } from "@/lib/types";
 
 export async function createFeed(data: {
-  name: string; rssUrl: string; channelId: string; color: number;
+  name: string; rssUrl: string; channelId: string; color: number; postTimes: number[];
 }): Promise<ActionResult> {
   if (!data.name.trim() || !data.rssUrl.trim() || !data.channelId) {
     return { success: false, error: "Nom, URL RSS et salon sont requis." };
+  }
+  if (data.postTimes.length === 0) {
+    return { success: false, error: "Au moins une heure de publication est requise." };
   }
   try {
     await db.insert(newsFeeds).values({
@@ -21,6 +24,7 @@ export async function createFeed(data: {
       rssUrl:    data.rssUrl.trim(),
       channelId: data.channelId,
       color:     data.color,
+      postTimes: JSON.stringify(data.postTimes.sort((a, b) => a - b)),
       createdAt: new Date().toISOString(),
     });
     revalidatePath("/news");
@@ -32,10 +36,16 @@ export async function createFeed(data: {
 
 export async function updateFeed(
   id: number,
-  data: { name: string; rssUrl: string; channelId: string; color: number },
+  data: { name: string; rssUrl: string; channelId: string; color: number; postTimes: number[] },
 ): Promise<ActionResult> {
+  if (data.postTimes.length === 0) {
+    return { success: false, error: "Au moins une heure de publication est requise." };
+  }
   try {
-    await db.update(newsFeeds).set(data).where(eq(newsFeeds.id, id));
+    await db.update(newsFeeds).set({
+      ...data,
+      postTimes: JSON.stringify(data.postTimes.sort((a, b) => a - b)),
+    }).where(eq(newsFeeds.id, id));
     revalidatePath("/news");
     return { success: true };
   } catch {
