@@ -1,5 +1,11 @@
 {
   "name": "chao",
   "private": true,
-  "workspaces": ["packages/db", "bot"]
+  "workspaces": [
+    "packages/db",
+    "bot"
+  ],
+  "devDependencies": {
+    "postgres": "^3.4.9"
+  }
 }
