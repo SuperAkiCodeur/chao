@@ -4,8 +4,9 @@ import { db } from "@/lib/db";
 import { valorantLinks } from "@/lib/schema";
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import type { ActionResult } from "@/lib/types";
 
-export type ActionResult = { success: true } | { success: false; error: string };
+export type { ActionResult };
 
 export async function addValorantAccount(formData: FormData): Promise<ActionResult> {
   const discordUserId = formData.get("discordUserId")?.toString().trim();

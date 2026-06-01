@@ -2,21 +2,20 @@
 
 import { revalidatePath } from "next/cache";
 import { getAllSettings, saveSettings } from "@/lib/settings";
+import { discordHeaders } from "@/lib/discord";
+import type { ActionResult } from "@/lib/types";
 
-const BOT_TOKEN          = process.env.DISCORD_BOT_TOKEN!;
 const DEFAULT_CHANNEL_ID = "1510242757627609178";
 const AMP_AUTHOR         = "Agence Média Palestine";
 const AMP_HOME           = "https://agencemediapalestine.fr";
 const EMBED_COLOR        = 0x009736;
-
-export type PostResult = { success: true } | { success: false; error: string };
 
 export async function postArticleNow(article: {
   title:       string;
   url:         string;
   description: string;
   date:        string;
-}): Promise<PostResult> {
+}): Promise<ActionResult> {
   try {
     const settings  = await getAllSettings();
     const channelId = settings["palestine_channel_id"] ?? DEFAULT_CHANNEL_ID;
@@ -38,10 +37,7 @@ export async function postArticleNow(article: {
       `https://discord.com/api/v10/channels/${channelId}/messages`,
       {
         method:  "POST",
-        headers: {
-          Authorization:  `Bot ${BOT_TOKEN}`,
-          "Content-Type": "application/json",
-        },
+        headers: discordHeaders(),
         body: JSON.stringify({ embeds: [embed] }),
       },
     );

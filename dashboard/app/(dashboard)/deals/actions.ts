@@ -4,10 +4,11 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { dealsConfig, dealsGames } from "@/lib/schema";
 import { and, eq } from "drizzle-orm";
+import type { ActionResult } from "@/lib/types";
 
 const GUILD_ID = process.env.DISCORD_GUILD_ID!;
 
-export type ActionResult = { success: true } | { success: false; error: string };
+export type { ActionResult };
 
 export async function createDealsList(data: {
   channelId: string; name: string; notifChannelId?: string;

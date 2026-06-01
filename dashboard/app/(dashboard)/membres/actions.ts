@@ -2,15 +2,12 @@
 
 import { addLog } from "@/lib/logger";
 import { revalidatePath } from "next/cache";
+import { discordHeaders } from "@/lib/discord";
+import type { ActionResult } from "@/lib/types";
+
+export type { ActionResult };
 
 const GUILD_ID = process.env.DISCORD_GUILD_ID!;
-const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN!;
-
-function discordHeaders() {
-  return { Authorization: `Bot ${BOT_TOKEN}`, "Content-Type": "application/json" };
-}
-
-export type ActionResult = { success: true } | { success: false; error: string };
 
 export async function kickMember(userId: string, userName: string, reason: string): Promise<ActionResult> {
   try {
