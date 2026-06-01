@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { CaretDown, Check, Hash, SpeakerHigh } from "@phosphor-icons/react";
-import type { DiscordChannel } from "@/components/FeatureSettings";
+import type { DiscordChannel } from "@/lib/discord";
 
 const BD  = "1px solid rgba(255,255,255,0.08)";
 const BDI = "1px solid rgba(255,255,255,0.12)";

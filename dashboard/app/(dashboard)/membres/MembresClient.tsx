@@ -12,13 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { kickMember, banMember, timeoutMember, updateMemberRoles } from "./actions";
 import type { ActionResult } from "./actions";
-
-export type DiscordRole = {
-  id: string;
-  name: string;
-  color: number;
-  position: number;
-};
+import type { DiscordRole } from "@/lib/discord";
 
 export type DiscordMember = {
   user: { id: string; username: string; global_name: string | null; avatar: string | null };

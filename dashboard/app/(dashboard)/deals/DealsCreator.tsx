@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { CaretDown, Plus } from "@phosphor-icons/react";
 import { createDealsList } from "./actions";
 import { ChannelSelect } from "@/components/ChannelSelect";
-import type { DiscordChannel } from "@/components/FeatureSettings";
+import type { DiscordChannel } from "@/lib/discord";
 
 const BD  = "1px solid rgba(255,255,255,0.08)";
 const BDI = "1px solid rgba(255,255,255,0.12)";

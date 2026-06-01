@@ -1,4 +1,5 @@
-import { MembresClient, type DiscordMember, type DiscordRole } from "./MembresClient";
+import { MembresClient, type DiscordMember } from "./MembresClient";
+import type { DiscordRole } from "@/lib/discord";
 import { FeatureSettings } from "@/components/FeatureSettings";
 import { getAllSettings } from "@/lib/settings";
 import { PageShell, SectionCard } from "@/components/PageShell";

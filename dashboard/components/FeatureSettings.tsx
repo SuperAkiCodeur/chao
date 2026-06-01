@@ -3,10 +3,8 @@
 import { useState, useTransition, useRef, useEffect } from "react";
 import { Check, CheckCircle, XCircle, CaretDown, FloppyDisk, Hash, SpeakerHigh, GearSix, MagnifyingGlass } from "@phosphor-icons/react";
 import { saveSection } from "@/app/(dashboard)/parametres/actions";
-import type { ActionResult } from "@/app/(dashboard)/parametres/actions";
-
-export type DiscordChannel = { id: string; name: string; type: number; position: number; parent_id: string | null };
-export type DiscordRole    = { id: string; name: string; color: number; position: number };
+import type { ActionResult } from "@/lib/types";
+import type { DiscordChannel, DiscordRole } from "@/lib/discord";
 
 export type SettingField = {
   key: string;

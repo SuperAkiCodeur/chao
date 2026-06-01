@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { Trash, FloppyDisk, CaretDown, Hash, PencilSimple, Check, ArrowRight } from "@phosphor-icons/react";
 import { saveDealsNotifChannel, removeDealsGame, renameDeals } from "./actions";
 import { ChannelSelect } from "@/components/ChannelSelect";
-import type { DiscordChannel } from "@/components/FeatureSettings";
+import type { DiscordChannel } from "@/lib/discord";
 
 const BD  = "1px solid rgba(255,255,255,0.08)";
 
