@@ -10,12 +10,15 @@ export const SETTING_KEYS = {
   MEMBER_ROLE_ID: "member_role_id",
   // Valorant
   VALORANT_CHANNEL_ID: "valorant_channel_id",
+  // Palestine
+  PALESTINE_CHANNEL_ID: "palestine_channel_id",
+  PALESTINE_SOURCE_URL:  "palestine_source_url",
 } as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];
 
 /** Lit une seule setting depuis la base. Retourne null si non configurée. */
-export async function getSetting(key: SettingKey): Promise<string | null> {
+export async function getSetting(key: SettingKey | string): Promise<string | null> {
   try {
     const [row] = await db
       .select()

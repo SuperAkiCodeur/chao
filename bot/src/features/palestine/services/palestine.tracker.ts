@@ -1,11 +1,12 @@
 import type { Client } from "discord.js";
 import { EmbedBuilder } from "discord.js";
 import { logger } from "../../../core/app/logger.js";
+import { getSetting, SETTING_KEYS } from "../../../core/db/settings.js";
 
-const RSS_URL         = "https://agencemediapalestine.fr/feed/";
-const NEWS_CHANNEL_ID = "1510242757627609178";
-const POST_HOUR_PARIS = 9;
-const EMBED_COLOR     = 0x009736; // vert du drapeau palestinien
+const DEFAULT_RSS_URL     = "https://agencemediapalestine.fr/feed/";
+const DEFAULT_CHANNEL_ID  = "1510242757627609178";
+const POST_HOUR_PARIS     = 9;
+const EMBED_COLOR         = 0x009736; // vert du drapeau palestinien
 
 // ── RSS parser ────────────────────────────────────────────────────────────────
 
@@ -41,14 +42,14 @@ function parseRss(xml: string): RssItem[] {
   for (const itemMatch of xml.matchAll(/<item>([\s\S]*?)<\/item>/g)) {
     const block = itemMatch[1];
 
-    const titleRaw = block.match(/<title>([\s\S]*?)<\/title>/)?.[1]?.trim() ?? "";
-    const link     = block.match(/<link>\s*(https?:[^\s<]+)\s*<\/link>/)?.[1]?.trim()
-                  ?? block.match(/<guid[^>]*>\s*(https?:[^\s<]+)\s*<\/guid>/)?.[1]?.trim()
+    const titleRaw = block.match(/<title>([\s\S]*?)<\/title>/i)?.[1]?.trim() ?? "";
+    const link     = block.match(/<link>\s*(https?:[^\s<]+)\s*<\/link>/i)?.[1]?.trim()
+                  ?? block.match(/<guid[^>]*>\s*(https?:[^\s<]+)\s*<\/guid>/i)?.[1]?.trim()
                   ?? "";
-    const descRaw  = block.match(/<description>([\s\S]*?)<\/description>/)?.[1]?.trim() ?? "";
-    const pubDate  = block.match(/<pubDate>([\s\S]*?)<\/pubDate>/)?.[1]?.trim() ?? "";
-
-    if (!link) continue;
+    const descRaw  = block.match(/<description>([\s\S]*?)<\/description>/i)?.[1]?.trim() ?? "";
+    const pubDate  = block.match(/<pubDate>([\s\S]*?)<\/pubDate>/i)?.[1]?.trim()
+                  ?? block.match(/<dc:date>([\s\S]*?)<\/dc:date>/i)?.[1]?.trim()
+                  ?? "";
 
     items.push({
       title:       stripHtml(parseCdata(titleRaw)),
@@ -61,8 +62,8 @@ function parseRss(xml: string): RssItem[] {
   return items;
 }
 
-async function fetchRecentItems(): Promise<RssItem[]> {
-  const res = await fetch(RSS_URL, { signal: AbortSignal.timeout(10_000) });
+async function fetchRecentItems(rssUrl: string): Promise<RssItem[]> {
+  const res = await fetch(rssUrl, { signal: AbortSignal.timeout(10_000) });
   if (!res.ok) throw new Error(`RSS fetch error: ${res.status}`);
 
   const xml   = await res.text();
@@ -70,9 +71,10 @@ async function fetchRecentItems(): Promise<RssItem[]> {
   const after = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
   return items.filter((item) => {
-    if (!item.pubDate) return true;
+    if (!item.pubDate) return true;          // pas de date → on inclut
     const d = new Date(item.pubDate);
-    return !isNaN(d.getTime()) && d >= after;
+    if (isNaN(d.getTime())) return true;     // date illisible → on inclut
+    return d >= after;
   });
 }
 
@@ -99,17 +101,25 @@ function buildEmbed(item: RssItem): EmbedBuilder {
 // ── Post ──────────────────────────────────────────────────────────────────────
 
 async function postDailyNews(client: Client): Promise<void> {
-  const channel = await client.channels.fetch(NEWS_CHANNEL_ID).catch(() => null);
+  const [channelId, rssUrl] = await Promise.all([
+    getSetting(SETTING_KEYS.PALESTINE_CHANNEL_ID),
+    getSetting(SETTING_KEYS.PALESTINE_SOURCE_URL),
+  ]);
+
+  const resolvedChannelId = channelId ?? DEFAULT_CHANNEL_ID;
+  const resolvedRssUrl    = rssUrl    ?? DEFAULT_RSS_URL;
+
+  const channel = await client.channels.fetch(resolvedChannelId).catch(() => null);
 
   if (!channel || !channel.isTextBased() || !("send" in channel)) {
-    logger.warn("[palestine] Salon introuvable ou non textuel", { channelId: NEWS_CHANNEL_ID });
+    logger.warn("[palestine] Salon introuvable ou non textuel", { channelId: resolvedChannelId });
     return;
   }
 
   let items: RssItem[];
 
   try {
-    items = await fetchRecentItems();
+    items = await fetchRecentItems(resolvedRssUrl);
   } catch (error) {
     logger.error("[palestine] Impossible de récupérer le flux RSS", { error });
     return;
