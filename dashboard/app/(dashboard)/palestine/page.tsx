@@ -128,18 +128,30 @@ async function fetchBotPosts(channelId: string): Promise<BotPost[]> {
 }
 
 async function fetchLatestArticles(rssUrl: string, limit = 10): Promise<TodayArticle[]> {
+  // Essaye l'API REST WordPress (plus fiable que le RSS pour la pagination)
   try {
-    // Demande plus d'articles que la limite par défaut de WordPress (souvent 6-10)
-    const url = new URL(rssUrl);
-    url.searchParams.set("posts_per_page", String(limit + 10));
-    const res = await fetch(url.toString(), {
-      cache: "no-store",
-      signal: AbortSignal.timeout(10_000),
-    });
-    if (!res.ok) return [];
-    const xml   = await res.text();
-    const items = parseRss(xml);
+    const origin  = new URL(rssUrl).origin;
+    const apiUrl  = `${origin}/wp-json/wp/v2/posts?per_page=${limit}&_fields=id,title,link,excerpt,date`;
+    const res     = await fetch(apiUrl, { cache: "no-store", signal: AbortSignal.timeout(8_000) });
 
+    if (res.ok) {
+      type WpPost = { id: number; title: { rendered: string }; link: string; excerpt: { rendered: string }; date: string };
+      const posts: WpPost[] = await res.json();
+      return posts.map((p, idx) => ({
+        id:          idx,
+        title:       stripHtml(p.title.rendered)   || "(sans titre)",
+        url:         p.link,
+        description: stripHtml(p.excerpt.rendered),
+        date:        p.date,
+      }));
+    }
+  } catch { /* fallback RSS */ }
+
+  // Fallback : RSS
+  try {
+    const res = await fetch(rssUrl, { cache: "no-store", signal: AbortSignal.timeout(10_000) });
+    if (!res.ok) return [];
+    const items = parseRss(await res.text());
     return items.slice(0, limit).map((item, idx) => ({
       id:          idx,
       title:       item.title       || "(sans titre)",
