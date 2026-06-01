@@ -1,4 +1,5 @@
-import { ChannelType, VoiceChannel, VoiceState } from "discord.js";
+import { ChannelType } from "discord.js";
+import type { VoiceChannel, VoiceState } from "discord.js";
 import { logger } from "../../../core/app/logger.js";
 import { VOICE_CONSTANTS } from "../domain/voice.constants.js";
 
