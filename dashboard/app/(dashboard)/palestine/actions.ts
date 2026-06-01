@@ -32,7 +32,7 @@ export async function postArticleNow(article: {
       url:         article.url,
       description: snippet,
       footer:      { text: "manuel" },
-      timestamp:   article.date,
+      timestamp:   article.date ? new Date(article.date).toISOString() : new Date().toISOString(),
     };
 
     const res = await fetch(
