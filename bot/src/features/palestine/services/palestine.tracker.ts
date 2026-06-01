@@ -2,6 +2,8 @@ import type { Client } from "discord.js";
 import { EmbedBuilder } from "discord.js";
 import { logger } from "../../../core/app/logger.js";
 import { getSetting, SETTING_KEYS } from "../../../core/db/settings.js";
+import { db } from "../../../core/db/client.js";
+import { dashboardSettings } from "../../../core/db/schema.js";
 
 const DEFAULT_RSS_URL     = "https://agencemediapalestine.fr/feed/";
 const DEFAULT_CHANNEL_ID  = "1510242757627609178";
@@ -101,7 +103,6 @@ function buildEmbed(item: RssItem): EmbedBuilder {
     .setTitle(item.title.slice(0, 256))
     .setURL(item.link)
     .setDescription(snippet || "​")
-    .setFooter({ text: "auto" })
     .setTimestamp(item.pubDate ? new Date(item.pubDate) : new Date());
 }
 
@@ -140,7 +141,15 @@ async function postDailyNews(client: Client): Promise<void> {
   const item  = pickRandom(items);
   const embed = buildEmbed(item);
 
-  await (channel as { send: Function }).send({ embeds: [embed] });
+  const sent = await (channel as { send: Function }).send({ embeds: [embed] });
+
+  // Mémorise la source pour l'affichage dashboard
+  try {
+    const now = new Date().toISOString();
+    await db.insert(dashboardSettings)
+      .values({ key: `palestine_post_${sent.id}`, value: "auto", updatedAt: now })
+      .onConflictDoUpdate({ target: dashboardSettings.key, set: { value: "auto", updatedAt: now } });
+  } catch { /* non bloquant */ }
 
   logger.info("[palestine] Article du jour posté", {
     title:         item.title,

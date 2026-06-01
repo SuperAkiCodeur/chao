@@ -85,7 +85,6 @@ type DiscordEmbed = {
   description?: string;
   timestamp?:  string;
   author?:     { name: string; url?: string };
-  footer?:     { text: string };
 };
 
 type DiscordMessage = {
@@ -116,14 +115,13 @@ async function fetchBotPosts(channelId: string): Promise<BotPost[]> {
       .filter((m) => m.embeds?.some((e) => e.author?.name === AMP_AUTHOR))
       .map((m) => {
         const embed = m.embeds!.find((e) => e.author?.name === AMP_AUTHOR)!;
-        const footer = embed.footer?.text;
         return {
           id:          m.id,
           title:       embed.title        ?? "(sans titre)",
           url:         embed.url          ?? AMP_HOME,
           description: embed.description  ?? "",
           timestamp:   embed.timestamp    ?? m.timestamp,
-          source:      footer === "auto" ? "auto" : footer === "manuel" ? "manuel" : "unknown",
+          source:      "unknown" as "auto" | "manuel" | "unknown",
         };
       });
   } catch {
@@ -179,10 +177,16 @@ export default async function PalestinePage() {
   const channelId = settings["palestine_channel_id"] ?? DEFAULT_CHANNEL_ID;
   const rssUrl    = settings["palestine_source_url"]  ?? DEFAULT_RSS_URL;
 
-  const [botPosts, todayArticles] = await Promise.all([
+  const [botPostsRaw, todayArticles] = await Promise.all([
     fetchBotPosts(channelId),
     fetchLatestArticles(rssUrl),
   ]);
+
+  // Résout la source (auto/manuel) depuis les settings DB
+  const botPosts = botPostsRaw.map((p) => ({
+    ...p,
+    source: (settings[`palestine_post_${p.id}`] ?? "unknown") as "auto" | "manuel" | "unknown",
+  }));
 
   const countdown = nextPost9h();
 

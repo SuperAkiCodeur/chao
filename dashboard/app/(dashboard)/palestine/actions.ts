@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getAllSettings } from "@/lib/settings";
+import { getAllSettings, saveSettings } from "@/lib/settings";
 
 const BOT_TOKEN          = process.env.DISCORD_BOT_TOKEN!;
 const DEFAULT_CHANNEL_ID = "1510242757627609178";
@@ -31,7 +31,6 @@ export async function postArticleNow(article: {
       title:       article.title.slice(0, 256),
       url:         article.url,
       description: snippet,
-      footer:      { text: "manuel" },
       timestamp:   article.date ? new Date(article.date).toISOString() : new Date().toISOString(),
     };
 
@@ -50,6 +49,12 @@ export async function postArticleNow(article: {
     if (!res.ok) {
       const text = await res.text().catch(() => "");
       return { success: false, error: `Discord ${res.status}${text ? ` — ${text}` : ""}` };
+    }
+
+    // Mémorise la source pour l'affichage dashboard
+    const msg = await res.json().catch(() => null) as { id?: string } | null;
+    if (msg?.id) {
+      await saveSettings({ [`palestine_post_${msg.id}`]: "manuel" });
     }
 
     revalidatePath("/palestine");
