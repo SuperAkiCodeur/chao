@@ -19,8 +19,7 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"],
-      "@chao/db": ["../packages/db/src/schema.ts"]
+      "@/*": ["./*"]
     }
   },
   "include": [
@@ -30,7 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts",
-    "../packages/db/src/**/*.ts"
   ],
   "exclude": ["node_modules"]
 }
