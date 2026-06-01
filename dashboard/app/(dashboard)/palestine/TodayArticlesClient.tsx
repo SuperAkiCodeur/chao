@@ -38,7 +38,7 @@ export function TodayArticlesClient({ articles }: { articles: TodayArticle[] }) 
   return (
     <SectionCard
       title="Derniers articles"
-      badge={articles.length > 0 ? `${articles.length} article${articles.length !== 1 ? "s" : ""}` : undefined}
+      badge={articles.length > 0 ? `${articles.length} articles` : undefined}
       noPadding
     >
       {articles.length === 0 ? (
