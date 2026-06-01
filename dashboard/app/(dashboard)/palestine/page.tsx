@@ -10,7 +10,7 @@ const BOT_TOKEN          = process.env.DISCORD_BOT_TOKEN!;
 const DEFAULT_CHANNEL_ID = "1510242757627609178";
 const AMP_AUTHOR         = "Agence Média Palestine";
 const AMP_HOME           = "https://agencemediapalestine.fr";
-const DEFAULT_RSS_URL    = "https://agencemediapalestine.fr/feed/";
+const DEFAULT_RSS_URL    = "https://agencemediapalestine.fr/feed/?posts_per_page=20";
 
 // ── RSS parser ────────────────────────────────────────────────────────────────
 
@@ -129,7 +129,10 @@ async function fetchBotPosts(channelId: string): Promise<BotPost[]> {
 
 async function fetchLatestArticles(rssUrl: string, limit = 10): Promise<TodayArticle[]> {
   try {
-    const res = await fetch(rssUrl, {
+    // Demande plus d'articles que la limite par défaut de WordPress (souvent 6-10)
+    const url = new URL(rssUrl);
+    url.searchParams.set("posts_per_page", String(limit + 10));
+    const res = await fetch(url.toString(), {
       cache: "no-store",
       signal: AbortSignal.timeout(10_000),
     });
@@ -182,7 +185,7 @@ export default async function PalestinePage() {
 
   const [botPosts, todayArticles] = await Promise.all([
     fetchBotPosts(channelId),
-    fetchLatestArticles(rssUrl),
+    fetchLatestArticles(rssUrl, 10),
   ]);
 
   const countdown = nextPost9h();
