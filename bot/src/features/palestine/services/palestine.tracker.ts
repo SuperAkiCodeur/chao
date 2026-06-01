@@ -25,10 +25,16 @@ function parseCdata(raw: string): string {
 function stripHtml(html: string): string {
   return html
     .replace(/<[^>]+>/g, "")
-    .replace(/&[a-z#0-9]+;/gi, (e) => {
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code, 10)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCharCode(parseInt(code, 16)))
+    .replace(/&[a-z]+;/gi, (e) => {
       const map: Record<string, string> = {
         "&amp;": "&", "&lt;": "<", "&gt;": ">",
-        "&quot;": '"', "&#039;": "'", "&nbsp;": " ",
+        "&quot;": '"', "&apos;": "'", "&nbsp;": " ",
+        "&rsquo;": "'", "&lsquo;": "'",
+        "&rdquo;": """, "&ldquo;": """,
+        "&mdash;": "—", "&ndash;": "–",
+        "&hellip;": "…",
       };
       return map[e] ?? e;
     })
