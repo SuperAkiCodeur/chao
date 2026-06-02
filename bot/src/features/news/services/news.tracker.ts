@@ -52,9 +52,9 @@ function stripHtml(html: string): string {
     .replace(/&#(\d+);/g,      (_, c) => String.fromCharCode(parseInt(c, 10)))
     .replace(/&#x([0-9a-f]+);/gi, (_, c) => String.fromCharCode(parseInt(c, 16)))
     .replace(/&[a-z]+;/gi, (e) => (
-      { "&amp;":"&","&lt;":"<","&gt;":">","&quot;":'"',"&apos;":"'",
-        "&nbsp;":" ","&rsquo;":"'","&lsquo;":"'","&rdquo;":""",
-        "&ldquo;":""","&mdash;":"—","&ndash;":"–","&hellip;":"…" }[e] ?? e
+      { “&amp;”:”&”,”&lt;”:”<”,”&gt;”:”>”,”&quot;”:’”’,”&apos;”:”’”,
+        "&nbsp;":" ","&rsquo;":"\u2019","&lsquo;":"\u2018","&rdquo;":"\u201D",
+        "&ldquo;":"\u201C","&mdash;":"\u2014","&ndash;":"\u2013","&hellip;":"\u2026" }[e] ?? e
     ))
     .replace(/\s+/g, " ").trim();
 }
