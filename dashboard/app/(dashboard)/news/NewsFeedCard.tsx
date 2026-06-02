@@ -14,9 +14,9 @@ import type { DiscordChannel } from "@/lib/discord";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type Article = { title: string; url: string; description: string; date: string; source?: string };
+export type Article = { title: string; url: string; description: string; date: string };
 export type Feed    = {
-  id: number; guildId: string; name: string; rssUrl: string;
+  id: number; guildId: string; name: string; displaySource: string; rssUrl: string;
   channelId: string; color: number; postTimes: string; createdAt: string;
   articles: Article[];
 };
@@ -52,7 +52,7 @@ function ArticleRow({ article, feed, onPost }: {
     const res = await postArticleNow({
       feedId:    feed.id,
       channelId: feed.channelId,
-      feedName:  feed.name,
+      feedName:  feed.displaySource || feed.name,
       feedUrl:   (() => { try { return new URL(feed.rssUrl).origin; } catch { return feed.rssUrl; } })(),
       color:     feed.color,
       article,
@@ -224,16 +224,17 @@ function parseTimes(raw: string): number[] {
 
 function EditForm({ feed, channels, onSave, onCancel }: {
   feed: Feed; channels: DiscordChannel[];
-  onSave: (data: { name: string; rssUrl: string; channelId: string; color: number; postTimes: number[] }) => void;
+  onSave: (data: { name: string; displaySource: string; rssUrl: string; channelId: string; color: number; postTimes: number[] }) => void;
   onCancel: () => void;
 }) {
-  const [name,      setName]      = useState(feed.name);
-  const [rssUrl,    setRssUrl]    = useState(feed.rssUrl);
-  const [channelId, setChannelId] = useState(feed.channelId);
-  const [color,     setColor]     = useState(toHex(feed.color));
-  const [postTimes, setPostTimes] = useState<number[]>(parseTimes(feed.postTimes));
-  const [error,     setError]     = useState<string | null>(null);
-  const [pending,   start]        = useTransition();
+  const [name,          setName]          = useState(feed.name);
+  const [displaySource, setDisplaySource] = useState(feed.displaySource);
+  const [rssUrl,        setRssUrl]        = useState(feed.rssUrl);
+  const [channelId,     setChannelId]     = useState(feed.channelId);
+  const [color,         setColor]         = useState(toHex(feed.color));
+  const [postTimes,     setPostTimes]     = useState<number[]>(parseTimes(feed.postTimes));
+  const [error,         setError]         = useState<string | null>(null);
+  const [pending,       start]            = useTransition();
 
   const inp: React.CSSProperties = {
     height: 34, width: "100%", background: "rgba(255,255,255,0.05)",
@@ -245,8 +246,9 @@ function EditForm({ feed, channels, onSave, onCancel }: {
     if (postTimes.length === 0) { setError("Au moins une heure requise."); return; }
     setError(null);
     start(async () => {
-      const res = await updateFeed(feed.id, { name: name.trim(), rssUrl: rssUrl.trim(), channelId, color: toInt(color), postTimes });
-      if (res.success) onSave({ name: name.trim(), rssUrl: rssUrl.trim(), channelId, color: toInt(color), postTimes });
+      const data = { name: name.trim(), displaySource: displaySource.trim(), rssUrl: rssUrl.trim(), channelId, color: toInt(color), postTimes };
+      const res  = await updateFeed(feed.id, data);
+      if (res.success) onSave(data);
       else setError(res.error ?? "Erreur.");
     });
   }
@@ -254,9 +256,10 @@ function EditForm({ feed, channels, onSave, onCancel }: {
   return (
     <div style={{ padding: "16px 20px", borderTop: BD, display: "flex", flexDirection: "column", gap: 12 }}>
       {[
-        { label: "Nom",     node: <input value={name}   onChange={e => setName(e.target.value)}   style={inp} maxLength={60} placeholder="Ex : Palestine…" /> },
+        { label: "Nom",     node: <input value={name}          onChange={e => setName(e.target.value)}          style={inp} maxLength={60}  placeholder="Ex : Palestine…" /> },
+        { label: "Source",  node: <input value={displaySource} onChange={e => setDisplaySource(e.target.value)} style={inp} maxLength={120} placeholder="Ex : Agence Média Palestine (affiché dans l'embed)" /> },
         { label: "Salon",   node: <ChannelSelect value={channelId} onChange={setChannelId} channels={channels.filter(c => c.type !== 4)} /> },
-        { label: "RSS URL", node: <input value={rssUrl} onChange={e => setRssUrl(e.target.value)} style={inp} placeholder="https://…" /> },
+        { label: "RSS URL", node: <input value={rssUrl}        onChange={e => setRssUrl(e.target.value)}        style={inp} placeholder="https://…" /> },
         { label: "Couleur", node: (
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <input type="color" value={color} onChange={e => setColor(e.target.value)}
@@ -349,7 +352,7 @@ export function NewsFeedCard({ feed: initialFeed, channels }: { feed: Feed; chan
         <EditForm
           feed={feed}
           channels={channels}
-          onSave={(data) => { setFeed(f => ({ ...f, ...data, postTimes: JSON.stringify(data.postTimes) })); setEditing(false); }}
+          onSave={(data) => { setFeed(f => ({ ...f, ...data, postTimes: JSON.stringify(data.postTimes), displaySource: data.displaySource })); setEditing(false); }}
           onCancel={() => setEditing(false)}
         />
       )}

@@ -9,7 +9,7 @@ import { addLog } from "@/lib/logger";
 import type { ActionResult } from "@/lib/types";
 
 export async function createFeed(data: {
-  name: string; rssUrl: string; channelId: string; color: number; postTimes: number[];
+  name: string; displaySource: string; rssUrl: string; channelId: string; color: number; postTimes: number[];
 }): Promise<ActionResult> {
   if (!data.name.trim() || !data.rssUrl.trim() || !data.channelId) {
     return { success: false, error: "Nom, URL RSS et salon sont requis." };
@@ -19,13 +19,14 @@ export async function createFeed(data: {
   }
   try {
     await db.insert(newsFeeds).values({
-      guildId:   GUILD_ID,
-      name:      data.name.trim(),
-      rssUrl:    data.rssUrl.trim(),
-      channelId: data.channelId,
-      color:     data.color,
-      postTimes: JSON.stringify(data.postTimes.sort((a, b) => a - b)),
-      createdAt: new Date().toISOString(),
+      guildId:       GUILD_ID,
+      name:          data.name.trim(),
+      displaySource: data.displaySource.trim(),
+      rssUrl:        data.rssUrl.trim(),
+      channelId:     data.channelId,
+      color:         data.color,
+      postTimes:     JSON.stringify(data.postTimes.sort((a, b) => a - b)),
+      createdAt:     new Date().toISOString(),
     });
     revalidatePath("/news");
     return { success: true };
@@ -36,7 +37,7 @@ export async function createFeed(data: {
 
 export async function updateFeed(
   id: number,
-  data: { name: string; rssUrl: string; channelId: string; color: number; postTimes: number[] },
+  data: { name: string; displaySource: string; rssUrl: string; channelId: string; color: number; postTimes: number[] },
 ): Promise<ActionResult> {
   if (data.postTimes.length === 0) {
     return { success: false, error: "Au moins une heure de publication est requise." };
@@ -44,7 +45,8 @@ export async function updateFeed(
   try {
     await db.update(newsFeeds).set({
       ...data,
-      postTimes: JSON.stringify(data.postTimes.sort((a, b) => a - b)),
+      displaySource: data.displaySource.trim(),
+      postTimes:     JSON.stringify(data.postTimes.sort((a, b) => a - b)),
     }).where(eq(newsFeeds.id, id));
     revalidatePath("/news");
     return { success: true };
@@ -85,7 +87,7 @@ export async function postArticleNow(data: {
   try {
     const { feedId, channelId, feedName, feedUrl, color, article } = data;
     const origin     = (() => { try { return new URL(feedUrl).origin; } catch { return feedUrl; } })();
-    const authorName = (article.source || feedName).slice(0, 256);
+    const authorName = feedName.slice(0, 256); // feedName = displaySource || name, résolu côté client
     const snippet    = article.description.length > 350
       ? article.description.slice(0, 350) + " […]"
       : article.description;

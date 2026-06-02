@@ -48,14 +48,15 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 }
 
 export function AddFeedForm({ channels }: { channels: DiscordChannel[] }) {
-  const [open, setOpen]           = useState(false);
-  const [name, setName]           = useState("");
-  const [rssUrl, setRssUrl]       = useState("");
-  const [channelId, setChannelId] = useState("");
-  const [color, setColor]         = useState("#4ade80");
-  const [postTimes, setPostTimes] = useState<number[]>([9]);
-  const [error, setError]         = useState<string | null>(null);
-  const [pending, start]          = useTransition();
+  const [open,          setOpen]          = useState(false);
+  const [name,          setName]          = useState("");
+  const [displaySource, setDisplaySource] = useState("");
+  const [rssUrl,        setRssUrl]        = useState("");
+  const [channelId,     setChannelId]     = useState("");
+  const [color,         setColor]         = useState("#4ade80");
+  const [postTimes,     setPostTimes]     = useState<number[]>([9]);
+  const [error,         setError]         = useState<string | null>(null);
+  const [pending,       start]            = useTransition();
 
   function handleCreate() {
     if (!name.trim() || !rssUrl.trim() || !channelId) {
@@ -65,13 +66,13 @@ export function AddFeedForm({ channels }: { channels: DiscordChannel[] }) {
     setError(null);
     start(async () => {
       const res = await createFeed({
-        name, rssUrl, channelId,
+        name, displaySource, rssUrl, channelId,
         color: parseInt(color.replace("#", ""), 16),
         postTimes,
       });
       if (res.success) {
         setOpen(false);
-        setName(""); setRssUrl(""); setChannelId(""); setColor("#4ade80"); setPostTimes([9]);
+        setName(""); setDisplaySource(""); setRssUrl(""); setChannelId(""); setColor("#4ade80"); setPostTimes([9]);
       } else {
         setError(res.error ?? "Erreur.");
       }
@@ -105,6 +106,12 @@ export function AddFeedForm({ channels }: { channels: DiscordChannel[] }) {
               style={{ height: 34, width: "100%", background: "rgba(255,255,255,0.05)",
                 border: BDI, borderRadius: 8, padding: "0 12px", fontSize: 13, color: "#fff" }}
               placeholder="Ex : Palestine, Tech News, Sciences…" />
+          </Row>
+          <Row label="Source">
+            <input value={displaySource} onChange={(e) => setDisplaySource(e.target.value)} maxLength={120}
+              style={{ height: 34, width: "100%", background: "rgba(255,255,255,0.05)",
+                border: BDI, borderRadius: 8, padding: "0 12px", fontSize: 13, color: "#fff" }}
+              placeholder="Affiché dans l'embed Discord (ex : Agence Média Palestine)" />
           </Row>
           <Row label="Salon">
             <ChannelSelect value={channelId} onChange={setChannelId}
