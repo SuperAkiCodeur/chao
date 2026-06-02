@@ -149,11 +149,20 @@ async function postFeed(client: Client, feed: Feed): Promise<void> {
 async function runHourlyCheck(client: Client): Promise<void> {
   const hour = currentHourParis();
 
-  const feeds = env.DISCORD_GUILD_ID
-    ? await db.select().from(newsFeeds).where(eq(newsFeeds.guildId, env.DISCORD_GUILD_ID))
-    : await db.select().from(newsFeeds);
+  let feeds: Feed[];
+  try {
+    feeds = env.DISCORD_GUILD_ID
+      ? await db.select().from(newsFeeds).where(eq(newsFeeds.guildId, env.DISCORD_GUILD_ID))
+      : await db.select().from(newsFeeds);
+  } catch (error) {
+    logger.error("[news] Impossible de lire les flux (table manquante ?)", { error });
+    return;
+  }
 
-  if (feeds.length === 0) return;
+  if (feeds.length === 0) {
+    logger.info("[news] Aucun flux configuré");
+    return;
+  }
 
   const due = feeds.filter((f) => parsePostTimes(f.postTimes).includes(hour));
 
