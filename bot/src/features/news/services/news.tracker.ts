@@ -9,7 +9,7 @@ import { env } from "../../../core/config/env.js";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type RssItem = { title: string; link: string; description: string; pubDate: string };
+type RssItem = { title: string; link: string; description: string; pubDate: string; source: string };
 type Feed    = typeof newsFeeds.$inferSelect;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -60,8 +60,19 @@ function stripHtml(html: string): string {
 }
 
 function parseRss(xml: string): RssItem[] {
+  // Titre du canal (source du flux) — extrait avant le premier <item>
+  const beforeItems   = xml.split(/<item>/i)[0] ?? "";
+  const channelTitle  = stripHtml(parseCdata(
+    beforeItems.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim() ?? "",
+  ));
+
   return [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].map((m) => {
     const b = m[1];
+    const itemSource = stripHtml(parseCdata(
+      b.match(/<author>([\s\S]*?)<\/author>/i)?.[1]?.trim()
+      ?? b.match(/<dc:creator>([\s\S]*?)<\/dc:creator>/i)?.[1]?.trim()
+      ?? "",
+    ));
     return {
       title:       stripHtml(parseCdata(b.match(/<title>([\s\S]*?)<\/title>/i)?.[1]?.trim() ?? "")),
       link:        b.match(/<link>\s*(https?:[^\s<]+)\s*<\/link>/i)?.[1]?.trim()
@@ -69,6 +80,7 @@ function parseRss(xml: string): RssItem[] {
       description: stripHtml(parseCdata(b.match(/<description>([\s\S]*?)<\/description>/i)?.[1]?.trim() ?? "")),
       pubDate:     b.match(/<pubDate>([\s\S]*?)<\/pubDate>/i)?.[1]?.trim()
                 ?? b.match(/<dc:date>([\s\S]*?)<\/dc:date>/i)?.[1]?.trim() ?? "",
+      source:      itemSource || channelTitle,
     };
   });
 }
@@ -87,18 +99,31 @@ async function fetchRecentItems(rssUrl: string): Promise<RssItem[]> {
 
 // ── Embed ─────────────────────────────────────────────────────────────────────
 
+function formatFooterDate(raw: string | undefined): string {
+  const d   = raw ? new Date(raw) : new Date();
+  const ref = isNaN(d.getTime()) ? new Date() : d;
+  // Heure Paris
+  const p   = new Date(ref.toLocaleString("en-US", { timeZone: "Europe/Paris" }));
+  const dd  = String(p.getDate()).padStart(2, "0");
+  const mm  = String(p.getMonth() + 1).padStart(2, "0");
+  const hh  = String(p.getHours()).padStart(2, "0");
+  const min = String(p.getMinutes()).padStart(2, "0");
+  return `${dd}/${mm}/${p.getFullYear()} ${hh}:${min}`;
+}
+
 function buildEmbed(item: RssItem, feed: Feed): EmbedBuilder {
   const snippet = item.description.length > 350
     ? item.description.slice(0, 350) + " [...]"
     : item.description;
-  const origin = (() => { try { return new URL(feed.rssUrl).origin; } catch { return feed.rssUrl; } })();
+  const origin     = (() => { try { return new URL(feed.rssUrl).origin; } catch { return feed.rssUrl; } })();
+  const authorName = (item.source || feed.name).slice(0, 256);
   return new EmbedBuilder()
     .setColor(feed.color)
-    .setAuthor({ name: feed.name, url: origin })
+    .setAuthor({ name: authorName, url: origin })
     .setTitle(item.title.slice(0, 256))
     .setURL(item.link)
     .setDescription(snippet || "​")
-    .setTimestamp(item.pubDate ? new Date(item.pubDate) : new Date());
+    .setFooter({ text: formatFooterDate(item.pubDate) });
 }
 
 // ── Post ──────────────────────────────────────────────────────────────────────

@@ -63,28 +63,40 @@ export async function deleteFeed(id: number): Promise<ActionResult> {
   }
 }
 
+function formatFooterDate(raw: string | undefined): string {
+  const d   = raw ? new Date(raw) : new Date();
+  const ref = isNaN(d.getTime()) ? new Date() : d;
+  const p   = new Date(ref.toLocaleString("en-US", { timeZone: "Europe/Paris" }));
+  const dd  = String(p.getDate()).padStart(2, "0");
+  const mm  = String(p.getMonth() + 1).padStart(2, "0");
+  const hh  = String(p.getHours()).padStart(2, "0");
+  const min = String(p.getMinutes()).padStart(2, "0");
+  return `${dd}/${mm}/${p.getFullYear()} ${hh}:${min}`;
+}
+
 export async function postArticleNow(data: {
   feedId:    number;
   channelId: string;
   feedName:  string;
   feedUrl:   string;
   color:     number;
-  article:   { title: string; url: string; description: string; date: string };
+  article:   { title: string; url: string; description: string; date: string; source?: string };
 }): Promise<ActionResult> {
   try {
     const { feedId, channelId, feedName, feedUrl, color, article } = data;
-    const origin  = (() => { try { return new URL(feedUrl).origin; } catch { return feedUrl; } })();
-    const snippet = article.description.length > 350
+    const origin     = (() => { try { return new URL(feedUrl).origin; } catch { return feedUrl; } })();
+    const authorName = (article.source || feedName).slice(0, 256);
+    const snippet    = article.description.length > 350
       ? article.description.slice(0, 350) + " […]"
       : article.description;
 
     const embed = {
       color,
-      author:      { name: feedName, url: origin },
+      author:      { name: authorName, url: origin },
       title:       article.title.slice(0, 256),
       url:         article.url,
       description: snippet || null,
-      timestamp:   new Date(article.date || Date.now()).toISOString(),
+      footer:      { text: formatFooterDate(article.date) },
     };
 
     const res = await fetch(

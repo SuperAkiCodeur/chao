@@ -14,7 +14,7 @@ import type { DiscordChannel } from "@/lib/discord";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type Article = { title: string; url: string; description: string; date: string };
+export type Article = { title: string; url: string; description: string; date: string; source?: string };
 export type Feed    = {
   id: number; guildId: string; name: string; rssUrl: string;
   channelId: string; color: number; postTimes: string; createdAt: string;
