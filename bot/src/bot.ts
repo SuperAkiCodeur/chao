@@ -3,7 +3,6 @@ import { env } from "./core/config/env.js";
 import { logger } from "./core/app/logger.js";
 import { loadEvents } from "./core/discord/eventLoader.js";
 import { startDealsTracker } from "./features/deals/services/deals.tracker.js";
-import { startNewsTracker } from "./features/news/services/news.tracker.js";
 
 export function createBot() {
   const client = new Client({
@@ -31,7 +30,6 @@ export function createBot() {
     async start() {
       await client.login(env.DISCORD_TOKEN);
       startDealsTracker(client);
-      startNewsTracker(client);
     },
   };
 }

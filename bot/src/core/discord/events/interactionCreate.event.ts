@@ -65,18 +65,6 @@ import {
   DEALS_CONFIG_CHAN_ID,
   DEALS_BACK_BTN_ID,
 } from "../../../features/deals/domain/deals.constants.js";
-import {
-  handleValorantMenu,
-  handleValorantBack,
-  handleValorantLinkModal,
-  handleValorantStatsSelect,
-} from "../../../features/valorant/services/valorant.service.js";
-import {
-  VALORANT_MENU_ID,
-  VALORANT_STATS_SELECT_ID,
-  VALORANT_MODAL_LINK_ID,
-  VALORANT_BACK_BTN_ID,
-} from "../../../features/valorant/domain/valorant.constants.js";
 
 export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
   name: Events.InteractionCreate,
@@ -93,8 +81,6 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
           await handleDealsRenameModal(interaction);
         } else if (id.startsWith(CINEMA_MODAL_START_PREFIX)) {
           await handleCinemaStartModal(interaction);
-        } else if (id === VALORANT_MODAL_LINK_ID) {
-          await handleValorantLinkModal(interaction);
         }
       } catch (err) {
         logger.error("Modal submit failed", { customId: id, err });
@@ -141,10 +127,6 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
         await handleCinemaEndPartySelect(interaction);
       } else if (id === CINEMA_MENU_ID) {
         await handleCinemaMenu(interaction);
-      } else if (id === VALORANT_MENU_ID) {
-        await handleValorantMenu(interaction);
-      } else if (id === VALORANT_STATS_SELECT_ID) {
-        await handleValorantStatsSelect(interaction);
       }
       return;
     }
@@ -179,8 +161,6 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
         await handleCinemaPanelEndButton(interaction);
       } else if (id === CINEMA_PANEL_HELP_BTN_ID) {
         await handleCinemaPanelHelpButton(interaction);
-      } else if (id === VALORANT_BACK_BTN_ID) {
-        await handleValorantBack(interaction);
       }
       return;
     }

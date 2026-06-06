@@ -242,12 +242,6 @@ export function SettingsClient({ channels, roles, settings }: {
         </Field>
       </Section>
 
-      <Section title="Valorant" description="Salon pour les résultats et statistiques Valorant" delay={200}>
-        <Field label="Salon Valorant" description="Salon où le bot poste les résultats">
-          <SelectDropdown name="valorant_channel_id" options={textChannels} value={vals["valorant_channel_id"] ?? ""} onChange={set("valorant_channel_id")} placeholder="Choisir un salon…" />
-        </Field>
-      </Section>
-
     </div>
   );
 }

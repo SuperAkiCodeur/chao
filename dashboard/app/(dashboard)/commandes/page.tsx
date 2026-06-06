@@ -14,11 +14,6 @@ type AutoBehavior = { name: string; description: string; note?: string };
 
 const AUTO_BEHAVIORS: AutoBehavior[] = [
   {
-    name: "News tracker",
-    description: "Chaque jour à 9h (heure de Paris), le bot poste un article aléatoire des dernières 24h pour chaque flux RSS configuré. Les flux sont gérés depuis la page News du dashboard.",
-    note: "Si aucun article n'a été publié dans les 24h sur un flux, le post est annulé pour ce flux.",
-  },
-  {
     name: "Deals tracker",
     description: "Toutes les 6h, le bot vérifie les prix Steam de chaque jeu suivi et envoie une alerte dans le salon de notifications si un jeu passe en promotion.",
     note: "Nécessite une ITAD_API_KEY pour la comparaison multi-boutiques.",
@@ -51,17 +46,6 @@ const COMMANDS: Command[] = [
     name: "/deals",
     description: "Ouvre un menu interactif éphémère pour gérer la liste de jeux du salon. Actions : 📋 Voir la liste, 🔍 Ajouter un jeu, 🗑 Retirer un jeu, 🔥 Promos en cours, 💰 Comparer les prix, ✏️ Renommer la liste, ⚙️ Salon de notifications.",
     note: "La comparaison de prix multi-boutiques nécessite une clé ITAD_API_KEY configurée sur le serveur.",
-  },
-  {
-    name: "/valorant",
-    description: "Ouvre un menu éphémère avec cinq actions pour gérer les comptes Riot liés.",
-    params: [
-      { name: "🔗 Lier mon compte",   required: false, description: "Associe ton Riot ID (format Pseudo#Tag) à ton profil Discord." },
-      { name: "📊 Mes résultats",     required: false, description: "Affiche tes derniers matchs : mode, résultat, K/D/A et évolution de rang." },
-      { name: "📈 Mes stats",         required: false, description: "Statistiques détaillées : Global, Par agent, Par map, Temps de jeu." },
-      { name: "🏆 Classement",        required: false, description: "Classement des membres du serveur ayant lié leur compte, triés par rang." },
-      { name: "❓ Aide",               required: false, description: "Affiche la liste de toutes les actions disponibles." },
-    ],
   },
 ];
 

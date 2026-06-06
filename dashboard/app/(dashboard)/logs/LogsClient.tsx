@@ -8,18 +8,16 @@ const LINE = "1px solid rgba(255,255,255,0.08)";
 
 const TYPE_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   cinema:     { label: "Cinéma",     color: "#a78bfa", bg: "rgba(167,139,250,0.12)" },
-  valorant:   { label: "Valorant",   color: "#f87171", bg: "rgba(248,113,113,0.12)" },
   member:     { label: "Membre",     color: "#4ade80", bg: "rgba(74,222,128,0.12)"  },
   moderation: { label: "Modération", color: "#fbbf24", bg: "rgba(251,191,36,0.12)"  },
-  news:       { label: "News",       color: "#38bdf8", bg: "rgba(56,189,248,0.12)"  },
+  deals:      { label: "Deals",      color: "#fb923c", bg: "rgba(251,146,60,0.12)"  },
 };
 
 const FILTERS = [
-  { id: "all",      label: "Tout",     types: null                     },
-  { id: "discord",  label: "Discord",  types: ["member", "moderation"] },
-  { id: "cinema",   label: "Cinéma",   types: ["cinema"]               },
-  { id: "valorant", label: "Valorant", types: ["valorant"]             },
-  { id: "news",     label: "News",     types: ["news"]                 },
+  { id: "all",     label: "Tout",     types: null                     },
+  { id: "discord", label: "Discord",  types: ["member", "moderation"] },
+  { id: "cinema",  label: "Cinéma",   types: ["cinema"]               },
+  { id: "deals",   label: "Deals",    types: ["deals"]                },
 ] as const;
 
 type FilterId = typeof FILTERS[number]["id"];
