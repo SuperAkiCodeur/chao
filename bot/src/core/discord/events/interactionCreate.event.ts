@@ -2,7 +2,6 @@ import { Events, MessageFlags, type Interaction } from "discord.js";
 import type { AppEvent } from "../types/appEvent.js";
 import { logger } from "../../app/logger.js";
 import { getCommand } from "../commandRegistry.js";
-import { handleSelfRoleButton, isSelfRoleButton } from "../../../features/selfrole/services/selfrole.service.js";
 import {
   handleCinemaRatingButton,
   handleCinemaTicketButton,
@@ -100,8 +99,6 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
         await handleCinemaEndButton(interaction);
       } else if (id.startsWith(CINEMA_CONSTANTS.RATING_BUTTON_PREFIX)) {
         await handleCinemaRatingButton(interaction);
-      } else if (isSelfRoleButton(id)) {
-        await handleSelfRoleButton(interaction);
       } else if (id.startsWith(ROULETTE_LAUNCH_PREFIX)) {
         await handleRouletteLaunch(interaction);
       } else if (id === ROULETTE_RETRY_ID) {

@@ -5,7 +5,6 @@ import type {
   SlashCommandSubcommandsOnlyBuilder,
 } from "discord.js";
 import { cinemaCommand } from "../../features/cinema/commands/cinema.command.js";
-import { selfRoleCommand } from "../../features/selfrole/commands/selfrole.command.js";
 import { rouletteCommand } from "../../features/roulette/commands/roulette.command.js";
 
 export type AppCommand = {
@@ -18,7 +17,6 @@ export type AppCommand = {
 
 export const commandRegistry = new Map<string, AppCommand>([
   [cinemaCommand.data.name, cinemaCommand],
-  [selfRoleCommand.data.name, selfRoleCommand],
   [rouletteCommand.data.name, rouletteCommand],
 ]);
 

@@ -24,18 +24,6 @@ const COMMANDS: Command[] = [
       { name: "❓ Aide",                      required: false, description: "Affiche la liste de toutes les actions disponibles." },
     ],
   },
-  {
-    name: "/selfrole create", adminOnly: true,
-    description: "Poste un message interactif dans un salon avec des boutons permettant aux membres de s'attribuer ou de retirer eux-mêmes un rôle d'un simple clic.",
-    params: [
-      { name: "channel",       required: true,  description: "Salon texte où le message de sélection de rôles sera posté." },
-      { name: "title",         required: true,  description: "Titre affiché en haut de l'embed du message." },
-      { name: "role1",         required: true,  description: "Premier rôle à proposer (au moins un requis)." },
-      { name: "role2 … role5", required: false, description: "Rôles supplémentaires à proposer (jusqu'à 5 au total)." },
-      { name: "description",   required: false, description: "Texte affiché sous le titre dans l'embed." },
-      { name: "color",         required: false, description: "Couleur de la barre latérale de l'embed en hexadécimal — ex : #ff4655." },
-    ],
-  },
 ];
 
 export default function CommandesPage() {
