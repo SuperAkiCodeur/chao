@@ -19,6 +19,4 @@ export const env = {
   CINEMA_CATEGORY_ID: getRequiredEnv("CINEMA_CATEGORY_ID"),
   LETTERBOXD_CHANNEL_ID: getRequiredEnv("LETTERBOXD_CHANNEL_ID"),
   DISCORD_GUILD_ID: process.env.DISCORD_GUILD_ID,
-  HENRIKDEV_API_KEY: process.env.HENRIKDEV_API_KEY,
-  ITAD_API_KEY: process.env.ITAD_API_KEY, // IsThereAnyDeal — optionnel
 } as const;

@@ -21,7 +21,6 @@
     "discord.js": "^14.26.4",
     "drizzle-orm": "^0.45.2",
     "postgres": "^3.4.9",
-    "rss-parser": "^3.13.0",
     "tsx": "^4.22.3"
   },
   "devDependencies": {

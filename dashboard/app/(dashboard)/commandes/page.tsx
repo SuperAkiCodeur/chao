@@ -8,11 +8,7 @@ const BD  = "1px solid rgba(255,255,255,0.08)";
 const BDI = "1px solid rgba(255,255,255,0.12)";
 
 type Param   = { name: string; description: string; required: boolean };
-type Command = { name: string; description: string; adminOnly?: boolean; auto?: boolean; params?: Param[]; note?: string };
-
-type AutoBehavior = { name: string; description: string; note?: string };
-
-const AUTO_BEHAVIORS: AutoBehavior[] = [];
+type Command = { name: string; description: string; adminOnly?: boolean; params?: Param[]; note?: string };
 
 const COMMANDS: Command[] = [
   {
@@ -23,6 +19,10 @@ const COMMANDS: Command[] = [
       { name: "⏹ Terminer une diffusion",    required: false, description: "Clôt une diffusion active et ouvre automatiquement un vote de notation pendant 1 heure." },
       { name: "❓ Aide",                      required: false, description: "Affiche la liste de toutes les actions disponibles." },
     ],
+  },
+  {
+    name: "/roulette",
+    description: "Tire au sort un membre parmi une sélection de 2 à 10 participants. Le résultat est annoncé publiquement avec un ping.",
   },
 ];
 
@@ -40,40 +40,7 @@ export default function CommandesPage() {
   }, [query]);
 
   return (
-    <PageShell title="Commandes" description="Référence complète des commandes et comportements du bot">
-
-      {/* Automatic behaviors */}
-      <div className="anim-fade-up" style={{ background: "#202020", borderRadius: 12, border: BD, overflow: "hidden" }}>
-        <div style={{ padding: "14px 20px", borderBottom: BD }}>
-          <p style={{ fontSize: 15, fontWeight: 700, color: "#fff" }}>Comportements automatiques</p>
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.40)", marginTop: 3 }}>
-            Actions déclenchées par le bot sans intervention — configurables via le dashboard
-          </p>
-        </div>
-        {AUTO_BEHAVIORS.map((b, i) => (
-          <div key={b.name} style={{ padding: "16px 20px", borderTop: i > 0 ? BD : undefined }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-              <code style={{
-                fontSize: 14, fontFamily: "ui-monospace, monospace", fontWeight: 700,
-                color: "#fff", background: "rgba(255,255,255,0.08)", padding: "3px 9px", borderRadius: 4,
-              }}>
-                {b.name}
-              </code>
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#38bdf8", background: "rgba(56,189,248,0.10)", border: "1px solid rgba(56,189,248,0.18)", padding: "2px 8px", borderRadius: 99 }}>
-                Automatique
-              </span>
-            </div>
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.52)", lineHeight: 1.6, marginBottom: b.note ? 8 : 0 }}>
-              {b.description}
-            </p>
-            {b.note && (
-              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.28)", fontStyle: "italic", lineHeight: 1.5 }}>
-                {b.note}
-              </p>
-            )}
-          </div>
-        ))}
-      </div>
+    <PageShell title="Commandes" description="Référence complète des commandes du bot">
 
       {/* Search */}
       <div className="anim-fade-in" style={{ position: "relative" }}>
@@ -122,11 +89,6 @@ export default function CommandesPage() {
               {cmd.adminOnly && (
                 <span style={{ fontSize: 11, fontWeight: 700, color: "#f59e0b", background: "rgba(245,158,11,0.10)", border: "1px solid rgba(245,158,11,0.18)", padding: "2px 8px", borderRadius: 99 }}>
                   Admin
-                </span>
-              )}
-              {cmd.auto && (
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#60a5fa", background: "rgba(96,165,250,0.10)", border: "1px solid rgba(96,165,250,0.18)", padding: "2px 8px", borderRadius: 99 }}>
-                  Automatique
                 </span>
               )}
             </div>

@@ -44,64 +44,6 @@ export const cinemaPartyRatings = pgTable(
   (t) => [primaryKey({ columns: [t.messageId, t.userId] })],
 );
 
-// ── Valorant ───────────────────────────────────────────────────────────────────
-
-export const valorantLinks = pgTable(
-  "valorant_links",
-  {
-    discordUserId: text("discord_user_id").notNull(),
-    guildId:       text("guild_id").notNull(),
-    riotId:        text("riot_id").notNull(),
-    puuid:         text("puuid"),
-    region:        text("region"),
-    linkedAt:      text("linked_at").notNull(),
-  },
-  (t) => [primaryKey({ columns: [t.discordUserId, t.guildId] })],
-);
-
-// ── Deals ─────────────────────────────────────────────────────────────────────
-
-export const dealsGames = pgTable("deals_games", {
-  id:                serial("id").primaryKey(),
-  guildId:           text("guild_id").notNull(),
-  channelId:         text("channel_id").notNull(),
-  steamAppId:        integer("steam_app_id").notNull(),
-  title:             text("title").notNull(),
-  headerImage:       text("header_image"),
-  addedById:         text("added_by_id").notNull(),
-  addedByName:       text("added_by_name").notNull(),
-  addedAt:           text("added_at").notNull(),
-  lastKnownPriceEur: integer("last_known_price_eur"),
-  lastKnownDiscount: integer("last_known_discount").default(0),
-  lastCheckedAt:     text("last_checked_at"),
-  isOnSale:          integer("is_on_sale").default(0).notNull(),
-});
-
-export const dealsConfig = pgTable(
-  "deals_config",
-  {
-    guildId:        text("guild_id").notNull(),
-    channelId:      text("channel_id").notNull(),
-    name:           text("name"),
-    notifChannelId: text("notif_channel_id"),
-  },
-  (t) => [primaryKey({ columns: [t.guildId, t.channelId] })],
-);
-
-// ── News ──────────────────────────────────────────────────────────────────────
-
-export const newsFeeds = pgTable("news_feeds", {
-  id:            serial("id").primaryKey(),
-  guildId:       text("guild_id").notNull(),
-  name:          text("name").notNull(),
-  displaySource: text("display_source").default("").notNull(), // affiché dans l'embed (ex: "Agence Média Palestine")
-  rssUrl:        text("rss_url").notNull(),
-  channelId:     text("channel_id").notNull(),
-  color:         integer("color").default(0x4ade80).notNull(),
-  postTimes:     text("post_times").default("[9]").notNull(), // JSON : heures Paris, ex. [9] ou [9,18]
-  createdAt:     text("created_at").notNull(),
-});
-
 // ── Dashboard ──────────────────────────────────────────────────────────────────
 
 export const dashboardLogs = pgTable("dashboard_logs", {
