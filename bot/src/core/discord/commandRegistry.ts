@@ -7,7 +7,6 @@ import type {
 import { cinemaCommand } from "../../features/cinema/commands/cinema.command.js";
 import { selfRoleCommand } from "../../features/selfrole/commands/selfrole.command.js";
 import { rouletteCommand } from "../../features/roulette/commands/roulette.command.js";
-import { dealsCommand } from "../../features/deals/commands/deals.command.js";
 
 export type AppCommand = {
   data:
@@ -21,7 +20,6 @@ export const commandRegistry = new Map<string, AppCommand>([
   [cinemaCommand.data.name, cinemaCommand],
   [selfRoleCommand.data.name, selfRoleCommand],
   [rouletteCommand.data.name, rouletteCommand],
-  [dealsCommand.data.name, dealsCommand],
 ]);
 
 export function getCommand(name: string): AppCommand | undefined {

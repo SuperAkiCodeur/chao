@@ -6,7 +6,7 @@ import { dashboardLogs } from "./schema.js";
  * Ne lève jamais d'exception — une erreur de log ne doit pas crasher le bot.
  */
 export async function insertLog(params: {
-  type: "cinema" | "member" | "moderation" | "deals";
+  type: "cinema" | "member" | "moderation";
   action: string;
   description: string;
   userId?: string | null;

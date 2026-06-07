@@ -6,13 +6,12 @@ import { useState, useEffect } from "react";
 import { signOut } from "next-auth/react";
 import {
   SquaresFour, Users, Popcorn,
-  Scroll, Fire, SignOut,
+  Scroll, SignOut,
   BookOpen, Stack, CaretDown, type IconWeight,
 } from "@phosphor-icons/react";
 
 const FEATURES = [
   { href: "/cinema", label: "Cinéma", Icon: Popcorn },
-  { href: "/deals",  label: "Deals",  Icon: Fire    },
 ];
 
 const FEATURE_HREFS = new Set(FEATURES.map((f) => f.href));

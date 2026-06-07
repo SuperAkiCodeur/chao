@@ -12,13 +12,7 @@ type Command = { name: string; description: string; adminOnly?: boolean; auto?: 
 
 type AutoBehavior = { name: string; description: string; note?: string };
 
-const AUTO_BEHAVIORS: AutoBehavior[] = [
-  {
-    name: "Deals tracker",
-    description: "Toutes les 6h, le bot vérifie les prix Steam de chaque jeu suivi et envoie une alerte dans le salon de notifications si un jeu passe en promotion.",
-    note: "Nécessite une ITAD_API_KEY pour la comparaison multi-boutiques.",
-  },
-];
+const AUTO_BEHAVIORS: AutoBehavior[] = [];
 
 const COMMANDS: Command[] = [
   {
@@ -41,11 +35,6 @@ const COMMANDS: Command[] = [
       { name: "description",   required: false, description: "Texte affiché sous le titre dans l'embed." },
       { name: "color",         required: false, description: "Couleur de la barre latérale de l'embed en hexadécimal — ex : #ff4655." },
     ],
-  },
-  {
-    name: "/deals",
-    description: "Ouvre un menu interactif éphémère pour gérer la liste de jeux du salon. Actions : 📋 Voir la liste, 🔍 Ajouter un jeu, 🗑 Retirer un jeu, 🔥 Promos en cours, 💰 Comparer les prix, ✏️ Renommer la liste, ⚙️ Salon de notifications.",
-    note: "La comparaison de prix multi-boutiques nécessite une clé ITAD_API_KEY configurée sur le serveur.",
   },
 ];
 
