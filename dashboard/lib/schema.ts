@@ -44,6 +44,15 @@ export const cinemaPartyRatings = pgTable(
   (t) => [primaryKey({ columns: [t.messageId, t.userId] })],
 );
 
+// ── Anniversaires ──────────────────────────────────────────────────────────────
+
+export const birthdays = pgTable("birthdays", {
+  userId:  text("user_id").primaryKey(),
+  guildId: text("guild_id").notNull(),
+  day:     integer("day").notNull(),
+  month:   integer("month").notNull(),
+});
+
 // ── Dashboard ──────────────────────────────────────────────────────────────────
 
 export const dashboardLogs = pgTable("dashboard_logs", {

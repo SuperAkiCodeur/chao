@@ -8,6 +8,7 @@ import {
   findCinemaPartyByMessageId,
   setCinemaStartAnnouncementMessageId,
 } from "../repositories/cinema.repository.js";
+import { fetchTmdbPosterUrl } from "./tmdb.service.js";
 
 const MAX_TIMEOUT_DELAY = 2_147_483_647;
 
@@ -97,6 +98,7 @@ function formatAverageAsStars(average: number): string {
 function buildCinemaRatingSummaryEmbed(
   cinemaParty: CinemaParty,
   ratings: Array<{ userId: string; rating: CinemaRatingValue }>,
+  posterUrl?: string | null,
 ): EmbedBuilder {
   const average =
     ratings.reduce((sum, entry) => sum + entry.rating, 0) / ratings.length;
@@ -106,7 +108,7 @@ function buildCinemaRatingSummaryEmbed(
     .map((entry) => `<@${entry.userId}> — ${entry.rating}/5`)
     .join("\n");
 
-  return new EmbedBuilder()
+  const embed = new EmbedBuilder()
     .setColor(CINEMA_CONSTANTS.DEFAULT_EMBED_COLOR)
     .setTitle(`📊 Notes de ${cinemaParty.title}`)
     .setDescription(
@@ -116,15 +118,28 @@ function buildCinemaRatingSummaryEmbed(
       name: "Participants",
       value: usersList || "Aucune note reçue.",
     });
+
+  if (posterUrl) {
+    embed.setThumbnail(posterUrl);
+  }
+
+  return embed;
 }
 
 function buildCinemaRatingSummaryWithoutVotesEmbed(
   cinemaParty: CinemaParty,
+  posterUrl?: string | null,
 ): EmbedBuilder {
-  return new EmbedBuilder()
+  const embed = new EmbedBuilder()
     .setColor(CINEMA_CONSTANTS.DEFAULT_EMBED_COLOR)
     .setTitle(`📊 Notes de ${cinemaParty.title}`)
     .setDescription("Aucune note n’a été enregistrée pendant les 24 heures de vote.");
+
+  if (posterUrl) {
+    embed.setThumbnail(posterUrl);
+  }
+
+  return embed;
 }
 
 async function sendScheduledCinemaAnnouncement(
@@ -251,10 +266,15 @@ async function closeScheduledCinemaRating(
     };
   }) as Array<{ userId: string; rating: CinemaRatingValue }>;
 
+  const posterUrl = await fetchTmdbPosterUrl(
+    currentCinemaParty.mediaType,
+    currentCinemaParty.mediaId,
+  ).catch(() => null);
+
   const summaryEmbed =
     ratings.length > 0
-      ? buildCinemaRatingSummaryEmbed(currentCinemaParty, ratings)
-      : buildCinemaRatingSummaryWithoutVotesEmbed(currentCinemaParty);
+      ? buildCinemaRatingSummaryEmbed(currentCinemaParty, ratings, posterUrl)
+      : buildCinemaRatingSummaryWithoutVotesEmbed(currentCinemaParty, posterUrl);
 
   const summaryMessage = await channel.send({
     embeds: [summaryEmbed],

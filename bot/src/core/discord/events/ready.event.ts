@@ -7,6 +7,9 @@ import {
   scheduleCinemaRatingClosure,
   scheduleCinemaStartAnnouncement,
 } from "../../../features/cinema/services/cinemaScheduler.service.js";
+import { scheduleBirthdayDailyCheck } from "../../../features/birthday/services/birthdayScheduler.service.js";
+import { runStartupMigrations } from "../../db/migrations.js";
+import { registerCommands } from "../registerCommands.js";
 
 export const readyEvent: AppEvent<Events.ClientReady> = {
   name: Events.ClientReady,
@@ -16,6 +19,12 @@ export const readyEvent: AppEvent<Events.ClientReady> = {
     logger.info("Bot is ready", {
       userTag: client.user.tag,
       userId: client.user.id,
+    });
+
+    await runStartupMigrations();
+
+    await registerCommands().catch((error: unknown) => {
+      logger.error("Failed to register commands on startup", { error });
     });
 
     const cinemaParties = await findAllCinemaParties();
@@ -41,5 +50,6 @@ export const readyEvent: AppEvent<Events.ClientReady> = {
       restoredCinemaRatingClosuresCount: cinemaPartiesWithOpenRatings.length,
     });
 
+    scheduleBirthdayDailyCheck(client);
   },
 };

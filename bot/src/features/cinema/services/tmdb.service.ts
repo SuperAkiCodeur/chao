@@ -129,3 +129,15 @@ export function buildTmdbPosterUrl(posterPath?: string | null): string | null {
 
   return `${CINEMA_CONSTANTS.TMDB_POSTER_BASE_URL}${posterPath}`;
 }
+
+export async function fetchTmdbPosterUrl(
+  type: CinemaContentType,
+  mediaId: string,
+): Promise<string | null> {
+  try {
+    const details = await fetchJson<TmdbDetails>(buildDetailsUrl(type, mediaId));
+    return buildTmdbPosterUrl(details.poster_path);
+  } catch {
+    return null;
+  }
+}

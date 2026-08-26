@@ -242,6 +242,15 @@ export function SettingsClient({ channels, roles, settings }: {
         </Field>
       </Section>
 
+      <Section title="Anniversaires" description="Salon d'annonces et rôle du jour pour les anniversaires" delay={200}>
+        <Field label="Salon d'annonces" description="Salon où le message d'anniversaire est posté chaque jour">
+          <SelectDropdown name="birthday_channel_id" options={textChannels} value={vals["birthday_channel_id"] ?? ""} onChange={set("birthday_channel_id")} placeholder="Choisir un salon…" />
+        </Field>
+        <Field label="Rôle du jour" description="Attribué le jour de l'anniversaire, retiré le lendemain">
+          <SelectDropdown name="birthday_role_id" options={sortedRoles} value={vals["birthday_role_id"] ?? ""} onChange={set("birthday_role_id")} placeholder="Choisir un rôle…" />
+        </Field>
+      </Section>
+
     </div>
   );
 }
