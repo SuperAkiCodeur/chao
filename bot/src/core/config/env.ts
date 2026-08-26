@@ -18,5 +18,5 @@ export const env = {
   TICKET_CHANNEL_ID: getRequiredEnv("TICKET_CHANNEL_ID"),
   CINEMA_CATEGORY_ID: getRequiredEnv("CINEMA_CATEGORY_ID"),
   LETTERBOXD_CHANNEL_ID: getRequiredEnv("LETTERBOXD_CHANNEL_ID"),
-  DISCORD_GUILD_ID: process.env.DISCORD_GUILD_ID,
+  DISCORD_GUILD_ID: process.env.DISCORD_GUILD_ID ?? process.env.GUILD_ID,
 } as const;
