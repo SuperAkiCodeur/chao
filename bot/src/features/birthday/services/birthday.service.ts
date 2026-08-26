@@ -58,7 +58,7 @@ function buildDaySelectRows(month: number): ActionRowBuilder<StringSelectMenuBui
   const customId = `${BIRTHDAY_DAY_SELECT_PREFIX}${month}`;
 
   const firstHalf = new StringSelectMenuBuilder()
-    .setCustomId(customId)
+    .setCustomId(`${customId}:1`)
     .setPlaceholder(`Jour (1–${midpoint})`)
     .addOptions(
       Array.from({ length: midpoint }, (_, i) =>
@@ -70,7 +70,7 @@ function buildDaySelectRows(month: number): ActionRowBuilder<StringSelectMenuBui
 
   if (maxDay > midpoint) {
     const secondHalf = new StringSelectMenuBuilder()
-      .setCustomId(customId)
+      .setCustomId(`${customId}:2`)
       .setPlaceholder(`Jour (${midpoint + 1}–${maxDay})`)
       .addOptions(
         Array.from({ length: maxDay - midpoint }, (_, i) =>
@@ -128,7 +128,7 @@ export async function handleBirthdayMonthSelect(interaction: StringSelectMenuInt
 }
 
 export async function handleBirthdayDaySelect(interaction: StringSelectMenuInteraction): Promise<void> {
-  const month = Number(interaction.customId.slice(BIRTHDAY_DAY_SELECT_PREFIX.length));
+  const month = Number(interaction.customId.slice(BIRTHDAY_DAY_SELECT_PREFIX.length).split(":")[0]);
   const day = Number(interaction.values[0]);
 
   const validation = validateBirthdayDate(day, month);
