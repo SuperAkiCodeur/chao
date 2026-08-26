@@ -44,8 +44,16 @@ import {
   ROULETTE_MENU_ID,
   ROULETTE_BACK_BTN_ID,
 } from "../../../features/roulette/domain/roulette.constants.js";
-import { handleBirthdaySetModal } from "../../../features/birthday/services/birthday.service.js";
-import { BIRTHDAY_MODAL_SET_ID } from "../../../features/birthday/domain/birthday.constants.js";
+import {
+  handleBirthdaySetModal,
+  handleBirthdayConfirmDelete,
+  handleBirthdayCancelDelete,
+} from "../../../features/birthday/services/birthday.service.js";
+import {
+  BIRTHDAY_MODAL_SET_ID,
+  BIRTHDAY_CONFIRM_DELETE_ID,
+  BIRTHDAY_CANCEL_DELETE_ID,
+} from "../../../features/birthday/domain/birthday.constants.js";
 export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
   name: Events.InteractionCreate,
 
@@ -119,6 +127,10 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
         await handleCinemaPanelEndButton(interaction);
       } else if (id === CINEMA_PANEL_HELP_BTN_ID) {
         await handleCinemaPanelHelpButton(interaction);
+      } else if (id === BIRTHDAY_CONFIRM_DELETE_ID) {
+        await handleBirthdayConfirmDelete(interaction);
+      } else if (id === BIRTHDAY_CANCEL_DELETE_ID) {
+        await handleBirthdayCancelDelete(interaction);
       }
       return;
     }

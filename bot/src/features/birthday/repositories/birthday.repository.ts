@@ -47,12 +47,3 @@ export async function findBirthdaysByDayMonth(day: number, month: number): Promi
 
   return rows.map(toBirthday);
 }
-
-export async function findBirthdaysByGuild(guildId: string): Promise<Birthday[]> {
-  const rows = await db
-    .select()
-    .from(birthdaysTable)
-    .where(eq(birthdaysTable.guildId, guildId));
-
-  return rows.map(toBirthday);
-}

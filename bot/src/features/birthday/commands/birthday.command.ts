@@ -5,22 +5,7 @@ import { handleBirthdayCommand } from "../services/birthday.service.js";
 export const birthdayCommand = {
   data: new SlashCommandBuilder()
     .setName(BIRTHDAY_CONSTANTS.COMMAND_NAME)
-    .setDescription("Gère ton anniversaire")
-    .addSubcommand((subcommand) =>
-      subcommand
-        .setName("set")
-        .setDescription("Enregistre la date de ton anniversaire"),
-    )
-    .addSubcommand((subcommand) =>
-      subcommand
-        .setName("supprimer")
-        .setDescription("Supprime ton anniversaire enregistré"),
-    )
-    .addSubcommand((subcommand) =>
-      subcommand
-        .setName("liste")
-        .setDescription("Affiche les prochains anniversaires"),
-    ),
+    .setDescription("Enregistre ton anniversaire, ou supprime-le s'il est déjà enregistré"),
 
   async execute(interaction: ChatInputCommandInteraction): Promise<void> {
     await handleBirthdayCommand(interaction);

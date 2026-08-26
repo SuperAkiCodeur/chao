@@ -1,14 +1,19 @@
 import {
   ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
   MessageFlags,
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
+  type ButtonInteraction,
   type ChatInputCommandInteraction,
   type ModalSubmitInteraction,
 } from "discord.js";
 import { logger } from "../../../core/app/logger.js";
 import {
+  BIRTHDAY_CANCEL_DELETE_ID,
+  BIRTHDAY_CONFIRM_DELETE_ID,
   BIRTHDAY_CONSTANTS,
   BIRTHDAY_INPUT_DATE_ID,
   BIRTHDAY_MODAL_SET_ID,
@@ -17,7 +22,6 @@ import { validateBirthdayDate } from "../domain/birthday.validators.js";
 import {
   deleteBirthday,
   findBirthdayByUserId,
-  findBirthdaysByGuild,
   upsertBirthday,
 } from "../repositories/birthday.repository.js";
 
@@ -43,6 +47,34 @@ async function showBirthdaySetModal(interaction: ChatInputCommandInteraction): P
   );
 
   await interaction.showModal(modal);
+}
+
+function buildConfirmDeleteRow(): ActionRowBuilder<ButtonBuilder> {
+  return new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId(BIRTHDAY_CONFIRM_DELETE_ID)
+      .setLabel("Supprimer")
+      .setStyle(ButtonStyle.Danger),
+    new ButtonBuilder()
+      .setCustomId(BIRTHDAY_CANCEL_DELETE_ID)
+      .setLabel("Annuler")
+      .setStyle(ButtonStyle.Secondary),
+  );
+}
+
+export async function handleBirthdayCommand(interaction: ChatInputCommandInteraction): Promise<void> {
+  const existing = await findBirthdayByUserId(interaction.user.id);
+
+  if (!existing) {
+    await showBirthdaySetModal(interaction);
+    return;
+  }
+
+  await interaction.reply({
+    content: `🎂 Ton anniversaire est enregistré : **${formatBirthdayDate(existing.day, existing.month)}**. Veux-tu le supprimer ?`,
+    components: [buildConfirmDeleteRow()],
+    flags: MessageFlags.Ephemeral,
+  });
 }
 
 export async function handleBirthdaySetModal(interaction: ModalSubmitInteraction): Promise<void> {
@@ -90,76 +122,20 @@ export async function handleBirthdaySetModal(interaction: ModalSubmitInteraction
   });
 }
 
-async function handleRemoveSubcommand(interaction: ChatInputCommandInteraction): Promise<void> {
-  const existing = await findBirthdayByUserId(interaction.user.id);
-
-  if (!existing) {
-    await interaction.reply({
-      content: "ℹ️ Tu n'as pas d'anniversaire enregistré.",
-      flags: MessageFlags.Ephemeral,
-    });
-    return;
-  }
-
+export async function handleBirthdayConfirmDelete(interaction: ButtonInteraction): Promise<void> {
   await deleteBirthday(interaction.user.id);
 
   logger.info("[birthday] Birthday removed", { userId: interaction.user.id });
 
-  await interaction.reply({
+  await interaction.update({
     content: "✅ Ton anniversaire a été supprimé.",
-    flags: MessageFlags.Ephemeral,
+    components: [],
   });
 }
 
-async function handleListSubcommand(interaction: ChatInputCommandInteraction): Promise<void> {
-  if (!interaction.guildId) {
-    await interaction.reply({
-      content: "❌ Cette commande doit être utilisée dans un serveur.",
-      flags: MessageFlags.Ephemeral,
-    });
-    return;
-  }
-
-  const birthdays = await findBirthdaysByGuild(interaction.guildId);
-
-  if (birthdays.length === 0) {
-    await interaction.reply({
-      content: "ℹ️ Aucun anniversaire enregistré pour le moment.",
-      flags: MessageFlags.Ephemeral,
-    });
-    return;
-  }
-
-  const now = new Date();
-  const dayOfYearKey = (month: number, day: number) => month * 100 + day;
-  const todayKey = dayOfYearKey(now.getMonth() + 1, now.getDate());
-
-  const sorted = [...birthdays].sort((a, b) => {
-    const aKey = dayOfYearKey(a.month, a.day);
-    const bKey = dayOfYearKey(b.month, b.day);
-    const aDistance = aKey >= todayKey ? aKey - todayKey : aKey + 1300 - todayKey;
-    const bDistance = bKey >= todayKey ? bKey - todayKey : bKey + 1300 - todayKey;
-    return aDistance - bDistance;
+export async function handleBirthdayCancelDelete(interaction: ButtonInteraction): Promise<void> {
+  await interaction.update({
+    content: "❌ Suppression annulée.",
+    components: [],
   });
-
-  const lines = sorted
-    .slice(0, 15)
-    .map((b) => `🎂 <@${b.userId}> — **${formatBirthdayDate(b.day, b.month)}**`);
-
-  await interaction.reply({
-    content: `**Prochains anniversaires**\n${lines.join("\n")}`,
-    flags: MessageFlags.Ephemeral,
-  });
-}
-
-export async function handleBirthdayCommand(interaction: ChatInputCommandInteraction): Promise<void> {
-  const subcommand = interaction.options.getSubcommand();
-
-  if (subcommand === "set") {
-    await showBirthdaySetModal(interaction);
-  } else if (subcommand === "supprimer") {
-    await handleRemoveSubcommand(interaction);
-  } else if (subcommand === "liste") {
-    await handleListSubcommand(interaction);
-  }
 }
