@@ -5,13 +5,14 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { signOut } from "next-auth/react";
 import {
-  SquaresFour, Users, Popcorn,
+  SquaresFour, Users, Popcorn, Gift,
   Scroll, SignOut,
   BookOpen, Stack, CaretDown, type IconWeight,
 } from "@phosphor-icons/react";
 
 const FEATURES = [
-  { href: "/cinema", label: "Cinéma", Icon: Popcorn },
+  { href: "/cinema",        label: "Cinéma",        Icon: Popcorn },
+  { href: "/anniversaires", label: "Anniversaires", Icon: Gift    },
 ];
 
 const FEATURE_HREFS = new Set(FEATURES.map((f) => f.href));
