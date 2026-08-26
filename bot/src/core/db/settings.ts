@@ -10,6 +10,7 @@ export const SETTING_KEYS = {
   // Anniversaires
   BIRTHDAY_CHANNEL_ID: "birthday_channel_id",
   BIRTHDAY_ROLE_ID: "birthday_role_id",
+  BIRTHDAY_ANNOUNCEMENT_POSTED: "birthday_announcement_posted",
 } as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];
@@ -25,4 +26,13 @@ export async function getSetting(key: SettingKey | string): Promise<string | nul
   } catch {
     return null;
   }
+}
+
+/** Écrit une setting en base (upsert). */
+export async function setSetting(key: SettingKey | string, value: string): Promise<void> {
+  const now = new Date().toISOString();
+  await db
+    .insert(dashboardSettings)
+    .values({ key, value, updatedAt: now })
+    .onConflictDoUpdate({ target: dashboardSettings.key, set: { value, updatedAt: now } });
 }

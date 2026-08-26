@@ -8,6 +8,7 @@ import {
   scheduleCinemaStartAnnouncement,
 } from "../../../features/cinema/services/cinemaScheduler.service.js";
 import { scheduleBirthdayDailyCheck } from "../../../features/birthday/services/birthdayScheduler.service.js";
+import { postBirthdayFeatureAnnouncementIfNeeded } from "../../../features/birthday/services/birthdayAnnouncement.service.js";
 import { runStartupMigrations } from "../../db/migrations.js";
 import { registerCommands } from "../registerCommands.js";
 
@@ -51,5 +52,9 @@ export const readyEvent: AppEvent<Events.ClientReady> = {
     });
 
     scheduleBirthdayDailyCheck(client);
+
+    await postBirthdayFeatureAnnouncementIfNeeded(client).catch((error: unknown) => {
+      logger.error("[birthday] Failed to post feature announcement", { error });
+    });
   },
 };
