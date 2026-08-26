@@ -7,7 +7,8 @@ import {
 } from "@/components/ui/dialog";
 import { SectionCard } from "@/components/PageShell";
 import { launchCinemaParty, searchTmdbAction, endCinemaParty, cancelCinemaParty } from "./actions";
-import type { ActionResult, TmdbResult, TmdbSearchResponse } from "./actions";
+import type { ActionResult } from "@/lib/types";
+import type { TmdbResult, TmdbSearchResponse } from "./types";
 
 const BD = "1px solid rgba(255,255,255,0.08)";
 

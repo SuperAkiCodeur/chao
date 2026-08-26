@@ -11,7 +11,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { kickMember, banMember, timeoutMember, updateMemberRoles } from "./actions";
-import type { ActionResult } from "./actions";
+import type { ActionResult } from "@/lib/types";
 import type { DiscordRole } from "@/lib/discord";
 
 export type DiscordMember = {

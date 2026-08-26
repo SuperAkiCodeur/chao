@@ -8,24 +8,13 @@ import { addLog } from "@/lib/logger";
 import { getSetting, SETTING_KEYS } from "@/lib/settings";
 import { GUILD_ID, discordHeaders } from "@/lib/discord";
 import type { ActionResult } from "@/lib/types";
+import type { TmdbResult, TmdbSearchResponse } from "./types";
 
-export type { ActionResult };
 const TMDB_KEY = process.env.TMDB_API_KEY;
 const TMDB_BASE = "https://api.themoviedb.org/3";
 const POSTER_BASE = "https://image.tmdb.org/t/p/w500";
 
 // ── TMDB ─────────────────────────────────────────────────────────────────────
-
-export type TmdbResult = {
-  mediaId: string;
-  resolvedTitle: string;
-  posterUrl: string | null;
-  overview: string | null;
-  genres: string[];
-  releaseDate: string | null;
-  runtime: string | null;
-  director: string | null;
-};
 
 function formatRuntime(minutes?: number | null): string | null {
   if (!minutes) return null;
@@ -39,10 +28,6 @@ function formatDate(iso?: string | null): string | null {
   const d = new Date(iso);
   return isNaN(d.getTime()) ? null : d.toLocaleDateString("fr-FR");
 }
-
-export type TmdbSearchResponse =
-  | { ok: true; result: TmdbResult }
-  | { ok: false; error: string };
 
 export async function searchTmdbAction(title: string, type: string): Promise<TmdbSearchResponse> {
   if (!TMDB_KEY) {

@@ -5,8 +5,6 @@ import { revalidatePath } from "next/cache";
 import { GUILD_ID, discordHeaders } from "@/lib/discord";
 import type { ActionResult } from "@/lib/types";
 
-export type { ActionResult };
-
 export async function kickMember(userId: string, userName: string, reason: string): Promise<ActionResult> {
   try {
     const res = await fetch(`https://discord.com/api/v10/guilds/${GUILD_ID}/members/${userId}`, {

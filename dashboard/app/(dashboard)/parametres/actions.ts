@@ -4,8 +4,6 @@ import { saveSettings } from "@/lib/settings";
 import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/lib/types";
 
-export type { ActionResult };
-
 export async function saveSection(formData: FormData): Promise<ActionResult> {
   try {
     const entries: Record<string, string> = {};

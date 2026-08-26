@@ -3,7 +3,7 @@
 import { useState, useTransition, useRef, useEffect } from "react";
 import { Check, CaretDown, FloppyDisk, Hash, SpeakerHigh, MagnifyingGlass } from "@phosphor-icons/react";
 import { saveSection } from "./actions";
-import type { ActionResult } from "./actions";
+import type { ActionResult } from "@/lib/types";
 
 import type { DiscordChannel, DiscordRole } from "@/lib/discord";
 
