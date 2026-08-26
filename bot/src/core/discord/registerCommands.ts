@@ -26,6 +26,12 @@ export async function registerCommands(guildIdOverride?: string): Promise<void> 
       commandCount: commands.length,
     });
 
+    // Évite les doublons dans l'UI Discord si des commandes globales ont été
+    // enregistrées par le passé (ex: avant qu'un guildId ne soit configuré).
+    await rest.put(Routes.applicationCommands(applicationId), { body: [] });
+
+    logger.info("Global commands cleared", { applicationId });
+
     return;
   }
 
