@@ -8,9 +8,9 @@ export const BIRTHDAY_CONSTANTS = {
   ],
 } as const;
 
-// Modal — saisie de la date d'anniversaire
-export const BIRTHDAY_MODAL_SET_ID = "birthday:modal:set";
-export const BIRTHDAY_INPUT_DATE_ID = "birthday:input:date";
+// Menus déroulants — sélection guidée de la date (mois puis jour)
+export const BIRTHDAY_MONTH_SELECT_ID = "birthday:select:month";
+export const BIRTHDAY_DAY_SELECT_PREFIX = "birthday:select:day:";
 
 // Boutons — confirmation de suppression
 export const BIRTHDAY_CONFIRM_DELETE_ID = "birthday:btn:confirm-delete";

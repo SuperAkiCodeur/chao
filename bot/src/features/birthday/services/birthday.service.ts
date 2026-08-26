@@ -3,20 +3,19 @@ import {
   ButtonBuilder,
   ButtonStyle,
   MessageFlags,
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
   type ButtonInteraction,
   type ChatInputCommandInteraction,
-  type ModalSubmitInteraction,
+  type StringSelectMenuInteraction,
 } from "discord.js";
 import { logger } from "../../../core/app/logger.js";
 import {
   BIRTHDAY_CANCEL_DELETE_ID,
   BIRTHDAY_CONFIRM_DELETE_ID,
   BIRTHDAY_CONSTANTS,
-  BIRTHDAY_INPUT_DATE_ID,
-  BIRTHDAY_MODAL_SET_ID,
+  BIRTHDAY_DAY_SELECT_PREFIX,
+  BIRTHDAY_MONTH_SELECT_ID,
 } from "../domain/birthday.constants.js";
 import { validateBirthdayDate } from "../domain/birthday.validators.js";
 import {
@@ -29,24 +28,62 @@ function formatBirthdayDate(day: number, month: number): string {
   return `${day} ${BIRTHDAY_CONSTANTS.MONTH_NAMES[month - 1]}`;
 }
 
-async function showBirthdaySetModal(interaction: ChatInputCommandInteraction): Promise<void> {
-  const modal = new ModalBuilder()
-    .setCustomId(BIRTHDAY_MODAL_SET_ID)
-    .setTitle("🎂 Ton anniversaire");
+function capitalize(word: string): string {
+  return word.charAt(0).toUpperCase() + word.slice(1);
+}
 
-  modal.addComponents(
-    new ActionRowBuilder<TextInputBuilder>().addComponents(
-      new TextInputBuilder()
-        .setCustomId(BIRTHDAY_INPUT_DATE_ID)
-        .setLabel("Date (JJ/MM)")
-        .setStyle(TextInputStyle.Short)
-        .setPlaceholder("Ex: 25/12")
-        .setRequired(true)
-        .setMaxLength(5),
-    ),
-  );
+// 2024 est bissextile, ce qui autorise le 29 février dans le sélecteur.
+function daysInMonth(month: number): number {
+  return new Date(2024, month, 0).getDate();
+}
 
-  await interaction.showModal(modal);
+function buildMonthSelectRow(): ActionRowBuilder<StringSelectMenuBuilder> {
+  const select = new StringSelectMenuBuilder()
+    .setCustomId(BIRTHDAY_MONTH_SELECT_ID)
+    .setPlaceholder("Choisis ton mois de naissance")
+    .addOptions(
+      BIRTHDAY_CONSTANTS.MONTH_NAMES.map((name, index) =>
+        new StringSelectMenuOptionBuilder()
+          .setLabel(capitalize(name))
+          .setValue(String(index + 1)),
+      ),
+    );
+
+  return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select);
+}
+
+function buildDaySelectRows(month: number): ActionRowBuilder<StringSelectMenuBuilder>[] {
+  const maxDay = daysInMonth(month);
+  const midpoint = Math.min(16, maxDay);
+  const customId = `${BIRTHDAY_DAY_SELECT_PREFIX}${month}`;
+
+  const firstHalf = new StringSelectMenuBuilder()
+    .setCustomId(customId)
+    .setPlaceholder(`Jour (1–${midpoint})`)
+    .addOptions(
+      Array.from({ length: midpoint }, (_, i) =>
+        new StringSelectMenuOptionBuilder().setLabel(String(i + 1)).setValue(String(i + 1)),
+      ),
+    );
+
+  const rows = [new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(firstHalf)];
+
+  if (maxDay > midpoint) {
+    const secondHalf = new StringSelectMenuBuilder()
+      .setCustomId(customId)
+      .setPlaceholder(`Jour (${midpoint + 1}–${maxDay})`)
+      .addOptions(
+        Array.from({ length: maxDay - midpoint }, (_, i) =>
+          new StringSelectMenuOptionBuilder()
+            .setLabel(String(midpoint + 1 + i))
+            .setValue(String(midpoint + 1 + i)),
+        ),
+      );
+
+    rows.push(new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(secondHalf));
+  }
+
+  return rows;
 }
 
 function buildConfirmDeleteRow(): ActionRowBuilder<ButtonBuilder> {
@@ -66,7 +103,11 @@ export async function handleBirthdayCommand(interaction: ChatInputCommandInterac
   const existing = await findBirthdayByUserId(interaction.user.id);
 
   if (!existing) {
-    await showBirthdaySetModal(interaction);
+    await interaction.reply({
+      content: "🎂 Choisis ton mois de naissance :",
+      components: [buildMonthSelectRow()],
+      flags: MessageFlags.Ephemeral,
+    });
     return;
   }
 
@@ -77,32 +118,30 @@ export async function handleBirthdayCommand(interaction: ChatInputCommandInterac
   });
 }
 
-export async function handleBirthdaySetModal(interaction: ModalSubmitInteraction): Promise<void> {
-  const dateInput = interaction.fields.getTextInputValue(BIRTHDAY_INPUT_DATE_ID).trim();
-  const match = /^(\d{1,2})\/(\d{1,2})$/.exec(dateInput);
+export async function handleBirthdayMonthSelect(interaction: StringSelectMenuInteraction): Promise<void> {
+  const month = Number(interaction.values[0]);
 
-  if (!match) {
-    await interaction.reply({
-      content: "❌ Format invalide. Utilise JJ/MM (ex: 25/12).",
-      flags: MessageFlags.Ephemeral,
-    });
-    return;
-  }
+  await interaction.update({
+    content: `📅 Mois : **${capitalize(BIRTHDAY_CONSTANTS.MONTH_NAMES[month - 1])}**. Choisis ton jour :`,
+    components: buildDaySelectRows(month),
+  });
+}
 
-  const day = Number(match[1]);
-  const month = Number(match[2]);
+export async function handleBirthdayDaySelect(interaction: StringSelectMenuInteraction): Promise<void> {
+  const month = Number(interaction.customId.slice(BIRTHDAY_DAY_SELECT_PREFIX.length));
+  const day = Number(interaction.values[0]);
 
   const validation = validateBirthdayDate(day, month);
 
   if (!validation.success) {
-    await interaction.reply({ content: validation.message, flags: MessageFlags.Ephemeral });
+    await interaction.update({ content: validation.message, components: [] });
     return;
   }
 
   if (!interaction.guildId) {
-    await interaction.reply({
+    await interaction.update({
       content: "❌ Cette commande doit être utilisée dans un serveur.",
-      flags: MessageFlags.Ephemeral,
+      components: [],
     });
     return;
   }
@@ -116,9 +155,9 @@ export async function handleBirthdaySetModal(interaction: ModalSubmitInteraction
 
   logger.info("[birthday] Birthday set", { userId: interaction.user.id, day, month });
 
-  await interaction.reply({
+  await interaction.update({
     content: `✅ Ton anniversaire est enregistré : **${formatBirthdayDate(day, month)}** 🎂`,
-    flags: MessageFlags.Ephemeral,
+    components: [],
   });
 }
 

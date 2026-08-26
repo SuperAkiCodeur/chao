@@ -45,12 +45,14 @@ import {
   ROULETTE_BACK_BTN_ID,
 } from "../../../features/roulette/domain/roulette.constants.js";
 import {
-  handleBirthdaySetModal,
+  handleBirthdayMonthSelect,
+  handleBirthdayDaySelect,
   handleBirthdayConfirmDelete,
   handleBirthdayCancelDelete,
 } from "../../../features/birthday/services/birthday.service.js";
 import {
-  BIRTHDAY_MODAL_SET_ID,
+  BIRTHDAY_MONTH_SELECT_ID,
+  BIRTHDAY_DAY_SELECT_PREFIX,
   BIRTHDAY_CONFIRM_DELETE_ID,
   BIRTHDAY_CANCEL_DELETE_ID,
 } from "../../../features/birthday/domain/birthday.constants.js";
@@ -65,8 +67,6 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
       try {
         if (id.startsWith(CINEMA_MODAL_START_PREFIX)) {
           await handleCinemaStartModal(interaction);
-        } else if (id === BIRTHDAY_MODAL_SET_ID) {
-          await handleBirthdaySetModal(interaction);
         }
       } catch (err) {
         logger.error("Modal submit failed", { customId: id, err });
@@ -97,6 +97,10 @@ export const interactionCreateEvent: AppEvent<Events.InteractionCreate> = {
         await handleCinemaEndPartySelect(interaction);
       } else if (id === CINEMA_MENU_ID) {
         await handleCinemaMenu(interaction);
+      } else if (id === BIRTHDAY_MONTH_SELECT_ID) {
+        await handleBirthdayMonthSelect(interaction);
+      } else if (id.startsWith(BIRTHDAY_DAY_SELECT_PREFIX)) {
+        await handleBirthdayDaySelect(interaction);
       }
       return;
     }
